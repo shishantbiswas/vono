@@ -819,7 +819,7 @@ fn openapi_schema_from_json_impl(j json2.Any) OpenAPISchema {
 	// Parse enum values
 	mut enum_vals := []string{}
 	if 'enum' in obj {
-		for e in (obj['enum'] or { json2.Any('') }).arr() {
+		for e in (obj['enum'] or { json2.Any('') }).as_array() {
 			enum_vals << e.str()
 		}
 	}
@@ -827,7 +827,7 @@ fn openapi_schema_from_json_impl(j json2.Any) OpenAPISchema {
 	// Parse required array
 	mut required := []string{}
 	if 'required' in obj {
-		for r in (obj['required'] or { json2.Any('') }).arr() {
+		for r in (obj['required'] or { json2.Any('') }).as_array() {
 			required << r.str()
 		}
 	}
@@ -951,7 +951,7 @@ pub fn OpenAPIOperation.from_json(j json2.Any) OpenAPIOperation {
 	// Parse tags array
 	mut tags := []string{}
 	if 'tags' in obj {
-		for t in (obj['tags'] or { json2.Any('') }).arr() {
+		for t in (obj['tags'] or { json2.Any('') }).as_array() {
 			tags << t.str()
 		}
 	}
@@ -959,7 +959,7 @@ pub fn OpenAPIOperation.from_json(j json2.Any) OpenAPIOperation {
 	// Parse parameters array
 	mut parameters := []OpenAPIParameter{}
 	if 'parameters' in obj {
-		for p in (obj['parameters'] or { json2.Any('') }).arr() {
+		for p in (obj['parameters'] or { json2.Any('') }).as_array() {
 			parameters << OpenAPIParameter.from_json(p)
 		}
 	}
@@ -976,12 +976,12 @@ pub fn OpenAPIOperation.from_json(j json2.Any) OpenAPIOperation {
 	// Parse security array
 	mut security := []map[string][]string{}
 	if 'security' in obj {
-		for sec in (obj['security'] or { json2.Any('') }).arr() {
+		for sec in (obj['security'] or { json2.Any('') }).as_array() {
 			mut sec_map := map[string][]string{}
 			sec_obj := sec.as_map()
 			for key, val in sec_obj {
 				mut scopes := []string{}
-				for scope in val.arr() {
+				for scope in val.as_array() {
 					scopes << scope.str()
 				}
 				sec_map[key] = scopes
@@ -1010,7 +1010,7 @@ pub fn OpenAPIPathItem.from_json(j json2.Any) OpenAPIPathItem {
 	// Parse parameters array
 	mut parameters := []OpenAPIParameter{}
 	if 'parameters' in obj {
-		for p in (obj['parameters'] or { json2.Any('') }).arr() {
+		for p in (obj['parameters'] or { json2.Any('') }).as_array() {
 			parameters << OpenAPIParameter.from_json(p)
 		}
 	}
@@ -1117,7 +1117,7 @@ pub fn OpenAPIDocument.from_json(j json2.Any) OpenAPIDocument {
 	// Parse servers array
 	mut servers := []OpenAPIServer{}
 	if 'servers' in obj {
-		for s in (obj['servers'] or { json2.Any('') }).arr() {
+		for s in (obj['servers'] or { json2.Any('') }).as_array() {
 			servers << OpenAPIServer.from_json(s)
 		}
 	}
@@ -1134,12 +1134,12 @@ pub fn OpenAPIDocument.from_json(j json2.Any) OpenAPIDocument {
 	// Parse security array
 	mut security := []map[string][]string{}
 	if 'security' in obj {
-		for sec in (obj['security'] or { json2.Any('') }).arr() {
+		for sec in (obj['security'] or { json2.Any('') }).as_array() {
 			mut sec_map := map[string][]string{}
 			sec_obj := sec.as_map()
 			for key, val in sec_obj {
 				mut scopes := []string{}
-				for scope in val.arr() {
+				for scope in val.as_array() {
 					scopes << scope.str()
 				}
 				sec_map[key] = scopes
@@ -1151,7 +1151,7 @@ pub fn OpenAPIDocument.from_json(j json2.Any) OpenAPIDocument {
 	// Parse tags array
 	mut tags := []OpenAPITag{}
 	if 'tags' in obj {
-		for t in (obj['tags'] or { json2.Any('') }).arr() {
+		for t in (obj['tags'] or { json2.Any('') }).as_array() {
 			tags << OpenAPITag.from_json(t)
 		}
 	}

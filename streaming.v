@@ -9,7 +9,7 @@ import picohttpparser
 import usockets
 
 // C function declaration for direct socket writes
-fn C.send(sockfd int, buf voidptr, len int, flags int) int
+// fn C.send(sockfd int, buf voidptr, len int, flags int) int
 
 // ============================================================================
 // SSE Event Structure
@@ -62,9 +62,9 @@ mut:
 // StreamContext.new - Create a new StreamContext with the given writer
 pub fn StreamContext.new(writer &StreamWriter) StreamContext {
 	return StreamContext{
-		writer: unsafe { writer }
+		writer:    unsafe { writer }
 		is_closed: false
-		abort_fn: none
+		abort_fn:  none
 	}
 }
 
@@ -97,7 +97,6 @@ pub fn (mut ctx StreamContext) writeln(data string) ! {
 	ctx.write_string(data)!
 	ctx.write_string('\n')!
 }
-
 
 // write_sse - Write an SSE event to the stream
 // Formats the event according to the SSE specification:
@@ -180,7 +179,6 @@ pub fn (mut ctx StreamContext) trigger_abort() {
 	ctx.is_closed = true
 }
 
-
 // ============================================================================
 // Picoev StreamWriter Implementation
 // ============================================================================
@@ -191,7 +189,7 @@ pub fn (mut ctx StreamContext) trigger_abort() {
 @[heap]
 pub struct PicoevStreamWriter {
 mut:
-	fd        int  // Socket file descriptor for direct writes
+	fd        int // Socket file descriptor for direct writes
 	connected bool
 }
 
@@ -199,7 +197,7 @@ mut:
 // Extracts the fd from picohttpparser.Response for direct socket writes
 pub fn PicoevStreamWriter.new(res &picohttpparser.Response) &PicoevStreamWriter {
 	return &PicoevStreamWriter{
-		fd: res.fd
+		fd:        res.fd
 		connected: true
 	}
 }
@@ -300,7 +298,7 @@ mut:
 // UsocketsStreamWriter.new - Create a new UsocketsStreamWriter with the given socket
 pub fn UsocketsStreamWriter.new(socket usockets.Socket) &UsocketsStreamWriter {
 	return &UsocketsStreamWriter{
-		socket: socket
+		socket:    socket
 		connected: true
 	}
 }
@@ -419,7 +417,7 @@ pub:
 
 // stream - Basic binary streaming function
 // Sets Transfer-Encoding: chunked and executes the callback with a StreamContext
-// 
+//
 // Parameters:
 //   writer: The StreamWriter implementation (PicoevStreamWriter or UsocketsStreamWriter)
 //   callback: The callback function that writes data to the stream
@@ -437,7 +435,7 @@ pub:
 pub fn stream(mut writer StreamWriter, callback StreamCallback, error_handler ...StreamErrorHandler) StreamResponse {
 	// Create StreamContext with the writer
 	mut ctx := StreamContext.new(writer)
-	
+
 	// Execute the callback and handle errors
 	callback(mut ctx) or {
 		// Handle error
@@ -449,18 +447,18 @@ pub fn stream(mut writer StreamWriter, callback StreamCallback, error_handler ..
 			eprintln('[SSE Stream Error] ${err.msg()}')
 		}
 	}
-	
+
 	// Auto-close the stream when callback completes
 	ctx.close()
-	
+
 	// Return response headers for streaming
 	return StreamResponse{
 		status_code: 200
-		headers: {
+		headers:     {
 			'Transfer-Encoding': 'chunked'
 			'Connection':        'keep-alive'
 		}
-		is_stream: true
+		is_stream:   true
 	}
 }
 
@@ -469,7 +467,7 @@ pub fn stream(mut writer StreamWriter, callback StreamCallback, error_handler ..
 pub fn stream_with_headers(mut writer StreamWriter, headers map[string]string, callback StreamCallback, error_handler ...StreamErrorHandler) StreamResponse {
 	// Create StreamContext with the writer
 	mut ctx := StreamContext.new(writer)
-	
+
 	// Execute the callback and handle errors
 	callback(mut ctx) or {
 		// Handle error
@@ -481,21 +479,21 @@ pub fn stream_with_headers(mut writer StreamWriter, headers map[string]string, c
 			eprintln('[SSE Stream Error] ${err.msg()}')
 		}
 	}
-	
+
 	// Auto-close the stream when callback completes
 	ctx.close()
-	
+
 	// Merge headers with required streaming headers
 	mut response_headers := headers.clone()
 	response_headers['Transfer-Encoding'] = 'chunked'
 	if 'Connection' !in response_headers {
 		response_headers['Connection'] = 'keep-alive'
 	}
-	
+
 	return StreamResponse{
 		status_code: 200
-		headers: response_headers
-		is_stream: true
+		headers:     response_headers
+		is_stream:   true
 	}
 }
 
@@ -520,12 +518,12 @@ pub fn write_stream_headers(mut writer StreamWriter, status_code int, headers ma
 	// Build HTTP response line
 	status_text := get_status_text(status_code)
 	mut response := 'HTTP/1.1 ${status_code} ${status_text}\r\n'
-	
+
 	// Add headers
 	for key, value in headers {
 		response += '${key}: ${value}\r\n'
 	}
-	
+
 	// Add required streaming headers if not present
 	if 'Transfer-Encoding' !in headers {
 		response += 'Transfer-Encoding: chunked\r\n'
@@ -533,10 +531,10 @@ pub fn write_stream_headers(mut writer StreamWriter, status_code int, headers ma
 	if 'Connection' !in headers {
 		response += 'Connection: keep-alive\r\n'
 	}
-	
+
 	// End headers section
 	response += '\r\n'
-	
+
 	// Write headers directly (not chunked)
 	// Note: Headers are written raw, not using chunked encoding
 	// The chunked encoding starts after the headers
@@ -565,7 +563,7 @@ pub fn write_stream_headers(mut writer StreamWriter, status_code int, headers ma
 pub fn stream_text(mut writer StreamWriter, callback StreamCallback, error_handler ...StreamErrorHandler) StreamResponse {
 	// Create StreamContext with the writer
 	mut ctx := StreamContext.new(writer)
-	
+
 	// Execute the callback and handle errors
 	callback(mut ctx) or {
 		// Handle error
@@ -577,20 +575,20 @@ pub fn stream_text(mut writer StreamWriter, callback StreamCallback, error_handl
 			eprintln('[SSE StreamText Error] ${err.msg()}')
 		}
 	}
-	
+
 	// Auto-close the stream when callback completes
 	ctx.close()
-	
+
 	// Return response headers for text streaming
 	return StreamResponse{
 		status_code: 200
-		headers: {
+		headers:     {
 			'Content-Type':           'text/plain; charset=utf-8'
 			'Transfer-Encoding':      'chunked'
 			'X-Content-Type-Options': 'nosniff'
 			'Connection':             'keep-alive'
 		}
-		is_stream: true
+		is_stream:   true
 	}
 }
 
@@ -635,7 +633,7 @@ pub fn get_stream_text_headers() map[string]string {
 pub fn stream_sse(mut writer StreamWriter, callback StreamCallback, error_handler ...StreamErrorHandler) StreamResponse {
 	// Create StreamContext with the writer
 	mut ctx := StreamContext.new(writer)
-	
+
 	// Execute the callback and handle errors
 	callback(mut ctx) or {
 		// Handle error
@@ -647,10 +645,10 @@ pub fn stream_sse(mut writer StreamWriter, callback StreamCallback, error_handle
 			eprintln('[SSE StreamSSE Error] ${err.msg()}')
 		}
 	}
-	
+
 	// Auto-close the stream when callback completes
 	ctx.close()
-	
+
 	// Return response headers for SSE streaming
 	// Requirements 3.1, 3.2, 3.3:
 	// - Content-Type: text/event-stream
@@ -658,13 +656,13 @@ pub fn stream_sse(mut writer StreamWriter, callback StreamCallback, error_handle
 	// - Connection: keep-alive
 	return StreamResponse{
 		status_code: 200
-		headers: {
+		headers:     {
 			'Content-Type':      'text/event-stream'
 			'Cache-Control':     'no-cache'
 			'Connection':        'keep-alive'
 			'Transfer-Encoding': 'chunked'
 		}
-		is_stream: true
+		is_stream:   true
 	}
 }
 
@@ -679,7 +677,6 @@ pub fn get_stream_sse_headers() map[string]string {
 	}
 }
 
-
 // ============================================================================
 // Context-Based Streaming Functions
 // ============================================================================
@@ -688,9 +685,9 @@ pub fn get_stream_sse_headers() map[string]string {
 
 // StreamType - Type of streaming response
 pub enum StreamType {
-	basic    // Basic binary streaming
-	text     // Text streaming with text/plain content type
-	sse      // Server-Sent Events streaming
+	basic // Basic binary streaming
+	text  // Text streaming with text/plain content type
+	sse   // Server-Sent Events streaming
 }
 
 // StreamConfig - Configuration stored in Context for streaming responses
@@ -769,33 +766,33 @@ fn rand_int() int {
 pub fn c_stream(mut c Context, callback StreamCallback, error_handler ...StreamErrorHandler) http.Response {
 	// Generate unique stream ID
 	stream_id := generate_stream_id()
-	
+
 	// Store stream configuration
 	config := StreamConfig{
-		stream_type: .basic
-		callback: callback
+		stream_type:   .basic
+		callback:      callback
 		error_handler: if error_handler.len > 0 { error_handler[0] } else { none }
 	}
 	store_stream_config(stream_id, config)
-	
+
 	// Mark context as streaming
 	c.store['_stream'] = 'true'
 	c.store['_stream_id'] = stream_id
 	c.store['_stream_type'] = 'basic'
-	
+
 	// Set streaming headers
 	c.headers['Transfer-Encoding'] = 'chunked'
 	c.headers['Connection'] = 'keep-alive'
-	
+
 	// Return a marker response (body will be ignored, streaming will be handled by server)
 	mut headers := http.new_header()
 	headers.add_custom('Transfer-Encoding', 'chunked') or {}
 	headers.add_custom('Connection', 'keep-alive') or {}
-	
+
 	return http.Response{
 		status_code: 200
-		header: headers
-		body: ''
+		header:      headers
+		body:        ''
 	}
 }
 
@@ -822,37 +819,37 @@ pub fn c_stream(mut c Context, callback StreamCallback, error_handler ...StreamE
 pub fn c_stream_text(mut c Context, callback StreamCallback, error_handler ...StreamErrorHandler) http.Response {
 	// Generate unique stream ID
 	stream_id := generate_stream_id()
-	
+
 	// Store stream configuration
 	config := StreamConfig{
-		stream_type: .text
-		callback: callback
+		stream_type:   .text
+		callback:      callback
 		error_handler: if error_handler.len > 0 { error_handler[0] } else { none }
 	}
 	store_stream_config(stream_id, config)
-	
+
 	// Mark context as streaming
 	c.store['_stream'] = 'true'
 	c.store['_stream_id'] = stream_id
 	c.store['_stream_type'] = 'text'
-	
+
 	// Set streaming headers
 	c.headers['Content-Type'] = 'text/plain; charset=utf-8'
 	c.headers['Transfer-Encoding'] = 'chunked'
 	c.headers['X-Content-Type-Options'] = 'nosniff'
 	c.headers['Connection'] = 'keep-alive'
-	
+
 	// Return a marker response
 	mut headers := http.new_header()
 	headers.add_custom('Content-Type', 'text/plain; charset=utf-8') or {}
 	headers.add_custom('Transfer-Encoding', 'chunked') or {}
 	headers.add_custom('X-Content-Type-Options', 'nosniff') or {}
 	headers.add_custom('Connection', 'keep-alive') or {}
-	
+
 	return http.Response{
 		status_code: 200
-		header: headers
-		body: ''
+		header:      headers
+		body:        ''
 	}
 }
 
@@ -887,37 +884,37 @@ pub fn c_stream_text(mut c Context, callback StreamCallback, error_handler ...St
 pub fn c_stream_sse(mut c Context, callback StreamCallback, error_handler ...StreamErrorHandler) http.Response {
 	// Generate unique stream ID
 	stream_id := generate_stream_id()
-	
+
 	// Store stream configuration
 	config := StreamConfig{
-		stream_type: .sse
-		callback: callback
+		stream_type:   .sse
+		callback:      callback
 		error_handler: if error_handler.len > 0 { error_handler[0] } else { none }
 	}
 	store_stream_config(stream_id, config)
-	
+
 	// Mark context as streaming
 	c.store['_stream'] = 'true'
 	c.store['_stream_id'] = stream_id
 	c.store['_stream_type'] = 'sse'
-	
+
 	// Set SSE headers (Requirements 3.1, 3.2, 3.3)
 	c.headers['Content-Type'] = 'text/event-stream'
 	c.headers['Cache-Control'] = 'no-cache'
 	c.headers['Connection'] = 'keep-alive'
 	c.headers['Transfer-Encoding'] = 'chunked'
-	
+
 	// Return a marker response
 	mut headers := http.new_header()
 	headers.add_custom('Content-Type', 'text/event-stream') or {}
 	headers.add_custom('Cache-Control', 'no-cache') or {}
 	headers.add_custom('Connection', 'keep-alive') or {}
 	headers.add_custom('Transfer-Encoding', 'chunked') or {}
-	
+
 	return http.Response{
 		status_code: 200
-		header: headers
-		body: ''
+		header:      headers
+		body:        ''
 	}
 }
 
@@ -933,7 +930,7 @@ pub fn get_stream_config(ctx Context) ?StreamConfig {
 	if !is_streaming_response(ctx) {
 		return none
 	}
-	
+
 	stream_id := ctx.store['_stream_id'] or { return none }
 	return retrieve_stream_config(stream_id)
 }
@@ -957,10 +954,10 @@ pub fn cleanup_stream_config(ctx Context) {
 //   true if streaming was executed, false if not a streaming response
 pub fn execute_stream(ctx Context, mut writer StreamWriter) bool {
 	config := get_stream_config(ctx) or { return false }
-	
+
 	// Create StreamContext with the writer
 	mut stream_ctx := StreamContext.new(writer)
-	
+
 	// Execute the callback and handle errors
 	config.callback(mut stream_ctx) or {
 		// Handle error
@@ -971,12 +968,12 @@ pub fn execute_stream(ctx Context, mut writer StreamWriter) bool {
 			eprintln('[SSE Stream Error] ${err.msg()}')
 		}
 	}
-	
+
 	// Auto-close the stream when callback completes
 	stream_ctx.close()
-	
+
 	// Cleanup the stored configuration
 	cleanup_stream_config(ctx)
-	
+
 	return true
 }

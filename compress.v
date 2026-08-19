@@ -56,9 +56,6 @@ pub fn compress(options ...CompressOptions) ContextMiddleware {
 		
 		// 选择压缩编码
 		encoding := select_encoding(accept_encoding, opts.encoding)
-		if encoding == none {
-			return response
-		}
 		
 		// 执行压缩
 		selected_encoding := encoding or { return response }
@@ -228,9 +225,7 @@ fn compress_body(body string, encoding CompressEncoding, level int) ![]u8 {
 	
 	match encoding {
 		.gzip {
-			return gzip.compress(data, gzip.CompressParams{
-				compression_level: level
-			})
+			return gzip.compress(data)
 		}
 		.deflate {
 			return zlib.compress(data)

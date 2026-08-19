@@ -595,7 +595,7 @@ fn validate_array(field_name string, value json2.Any, schema ArraySchema) []Vali
 	}
 	
 	// 获取数组
-	arr := value.arr()
+	arr := value.as_array()
 	
 	// 检查最小元素数量
 	if schema.min_items > 0 && arr.len < schema.min_items {
