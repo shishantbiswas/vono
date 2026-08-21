@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -20,7 +20,7 @@ fn main() {
 fn test_million_matches_small_scale() {
 	println('\n📊 百万次路由匹配 - 小规模 (10个动态路由)...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add 10 dynamic routes
 	dynamic_routes := [
@@ -37,9 +37,9 @@ fn test_million_matches_small_scale() {
 	]
 	
 	for route in dynamic_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -101,14 +101,14 @@ fn test_million_matches_small_scale() {
 fn test_million_matches_medium_scale() {
 	println('\n📊 百万次路由匹配 - 中等规模 (50个动态路由)...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add 50 dynamic routes
 	for i in 0 .. 50 {
 		route := '/api/v${i}/resources/:id/items/:item_id'
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -165,7 +165,7 @@ fn test_million_matches_medium_scale() {
 fn test_million_complex_routes() {
 	println('\n📊 百万次复杂路由匹配测试...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add complex dynamic routing
 	complex_routes := [
@@ -177,9 +177,9 @@ fn test_million_complex_routes() {
 	]
 	
 	for route in complex_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}

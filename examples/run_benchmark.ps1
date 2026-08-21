@@ -32,14 +32,14 @@ switch ($choice) {
     "1" {
         Write-Host ""
         Write-Host "运行路由匹配性能测试..." -ForegroundColor Cyan
-        v run benchmark_veb_vs_hono.v
+        v run benchmark_veb_vs_vono.v
     }
     "2" {
         Write-Host ""
         Write-Host "运行 HTTP 压测..." -ForegroundColor Cyan
         Write-Host "请确保已在其他终端启动服务器:" -ForegroundColor Yellow
         Write-Host "  - veb:    v run server_veb.v   (端口 8080)"
-        Write-Host "  - vono: v run server_hono.v  (端口 8081)"
+        Write-Host "  - vono: v run server_vono.v  (端口 8081)"
         Write-Host ""
         v run http_benchmark.v
     }
@@ -51,20 +51,20 @@ switch ($choice) {
     "4" {
         Write-Host ""
         Write-Host "启动 vono 服务器 (端口 8081)..." -ForegroundColor Cyan
-        v run server_hono.v
+        v run server_vono.v
     }
     "5" {
         Write-Host ""
         Write-Host "编译所有测试文件..." -ForegroundColor Cyan
         
-        Write-Host "编译 benchmark_veb_vs_hono.v..."
-        v -prod benchmark_veb_vs_hono.v -o benchmark_veb_vs_hono.exe
+        Write-Host "编译 benchmark_veb_vs_vono.v..."
+        v -prod benchmark_veb_vs_vono.v -o benchmark_veb_vs_vono.exe
         
         Write-Host "编译 server_veb.v..."
         v -prod server_veb.v -o server_veb.exe
         
-        Write-Host "编译 server_hono.v..."
-        v -prod server_hono.v -o server_hono.exe
+        Write-Host "编译 server_vono.v..."
+        v -prod server_vono.v -o server_vono.exe
         
         Write-Host "编译 http_benchmark.v..."
         v -prod http_benchmark.v -o http_benchmark.exe

@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import x.json2
 import net.http
@@ -115,7 +115,7 @@ pub fn permission_middleware(auth_manager AuthManager, required_permission strin
 }
 
 //Register authentication route
-pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
+pub fn register_auth_routes(mut app Vono, mut auth_manager AuthManager) {
 	//Login route
 	app.post('/api/auth/login', fn [mut auth_manager] (mut c Context) http.Response {
 		body := c.body

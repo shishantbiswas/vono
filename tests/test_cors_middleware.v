@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import rand
 import time
@@ -42,7 +42,7 @@ fn (stats CorsTestStats) print_summary() {
 }
 
 //Create a test Context with Origin header
-fn create_cors_context_with_origin(origin string, method http.Method) hono.Context {
+fn create_cors_context_with_origin(origin string, method http.Method) vono.Context {
 	mut headers := http.new_header()
 	if origin.len > 0 {
 		headers.add_custom('Origin', origin) or {}
@@ -53,11 +53,11 @@ fn create_cors_context_with_origin(origin string, method http.Method) hono.Conte
 		url: '/test'
 		header: headers
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 // Create a preflight request Context with Origin and Access-Control-Request-Headers
-fn create_cors_preflight_context(origin string, request_headers string) hono.Context {
+fn create_cors_preflight_context(origin string, request_headers string) vono.Context {
 	mut headers := http.new_header()
 	if origin.len > 0 {
 		headers.add_custom('Origin', origin) or {}
@@ -71,7 +71,7 @@ fn create_cors_preflight_context(origin string, request_headers string) hono.Con
 		url: '/test'
 		header: headers
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 // Generate a random domain name
@@ -112,7 +112,7 @@ fn generate_cors_random_headers() []string {
 }
 
 // Simulate the next function and return a simple response
-fn cors_mock_next(mut c hono.Context) http.Response {
+fn cors_mock_next(mut c vono.Context) http.Response {
 	return c.text('OK')
 }
 
@@ -133,7 +133,7 @@ fn test_property_1_cors_origin_header_consistency() bool {
 		origin := generate_cors_random_origin()
 		mut ctx := create_cors_context_with_origin(origin, generate_cors_random_method())
 		
-		cors_mw := hono.cors()
+		cors_mw := vono.cors()
 		_ := cors_mw(mut ctx, cors_mock_next)
 		
 		allowed_origin := ctx.headers['Access-Control-Allow-Origin'] or { '' }
@@ -150,7 +150,7 @@ fn test_property_1_cors_origin_header_consistency() bool {
 		
 		mut ctx := create_cors_context_with_origin(request_origin, generate_cors_random_method())
 		
-		cors_mw := hono.cors(hono.CorsOptions{
+		cors_mw := vono.cors(vono.CorsOptions{
 			origin: allowed_domain
 		})
 		_ := cors_mw(mut ctx, cors_mock_next)
@@ -182,7 +182,7 @@ fn test_property_1_cors_origin_header_consistency() bool {
 		
 		mut ctx := create_cors_context_with_origin(request_origin, generate_cors_random_method())
 		
-		cors_mw := hono.cors(hono.CorsOptions{
+		cors_mw := vono.cors(vono.CorsOptions{
 			origin: allowed_domains
 		})
 		_ := cors_mw(mut ctx, cors_mock_next)
@@ -201,8 +201,8 @@ fn test_property_1_cors_origin_header_consistency() bool {
 		mut ctx := create_cors_context_with_origin(request_origin, generate_cors_random_method())
 		
 		// Callback that returns the origin if it starts with "https"
-		cors_mw := hono.cors(hono.CorsOptions{
-			origin: fn (origin string, c hono.Context) string {
+		cors_mw := vono.cors(vono.CorsOptions{
+			origin: fn (origin string, c vono.Context) string {
 				if origin.starts_with('https') {
 					return origin
 				}
@@ -251,7 +251,7 @@ fn test_property_2_cors_preflight_response() bool {
 		
 		mut ctx := create_cors_preflight_context(origin, allow_headers.join(', '))
 		
-		cors_mw := hono.cors(hono.CorsOptions{
+		cors_mw := vono.cors(vono.CorsOptions{
 			origin: '*'
 			allow_methods: allow_methods
 			allow_headers: allow_headers

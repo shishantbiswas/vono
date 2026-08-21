@@ -31,7 +31,7 @@
 
 ```
 vono/
-├── hono/
+├── vono/
 │   ├── auth.v              # 认证核心模块
 │   ├── auth_routes.v       # 认证路由
 │   ├── database.v          # 数据库管理
@@ -206,13 +206,13 @@ Authorization: <token>
 ### 认证中间件
 ```v
 // 添加认证中间件
-app.use(hono.auth_middleware(auth_manager))
+app.use(vono.auth_middleware(auth_manager))
 ```
 
 ### 权限中间件
 ```v
 // 添加权限检查中间件
-app.use(hono.permission_middleware('manage'))
+app.use(vono.permission_middleware('manage'))
 ```
 
 ## 数据库结构

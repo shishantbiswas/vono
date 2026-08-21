@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import net.http
 import time

@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import rand
 import time
@@ -68,7 +68,7 @@ fn generate_random_prefix() string {
 }
 
 //Create a test Context with Authorization header
-fn create_bearer_context_with_auth(auth_header string) hono.Context {
+fn create_bearer_context_with_auth(auth_header string) vono.Context {
 	mut headers := http.new_header()
 	if auth_header.len > 0 {
 		headers.add_custom('Authorization', auth_header) or {}
@@ -79,11 +79,11 @@ fn create_bearer_context_with_auth(auth_header string) hono.Context {
 		url: '/api/protected'
 		header: headers
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 //Create a test Context with custom header
-fn create_bearer_context_with_custom_header(header_name string, header_value string) hono.Context {
+fn create_bearer_context_with_custom_header(header_name string, header_value string) vono.Context {
 	mut headers := http.new_header()
 	if header_value.len > 0 {
 		headers.add_custom(header_name, header_value) or {}
@@ -94,11 +94,11 @@ fn create_bearer_context_with_custom_header(header_name string, header_value str
 		url: '/api/protected'
 		header: headers
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 // Simulate the next function and return a simple response
-fn bearer_mock_next(mut c hono.Context) http.Response {
+fn bearer_mock_next(mut c vono.Context) http.Response {
 	c.status(200)
 	return c.text('OK')
 }
@@ -122,7 +122,7 @@ fn test_property_9_bearer_token_validation() bool {
 
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 		})
 		response := bearer_mw(mut ctx, bearer_mock_next)
@@ -154,7 +154,7 @@ fn test_property_9_bearer_token_validation() bool {
 
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 		})
 		response := bearer_mw(mut ctx, bearer_mock_next)
@@ -182,7 +182,7 @@ fn test_property_9_bearer_token_validation() bool {
 
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: tokens
 		})
 		response := bearer_mw(mut ctx, bearer_mock_next)
@@ -199,7 +199,7 @@ fn test_property_9_bearer_token_validation() bool {
 
 		mut ctx := create_bearer_context_with_auth('')
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 		})
 		response := bearer_mw(mut ctx, bearer_mock_next)
@@ -225,7 +225,7 @@ fn test_property_9_bearer_token_validation() bool {
 
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 			prefix: custom_prefix
 		})
@@ -252,9 +252,9 @@ fn test_property_9_custom_verify_callback() bool {
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
 		// Custom verify function that only accepts tokens starting with "valid_"
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: ''
-			verify_token: fn (token string, c hono.Context) bool {
+			verify_token: fn (token string, c vono.Context) bool {
 				return token.starts_with('valid_')
 			}
 		})
@@ -274,9 +274,9 @@ fn test_property_9_custom_verify_callback() bool {
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
 		// Custom verify function that only accepts tokens starting with "valid_"
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: ''
-			verify_token: fn (token string, c hono.Context) bool {
+			verify_token: fn (token string, c vono.Context) bool {
 				return token.starts_with('valid_')
 			}
 		})
@@ -309,7 +309,7 @@ fn test_property_9_realm_configuration() bool {
 
 		mut ctx := create_bearer_context_with_auth(auth_header)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 			realm: realm
 		})
@@ -346,7 +346,7 @@ fn test_property_9_custom_header_name() bool {
 
 		mut ctx := create_bearer_context_with_custom_header(custom_header, header_value)
 
-		bearer_mw := hono.bearer_auth(hono.BearerAuthOptions{
+		bearer_mw := vono.bearer_auth(vono.BearerAuthOptions{
 			token: valid_token
 			header_name: custom_header
 		})

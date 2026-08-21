@@ -1,40 +1,40 @@
 module main
 
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Basic redirect (302 Found)
-	app.get('/redirect-basic', fn (mut c hono.Context) http.Response {
+	app.get('/redirect-basic', fn (mut c vono.Context) http.Response {
 		return c.redirect('https://example.com')
 	})
 	
 	// Redirect with custom status code (301 Moved Permanently)
-	app.get('/redirect-permanent', fn (mut c hono.Context) http.Response {
+	app.get('/redirect-permanent', fn (mut c vono.Context) http.Response {
 		return c.redirect('https://example.com', 301)
 	})
 	
 	// Redirect with 303 See Other
-	app.post('/form-submit', fn (mut c hono.Context) http.Response {
+	app.post('/form-submit', fn (mut c vono.Context) http.Response {
 		// Process form data here...
 		// Then redirect to success page
 		return c.redirect('/success', 303)
 	})
 	
 	// Redirect with 307 Temporary Redirect (preserves method)
-	app.get('/redirect-preserve-method', fn (mut c hono.Context) http.Response {
+	app.get('/redirect-preserve-method', fn (mut c vono.Context) http.Response {
 		return c.redirect('/new-location', 307)
 	})
 	
 	// Redirect with 308 Permanent Redirect (preserves method)
-	app.get('/redirect-permanent-preserve', fn (mut c hono.Context) http.Response {
+	app.get('/redirect-permanent-preserve', fn (mut c vono.Context) http.Response {
 		return c.redirect('/new-permanent-location', 308)
 	})
 	
 	// Conditional redirect
-	app.get('/conditional-redirect', fn (mut c hono.Context) http.Response {
+	app.get('/conditional-redirect', fn (mut c vono.Context) http.Response {
 		user_agent := c.req.header.get_custom('User-Agent') or { '' }
 		
 		if user_agent.contains('Mobile') {
@@ -45,20 +45,20 @@ fn main() {
 	})
 	
 	// Redirect to relative path
-	app.get('/relative-redirect', fn (mut c hono.Context) http.Response {
+	app.get('/relative-redirect', fn (mut c vono.Context) http.Response {
 		return c.redirect('../other-page')
 	})
 	
 	// Success page for demonstration
-	app.get('/success', fn (mut c hono.Context) http.Response {
+	app.get('/success', fn (mut c vono.Context) http.Response {
 		return c.html('<h1>Success!</h1><p>Form submitted successfully.</p>')
 	})
 	
-	app.get('/mobile-version', fn (mut c hono.Context) http.Response {
+	app.get('/mobile-version', fn (mut c vono.Context) http.Response {
 		return c.html('<h1>Mobile Version</h1>')
 	})
 	
-	app.get('/desktop-version', fn (mut c hono.Context) http.Response {
+	app.get('/desktop-version', fn (mut c vono.Context) http.Response {
 		return c.html('<h1>Desktop Version</h1>')
 	})
 	

@@ -49,7 +49,7 @@ function showMessage(message, type = 'info') {
 }
 
 // Export some tool functions for use by other scripts
-window.VHonoUtils = {
+window.VVonoUtils = {
     showMessage,
     getTimestamp: () => new Date().toISOString(),
     logFeature: (featureName) => showMessage(`Feature used: ${featureName}`, 'info')

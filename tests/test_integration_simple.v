@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -24,7 +24,7 @@ fn test_basic_app_creation() {
 	println('\n📊 基本应用创建测试...')
 	
 	// Create application
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Verify that FastRouter is enabled by default
 	if app.use_fast_router {
@@ -52,18 +52,18 @@ fn test_basic_app_creation() {
 fn test_route_management() {
 	println('\n📊 路由管理测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add different types of routes
-	app.get('/static', fn (mut c hono.Context) http.Response {
+	app.get('/static', fn (mut c vono.Context) http.Response {
 		return c.text('static response')
 	})
 	
-	app.get('/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('user response')
 	})
 	
-	app.post('/api/:version/users', fn (mut c hono.Context) http.Response {
+	app.post('/api/:version/users', fn (mut c vono.Context) http.Response {
 		return c.text('api response')
 	})
 	
@@ -98,23 +98,23 @@ fn test_performance_validation() {
 	println('\n📊 性能验证测试...')
 	
 	//Create FastRouter and HybridRouter for comparison
-	mut fast_router := hono.FastRouter.new()
-	mut hybrid_router := hono.ContextHybridRouter.new()
+	mut fast_router := vono.FastRouter.new()
+	mut hybrid_router := vono.ContextHybridRouter.new()
 	
 	//Add the same route
 	route_path := '/api/:version/users/:user_id'
 	test_path := '/api/v1/users/123'
 	
-	fast_handler := hono.ContextHandler{
+	fast_handler := vono.ContextHandler{
 		path: route_path
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('fast')
 		}
 	}
 	
-	hybrid_handler := hono.ContextHandler{
+	hybrid_handler := vono.ContextHandler{
 		path: route_path
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('hybrid')
 		}
 	}
@@ -170,7 +170,7 @@ fn test_config_system() {
 	println('\n📊 配置系统测试...')
 	
 	// Test default configuration creation
-	config := hono.default_config()
+	config := vono.default_config()
 	
 	//Verify default value
 	if config.server.host == '127.0.0.1' && config.server.port == 8080 {

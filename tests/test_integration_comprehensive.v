@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 import os
@@ -34,7 +34,7 @@ fn test_fast_router_integration() {
 	println('\n📊 FastRouter集成测试...')
 	
 	//Create application instance
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Verify that FastRouter is enabled by default
 	if !app.use_fast_router {
@@ -53,7 +53,7 @@ fn test_fast_router_integration() {
 	]
 	
 	for route in test_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('response')
 		})
 	}
@@ -108,7 +108,7 @@ fn test_config_integration() {
 	println('\n📊 配置管理集成测试...')
 	
 	//Test default configuration
-	config := hono.default_config()
+	config := vono.default_config()
 	if config.server.host == '0.0.0.0' && config.server.port == 8080 {
 		println('  ✅ 默认配置正确')
 	} else {
@@ -116,7 +116,7 @@ fn test_config_integration() {
 	}
 	
 	//Test configuration verification
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		println('  ❌ 配置验证失败: ${err}')
 		return
 	}
@@ -125,13 +125,13 @@ fn test_config_integration() {
 	//Test configuration save and load
 	test_config_file := 'test_config.json'
 	
-	hono.save_config(config, test_config_file) or {
+	vono.save_config(config, test_config_file) or {
 		println('  ❌ 配置保存失败: ${err}')
 		return
 	}
 	println('  ✅ 配置保存成功')
 	
-	loaded_config := hono.load_config(test_config_file) or {
+	loaded_config := vono.load_config(test_config_file) or {
 		println('  ❌ 配置加载失败: ${err}')
 		return
 	}
@@ -152,11 +152,11 @@ fn test_logger_integration() {
 	println('\n📊 日志系统集成测试...')
 	
 	//Create logger configuration
-	config := hono.LoggerConfig{
+	config := vono.LoggerConfig{
 		level: .info
 		output: .console
 	}
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Test logs at each level
 	logger.debug('Debug message')
@@ -187,21 +187,21 @@ fn test_error_handling_integration() {
 	println('\n📊 错误处理集成测试...')
 	
 	//Test error response
-	error_response_400 := hono.Response.error(400, 'Bad request test')
+	error_response_400 := vono.Response.error(400, 'Bad request test')
 	if error_response_400.status_code == 400 {
 		println('  ✅ 400 Bad Request 错误响应正确')
 	} else {
 		println('  ❌ 400 Bad Request 错误响应失败')
 	}
 	
-	error_response_404 := hono.Response.error(404, 'Not found test')
+	error_response_404 := vono.Response.error(404, 'Not found test')
 	if error_response_404.status_code == 404 {
 		println('  ✅ 404 Not Found 错误响应正确')
 	} else {
 		println('  ❌ 404 Not Found 错误响应失败')
 	}
 	
-	error_response_500 := hono.Response.error(500, 'Internal error test')
+	error_response_500 := vono.Response.error(500, 'Internal error test')
 	if error_response_500.status_code == 500 {
 		println('  ✅ 500 Internal Error 错误响应正确')
 	} else {
@@ -229,7 +229,7 @@ fn test_security_integration() {
 	mut blocked_count := 0
 	for path in dangerous_paths {
 		// validate_file_path returns !string, so error means blocked
-		_ := hono.validate_file_path(path, hono.PathValidationOptions{}) or {
+		_ := vono.validate_file_path(path, vono.PathValidationOptions{}) or {
 			blocked_count++
 			continue
 		}
@@ -250,7 +250,7 @@ fn test_security_integration() {
 	
 	mut safe_count := 0
 	for path in safe_paths {
-		if _ := hono.validate_file_path(path, hono.PathValidationOptions{}) {
+		if _ := vono.validate_file_path(path, vono.PathValidationOptions{}) {
 			safe_count++
 		}
 	}
@@ -266,7 +266,7 @@ fn test_performance_integration() {
 	println('\n📊 性能基准集成测试...')
 	
 	//Create test application
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add multiple routes
 	performance_routes := [
@@ -278,7 +278,7 @@ fn test_performance_integration() {
 	]
 	
 	for route in performance_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('response')
 		})
 	}
@@ -320,13 +320,13 @@ fn test_memory_management_integration() {
 	println('\n📊 内存管理集成测试...')
 	
 	//Test LRU cache
-	mut cache := hono.ContextLRUCache.new(100)
+	mut cache := vono.ContextLRUCache.new(100)
 	
 	//Add test data
-	test_data := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{
+	test_data := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{
 			path: '/test'
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -367,12 +367,12 @@ fn test_memory_management_integration() {
 }
 
 //Create a mock Context for testing
-fn create_mock_context() hono.Context {
+fn create_mock_context() vono.Context {
 	req := http.Request{
 		method: http.Method.get
 		url: '/test'
 		data: ''
 	}
 	
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }

@@ -1,7 +1,7 @@
 // streaming.v - SSE Streaming Helper for vono
 // Provides Server-Sent Events (SSE) and streaming response support
-// Reference: Hono.js Streaming Helper API
-module hono
+// Reference: Vono.js Streaming Helper API
+module vono
 
 import net.http
 import time
@@ -756,8 +756,8 @@ fn rand_int() int {
 //   http.Response with streaming marker headers
 //
 // Example:
-//   app.get('/stream', fn (mut c hono.Context) http.Response {
-//       return hono.c_stream(mut c, fn (mut stream hono.StreamContext) ! {
+//   app.get('/stream', fn (mut c vono.Context) http.Response {
+//       return vono.c_stream(mut c, fn (mut stream vono.StreamContext) ! {
 //           stream.write('Hello'.bytes())!
 //           stream.sleep(100)
 //           stream.write('World'.bytes())!
@@ -809,8 +809,8 @@ pub fn c_stream(mut c Context, callback StreamCallback, error_handler ...StreamE
 //   http.Response with streaming marker headers
 //
 // Example:
-//   app.get('/stream-text', fn (mut c hono.Context) http.Response {
-//       return hono.c_stream_text(mut c, fn (mut stream hono.StreamContext) ! {
+//   app.get('/stream-text', fn (mut c vono.Context) http.Response {
+//       return vono.c_stream_text(mut c, fn (mut stream vono.StreamContext) ! {
 //           stream.write_string('Hello ')!
 //           stream.sleep(100)
 //           stream.writeln('World')!
@@ -866,15 +866,15 @@ pub fn c_stream_text(mut c Context, callback StreamCallback, error_handler ...St
 //   http.Response with streaming marker headers
 //
 // Example:
-//   app.get('/sse', fn (mut c hono.Context) http.Response {
-//       return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
-//           stream.write_sse(hono.SSEEvent{
+//   app.get('/sse', fn (mut c vono.Context) http.Response {
+//       return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
+//           stream.write_sse(vono.SSEEvent{
 //               data: 'Hello World'
 //               event: 'message'
 //               id: '1'
 //           })!
 //           stream.sleep(1000)
-//           stream.write_sse(hono.SSEEvent{
+//           stream.write_sse(vono.SSEEvent{
 //               data: 'Another message'
 //               event: 'update'
 //               id: '2'

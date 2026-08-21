@@ -1,14 +1,14 @@
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
 	println('=== 测试缓存内存泄漏修复 ===')
 	
 	//Create cache
-	mut cache := hono.ContextLRUCache.new(5)
+	mut cache := vono.ContextLRUCache.new(5)
 	
 	//Create test data
-	test_route_match := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{
+	test_route_match := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{
 			path: '/test'
 		}
 		params: {'id': '123'}

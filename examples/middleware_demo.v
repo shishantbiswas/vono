@@ -2,21 +2,21 @@
 // This example shows the basic usage of all built-in middleware of the vono framework
 module main
 
-import hono
+import vono
 import net.http
 import time
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// ============================================================================
 	// 1. CORS middleware example
 	// ============================================================================
 	//Basic usage: allow all sources
-	app.use(hono.cors())
+	app.use(vono.cors())
 	
 	// Advanced configuration example (commented out to avoid duplication)
-	// app.use(hono.cors(hono.CorsOptions{
+	// app.use(vono.cors(vono.CorsOptions{
 	// origin: 'https://example.com' // Only allow specific domain names
 	// credentials: true // Allow credentials to be carried
 	// max_age: 600 // Preflight request cache for 10 minutes
@@ -28,13 +28,13 @@ fn main() {
 	// 2. Compression middleware example
 	// ============================================================================
 	// Use gzip compression (default)
-	app.use(hono.gzip())
+	app.use(vono.gzip())
 	
 	// Or use deflate compression
-	// app.use(hono.deflate_compress())
+	// app.use(vono.deflate_compress())
 	
 	// Custom compression configuration
-	// app.use(hono.compress(hono.CompressOptions{
+	// app.use(vono.compress(vono.CompressOptions{
 	//     encoding: .gzip
 	// threshold: 2048 // Only compress responses larger than 2KB
 	// level: 9 // Highest compression level
@@ -43,26 +43,26 @@ fn main() {
 	// ============================================================================
 	// 3. Security response header middleware example
 	// ============================================================================
-	app.use(hono.secure_headers())
+	app.use(vono.secure_headers())
 	
 	// ============================================================================
 	// 4. Request ID middleware example
 	// ============================================================================
-	app.use(hono.request_id())
+	app.use(vono.request_id())
 	
 	// ============================================================================
 	// 5. Request timing middleware example
 	// ============================================================================
-	app.use(hono.timing())
+	app.use(vono.timing())
 	
 	// ============================================================================
 	// 6. Current limiting middleware example
 	// ============================================================================
 	//Create memory storage
-	store := hono.MemoryStore.new()
+	store := vono.MemoryStore.new()
 	
 	//Apply throttling middleware: up to 100 requests per minute
-	app.use(hono.rate_limiter(hono.RateLimitOptions{
+	app.use(vono.rate_limiter(vono.RateLimitOptions{
 		store: store
 		window_ms: 60000  // 1 minute
 		limit: 100        // Max 100 requests
@@ -74,12 +74,12 @@ fn main() {
 	// ============================================================================
 	
 	//Basic routing
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('{"message": "Welcome to vono middleware demo!"}')
 	})
 	
 	// Get request information
-	app.get('/info', fn (mut c hono.Context) http.Response {
+	app.get('/info', fn (mut c vono.Context) http.Response {
 		// Get request ID
 		request_id := c.get('request_id') or { 'unknown' }
 		// Get client IP
@@ -93,9 +93,9 @@ fn main() {
 	// ============================================================================
 	
 	//Set Cookie
-	app.get('/cookie/set', fn (mut c hono.Context) http.Response {
+	app.get('/cookie/set', fn (mut c vono.Context) http.Response {
 		//Set normal cookies
-		hono.set_cookie(mut c, 'session_id', 'abc123', hono.CookieOptions{
+		vono.set_cookie(mut c, 'session_id', 'abc123', vono.CookieOptions{
 			http_only: true
 			secure: false  // Set development environment to false
 			max_age: 3600  // 1 hour
@@ -106,16 +106,16 @@ fn main() {
 	})
 	
 	// Get Cookie
-	app.get('/cookie/get', fn (mut c hono.Context) http.Response {
-		if session_id := hono.get_cookie(c, 'session_id') {
+	app.get('/cookie/get', fn (mut c vono.Context) http.Response {
+		if session_id := vono.get_cookie(c, 'session_id') {
 			return c.json('{"session_id": "${session_id}"}')
 		}
 		return c.json('{"error": "Cookie not found"}')
 	})
 	
 	// Get all cookies
-	app.get('/cookie/all', fn (mut c hono.Context) http.Response {
-		cookies := hono.get_all_cookies(c)
+	app.get('/cookie/all', fn (mut c vono.Context) http.Response {
+		cookies := vono.get_all_cookies(c)
 		mut parts := []string{}
 		for name, value in cookies {
 			parts << '"${name}": "${value}"'
@@ -124,24 +124,24 @@ fn main() {
 	})
 	
 	//Delete Cookie
-	app.get('/cookie/delete', fn (mut c hono.Context) http.Response {
-		hono.delete_cookie(mut c, 'session_id')
+	app.get('/cookie/delete', fn (mut c vono.Context) http.Response {
+		vono.delete_cookie(mut c, 'session_id')
 		return c.json('{"message": "Cookie deleted"}')
 	})
 	
 	//Signed Cookie Example
-	app.get('/cookie/signed/set', fn (mut c hono.Context) http.Response {
+	app.get('/cookie/signed/set', fn (mut c vono.Context) http.Response {
 		secret := 'my-secret-key-for-signing'
-		hono.set_signed_cookie(mut c, 'user_data', 'user123', secret) or {
+		vono.set_signed_cookie(mut c, 'user_data', 'user123', secret) or {
 			c.status(500)
 			return c.json('{"error": "Failed to set signed cookie"}')
 		}
 		return c.json('{"message": "Signed cookie set successfully"}')
 	})
 	
-	app.get('/cookie/signed/get', fn (mut c hono.Context) http.Response {
+	app.get('/cookie/signed/get', fn (mut c vono.Context) http.Response {
 		secret := 'my-secret-key-for-signing'
-		user_data := hono.get_signed_cookie(c, 'user_data', secret) or {
+		user_data := vono.get_signed_cookie(c, 'user_data', secret) or {
 			c.status(400)
 			return c.json('{"error": "Invalid or missing signed cookie"}')
 		}
@@ -153,12 +153,12 @@ fn main() {
 	// ============================================================================
 	
 	// Generate JWT Token
-	app.post('/auth/login', fn (mut c hono.Context) http.Response {
+	app.post('/auth/login', fn (mut c vono.Context) http.Response {
 		// In actual applications, user credentials should be verified here
 		secret := 'my-jwt-secret-key'
 		
 		//Create JWT payload
-		payload := hono.JwtPayload{
+		payload := vono.JwtPayload{
 			sub: 'user123'
 			iss: 'vono-demo'
 			exp: time.now().unix() + 3600  // Expires in 1 hour
@@ -170,7 +170,7 @@ fn main() {
 		}
 		
 		//Sign JWT
-		token := hono.sign_jwt(payload, secret, .hs256) or {
+		token := vono.sign_jwt(payload, secret, .hs256) or {
 			c.status(500)
 			return c.json('{"error": "Failed to generate token"}')
 		}
@@ -179,7 +179,7 @@ fn main() {
 	})
 	
 	//Verify JWT Token (manual verification example)
-	app.get('/auth/verify', fn (mut c hono.Context) http.Response {
+	app.get('/auth/verify', fn (mut c vono.Context) http.Response {
 		secret := 'my-jwt-secret-key'
 		
 		// Get token from Authorization header
@@ -196,7 +196,7 @@ fn main() {
 		token := auth_header[7..]
 		
 		//Verify token
-		payload := hono.verify_jwt(token, secret, .hs256) or {
+		payload := vono.verify_jwt(token, secret, .hs256) or {
 			c.status(401)
 			return c.json('{"error": "Invalid token: ${err}"}')
 		}
@@ -209,17 +209,17 @@ fn main() {
 	// ============================================================================
 	
 	//Create a protected sub-application
-	mut protected_app := hono.Hono.new()
+	mut protected_app := vono.Vono.new()
 	
 	// Apply Bearer Auth middleware
-	protected_app.use(hono.bearer(hono.BearerAuthOptions{
+	protected_app.use(vono.bearer(vono.BearerAuthOptions{
 		token: 'my-api-token'  // Simple static token
 		realm: 'Protected API'
 	}))
 	
-	protected_app.get('/data', fn (mut c hono.Context) http.Response {
+	protected_app.get('/data', fn (mut c vono.Context) http.Response {
 		// Get the verified token
-		token := hono.get_bearer_token(c) or { 'unknown' }
+		token := vono.get_bearer_token(c) or { 'unknown' }
 		return c.json('{"message": "Protected data", "token": "${token}"}')
 	})
 	
@@ -232,14 +232,14 @@ fn main() {
 	
 	// JSON body validation
 	app.post('/users', 
-		hono.validate_json(hono.v_object({
-			'name':  hono.v_string().required().min(2).max(50)
-			'email': hono.v_string().required().pattern(r'^[\w\.-]+@[\w\.-]+\.\w+$')
-			'age':   hono.v_int().min(0).max(150)
+		vono.validate_json(vono.v_object({
+			'name':  vono.v_string().required().min(2).max(50)
+			'email': vono.v_string().required().pattern(r'^[\w\.-]+@[\w\.-]+\.\w+$')
+			'age':   vono.v_int().min(0).max(150)
 		})),
-		fn (mut c hono.Context) http.Response {
+		fn (mut c vono.Context) http.Response {
 			// Get verified data
-			data := hono.get_validated_data(c)
+			data := vono.get_validated_data(c)
 			name := data['name'] or { '' }
 			email := data['email'] or { '' }
 			
@@ -249,14 +249,14 @@ fn main() {
 	
 	// Query parameter verification
 	app.get('/search',
-		hono.validate_query(hono.v_object({
-			'q':    hono.v_string().required().min(1)
-			'page': hono.v_int().min(1)
-			'size': hono.v_int().min(1).max(100)
+		vono.validate_query(vono.v_object({
+			'q':    vono.v_string().required().min(1)
+			'page': vono.v_int().min(1)
+			'size': vono.v_int().min(1).max(100)
 		})),
-		fn (mut c hono.Context) http.Response {
-			q := hono.get_validated_field(c, 'q') or { '' }
-			page := hono.get_validated_field(c, 'page') or { '1' }
+		fn (mut c vono.Context) http.Response {
+			q := vono.get_validated_field(c, 'q') or { '' }
+			page := vono.get_validated_field(c, 'page') or { '1' }
 			
 			return c.json('{"query": "${q}", "page": ${page}}')
 		}
@@ -267,17 +267,17 @@ fn main() {
 	// ============================================================================
 	
 	// Combine multiple middlewares
-	combined := hono.combine_middlewares([
-		hono.cors_middleware(),
-		hono.secure_headers(),
-		hono.timing(),
+	combined := vono.combine_middlewares([
+		vono.cors_middleware(),
+		vono.secure_headers(),
+		vono.timing(),
 	])
 	
 	//Create a sub-application using composite middleware
-	mut combined_app := hono.Hono.new()
+	mut combined_app := vono.Vono.new()
 	combined_app.use(combined)
 	
-	combined_app.get('/test', fn (mut c hono.Context) http.Response {
+	combined_app.get('/test', fn (mut c vono.Context) http.Response {
 		duration := c.get('request_duration_ms') or { '0' }
 		return c.json('{"message": "Combined middleware test", "duration_ms": "${duration}"}')
 	})

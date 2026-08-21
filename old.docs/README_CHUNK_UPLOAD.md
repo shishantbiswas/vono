@@ -2,7 +2,7 @@
 
 ## 概述
 
-vono 大文件分片上传系统是一个基于 V 语言和 Hono 框架构建的高性能文件上传解决方案。支持大文件分片上传、断点续传、秒传、自动合并等功能。
+vono 大文件分片上传系统是一个基于 V 语言和 Vono 框架构建的高性能文件上传解决方案。支持大文件分片上传、断点续传、秒传、自动合并等功能。
 
 ## 主要特性
 
@@ -228,14 +228,14 @@ uploads/
 
 ```v
 // 使用默认配置创建分片上传管理器
-mut upload_manager := hono.new_chunk_upload_manager(hono.ChunkUploadConfig{})
+mut upload_manager := vono.new_chunk_upload_manager(vono.ChunkUploadConfig{})
 ```
 
 ### 2. 使用自定义配置
 
 ```v
 // 创建自定义配置
-custom_config := hono.ChunkUploadConfig{
+custom_config := vono.ChunkUploadConfig{
     chunk_size: 5 * 1024 * 1024  // 5MB 默认分片大小
     max_file_size: 5 * 1024 * 1024 * 1024  // 5GB 最大文件大小
     max_chunk_size: 20 * 1024 * 1024  // 20MB 最大分片大小
@@ -247,7 +247,7 @@ custom_config := hono.ChunkUploadConfig{
 }
 
 // 使用自定义配置创建分片上传管理器
-mut upload_manager := hono.new_chunk_upload_manager(custom_config)
+mut upload_manager := vono.new_chunk_upload_manager(custom_config)
 ```
 
 ### 3. 获取配置信息

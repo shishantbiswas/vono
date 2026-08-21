@@ -565,25 +565,25 @@
             <h2>💻 代码示例</h2>
             <div class="code-block">
 //Basic routing settings
-mut app := hono.Hono.new()
+mut app := vono.Vono.new()
 
 // Static file service
-app.use(hono.serve_static_default())
-app.use(hono.serve_static_path('/assets', './static'))
+app.use(vono.serve_static_default())
+app.use(vono.serve_static_path('/assets', './static'))
 
 //Basic routing
-app.get('/hello', fn (mut c hono.Context) http.Response {
+app.get('/hello', fn (mut c vono.Context) http.Response {
     return c.text('Hello, World!')
 })
 
 // dynamic routing
-app.get('/users/:id', fn (mut c hono.Context) http.Response {
+app.get('/users/:id', fn (mut c vono.Context) http.Response {
     user_id := c.params['id']
     return c.json('{"user_id": "${user_id}"}')
 })
 
 // file service
-app.get('/file/:filename', fn (mut c hono.Context) http.Response {
+app.get('/file/:filename', fn (mut c vono.Context) http.Response {
     filename := c.params['filename']
     return c.file('public/${filename}')
 })

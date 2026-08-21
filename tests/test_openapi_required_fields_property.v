@@ -6,7 +6,7 @@
 // the validate() method SHALL return an error identifying the missing field.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -81,19 +81,19 @@ fn random_openapi_version() string {
 }
 
 // Generate a valid OpenAPIDocument
-fn generate_valid_document() hono.OpenAPIDocument {
-	return hono.OpenAPIDocument{
+fn generate_valid_document() vono.OpenAPIDocument {
+	return vono.OpenAPIDocument{
 		openapi: random_openapi_version()
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: random_string(5, 20)
 			version: '${rand.int_in_range(1, 10) or { 1 }}.${rand.int_in_range(0, 10) or { 0 }}.${rand.int_in_range(0, 10) or { 0 }}'
 		}
 		paths: {
-			random_path(): hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			random_path(): vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: random_string(5, 20)
 					responses: {
-						'200': hono.OpenAPIResponse{description: 'Success'}
+						'200': vono.OpenAPIResponse{description: 'Success'}
 					}
 				}
 			}
@@ -109,16 +109,16 @@ fn test_missing_openapi_field() PropertyTestStats {
 	
 	for _ in 0 .. property_test_iterations {
 		// Generate document with missing openapi field
-		doc := hono.OpenAPIDocument{
+		doc := vono.OpenAPIDocument{
 			openapi: ''  // Missing required field
-			info: hono.OpenAPIInfo{
+			info: vono.OpenAPIInfo{
 				title: random_string(5, 20)
 				version: '1.0.0'
 			}
 			paths: {
-				random_path(): hono.OpenAPIPathItem{
-					get: hono.OpenAPIOperation{
-						responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+				random_path(): vono.OpenAPIPathItem{
+					get: vono.OpenAPIOperation{
+						responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 					}
 				}
 			}
@@ -150,16 +150,16 @@ fn test_missing_info_title_field() PropertyTestStats {
 	
 	for _ in 0 .. property_test_iterations {
 		// Generate document with missing info.title field
-		doc := hono.OpenAPIDocument{
+		doc := vono.OpenAPIDocument{
 			openapi: random_openapi_version()
-			info: hono.OpenAPIInfo{
+			info: vono.OpenAPIInfo{
 				title: ''  // Missing required field
 				version: '1.0.0'
 			}
 			paths: {
-				random_path(): hono.OpenAPIPathItem{
-					get: hono.OpenAPIOperation{
-						responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+				random_path(): vono.OpenAPIPathItem{
+					get: vono.OpenAPIOperation{
+						responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 					}
 				}
 			}
@@ -191,16 +191,16 @@ fn test_missing_info_version_field() PropertyTestStats {
 	
 	for _ in 0 .. property_test_iterations {
 		// Generate document with missing info.version field
-		doc := hono.OpenAPIDocument{
+		doc := vono.OpenAPIDocument{
 			openapi: random_openapi_version()
-			info: hono.OpenAPIInfo{
+			info: vono.OpenAPIInfo{
 				title: random_string(5, 20)
 				version: ''  // Missing required field
 			}
 			paths: {
-				random_path(): hono.OpenAPIPathItem{
-					get: hono.OpenAPIOperation{
-						responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+				random_path(): vono.OpenAPIPathItem{
+					get: vono.OpenAPIOperation{
+						responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 					}
 				}
 			}
@@ -258,16 +258,16 @@ fn test_unsupported_openapi_version() PropertyTestStats {
 		// Pick a random invalid version
 		invalid_version := invalid_versions[rand.int_in_range(0, invalid_versions.len - 1) or { 0 }]
 		
-		doc := hono.OpenAPIDocument{
+		doc := vono.OpenAPIDocument{
 			openapi: invalid_version
-			info: hono.OpenAPIInfo{
+			info: vono.OpenAPIInfo{
 				title: random_string(5, 20)
 				version: '1.0.0'
 			}
 			paths: {
-				random_path(): hono.OpenAPIPathItem{
-					get: hono.OpenAPIOperation{
-						responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+				random_path(): vono.OpenAPIPathItem{
+					get: vono.OpenAPIOperation{
+						responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 					}
 				}
 			}

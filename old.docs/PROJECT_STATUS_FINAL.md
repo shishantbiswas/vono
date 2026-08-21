@@ -29,7 +29,7 @@
 ## 🏗️ 架构优化成果
 
 ### 1. 预编译路由系统 (FastRouter)
-- **文件**: `hono/fast_router.v`
+- **文件**: `vono/fast_router.v`
 - **核心改进**: 从动态编译升级为预编译架构
 - **性能提升**: 10.66倍第一次匹配性能提升
 - **特性**: 
@@ -39,7 +39,7 @@
   - 自动回退保障
 
 ### 2. 智能集成系统
-- **文件**: `hono/app.v`
+- **文件**: `vono/app.v`
 - **核心改进**: FastRouter + HybridRouter双重保障
 - **特性**:
   - 默认启用FastRouter
@@ -48,7 +48,7 @@
   - 零配置优化
 
 ### 3. 内存安全优化
-- **文件**: `hono/cache.v`
+- **文件**: `vono/cache.v`
 - **核心改进**: 消除LRU缓存内存泄漏风险
 - **特性**:
   - 安全的节点清理机制
@@ -56,7 +56,7 @@
   - 健康检查功能
 
 ### 4. 安全验证系统
-- **文件**: `hono/security.v`
+- **文件**: `vono/security.v`
 - **核心改进**: 统一的安全验证机制
 - **特性**:
   - 路径遍历攻击防护
@@ -141,14 +141,14 @@
 ## 📋 文件清单
 
 ### 核心框架文件
-- `hono/app.v` - 主应用框架 (集成FastRouter)
-- `hono/fast_router.v` - 预编译路由系统 ⭐
-- `hono/router.v` - 混合路由系统 (优化版)
-- `hono/cache.v` - LRU缓存系统 (内存安全版)
-- `hono/security.v` - 安全验证系统 ⭐
-- `hono/config.v` - 配置管理系统 ⭐
-- `hono/logger.v` - 结构化日志系统 ⭐
-- `hono/error_handler.v` - 统一错误处理 ⭐
+- `vono/app.v` - 主应用框架 (集成FastRouter)
+- `vono/fast_router.v` - 预编译路由系统 ⭐
+- `vono/router.v` - 混合路由系统 (优化版)
+- `vono/cache.v` - LRU缓存系统 (内存安全版)
+- `vono/security.v` - 安全验证系统 ⭐
+- `vono/config.v` - 配置管理系统 ⭐
+- `vono/logger.v` - 结构化日志系统 ⭐
+- `vono/error_handler.v` - 统一错误处理 ⭐
 
 ### 测试和验证文件
 - `test_final_performance_showcase.v` - 最终性能展示 ⭐

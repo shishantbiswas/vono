@@ -24,16 +24,16 @@ module main
 
 import net.http
 import os
-import hono
+import vono
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	// =========================================================================
 	// Static HTML page for testing SSE
 	// =========================================================================
 	
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.html(get_sse_test_page())
 	})
 
@@ -43,8 +43,8 @@ fn main() {
 	
 	// Basic stream - demonstrates binary data streaming
 	// Sets Transfer-Encoding: chunked header
-	app.get('/stream', fn (mut c hono.Context) http.Response {
-		return hono.c_stream(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/stream', fn (mut c vono.Context) http.Response {
+		return vono.c_stream(mut c, fn (mut stream vono.StreamContext) ! {
 			// Register abort callback for client disconnection
 			stream.on_abort(fn () {
 				println('[Stream] Client disconnected')
@@ -69,8 +69,8 @@ fn main() {
 	// Sets Content-Type: text/plain; charset=utf-8
 	// Sets Transfer-Encoding: chunked
 	// Sets X-Content-Type-Options: nosniff
-	app.get('/stream-text', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_text(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/stream-text', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_text(mut c, fn (mut stream vono.StreamContext) ! {
 			// Register abort callback
 			stream.on_abort(fn () {
 				println('[StreamText] Client disconnected')
@@ -100,15 +100,15 @@ fn main() {
 	// Sets Content-Type: text/event-stream
 	// Sets Cache-Control: no-cache
 	// Sets Connection: keep-alive
-	app.get('/sse', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/sse', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
 			// Register abort callback
 			stream.on_abort(fn () {
 				println('[SSE] Client disconnected')
 			})
 			
 			// Send initial connection event
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Connected to SSE stream'
 				event: 'connect'
 				id: '0'
@@ -118,7 +118,7 @@ fn main() {
 			for i in 1 .. 6 {
 				stream.sleep(1000) // 1 second delay
 				
-				stream.write_sse(hono.SSEEvent{
+				stream.write_sse(vono.SSEEvent{
 					data: 'Update ${i}: Current time is ${get_timestamp()}'
 					event: 'update'
 					id: '${i}'
@@ -126,7 +126,7 @@ fn main() {
 			}
 			
 			// Send completion event
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Stream completed'
 				event: 'complete'
 				id: '999'
@@ -139,10 +139,10 @@ fn main() {
 	// =========================================================================
 	
 	// SSE with multi-line data - demonstrates multi-line data handling
-	app.get('/sse-multiline', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/sse-multiline', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
 			// Send event with multi-line data
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Line 1: First line of data\nLine 2: Second line of data\nLine 3: Third line of data'
 				event: 'multiline'
 				id: '1'
@@ -152,7 +152,7 @@ fn main() {
 			
 			// Send JSON data (multi-line formatted)
 			json_data := '{\n  "name": "vono",\n  "version": "1.0.0",\n  "features": ["SSE", "WebSocket", "Streaming"]\n}'
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: json_data
 				event: 'json'
 				id: '2'
@@ -165,10 +165,10 @@ fn main() {
 	// =========================================================================
 	
 	// SSE with retry - demonstrates retry field for reconnection
-	app.get('/sse-retry', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/sse-retry', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
 			// Send event with retry field (tells client to reconnect after 3 seconds)
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'This event includes a retry field'
 				event: 'message'
 				id: '1'
@@ -178,7 +178,7 @@ fn main() {
 			stream.sleep(1000)
 			
 			// Send another event without retry
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'This event does not include retry'
 				event: 'message'
 				id: '2'
@@ -191,10 +191,10 @@ fn main() {
 	// =========================================================================
 	
 	// SSE with error handling - demonstrates custom error handler
-	app.get('/sse-error', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/sse-error', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
 			// Send initial event
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Starting stream with potential error...'
 				event: 'start'
 				id: '1'
@@ -210,17 +210,17 @@ fn main() {
 			}
 			
 			// This won't be reached due to the error above
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'This message will not be sent'
 				event: 'message'
 				id: '2'
 			})!
-		}, fn (err IError, mut stream hono.StreamContext) {
+		}, fn (err IError, mut stream vono.StreamContext) {
 			// Custom error handler - send error event to client
 			println('[SSE Error Handler] Error occurred: ${err.msg()}')
 			
 			// Try to send error event to client before closing
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Error: ${err.msg()}'
 				event: 'error'
 				id: 'error'
@@ -235,8 +235,8 @@ fn main() {
 	// =========================================================================
 	
 	// Real-time counter - demonstrates continuous SSE updates
-	app.get('/sse-counter', fn (mut c hono.Context) http.Response {
-		return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/sse-counter', fn (mut c vono.Context) http.Response {
+		return vono.c_stream_sse(mut c, fn (mut stream vono.StreamContext) ! {
 			mut counter := 0
 			
 			// Send counter updates every 500ms for 20 iterations
@@ -247,7 +247,7 @@ fn main() {
 				}
 				
 				counter++
-				stream.write_sse(hono.SSEEvent{
+				stream.write_sse(vono.SSEEvent{
 					data: '${counter}'
 					event: 'counter'
 					id: '${counter}'
@@ -257,7 +257,7 @@ fn main() {
 			}
 			
 			// Send completion event
-			stream.write_sse(hono.SSEEvent{
+			stream.write_sse(vono.SSEEvent{
 				data: 'Counter finished at ${counter}'
 				event: 'complete'
 				id: 'done'
@@ -270,8 +270,8 @@ fn main() {
 	// =========================================================================
 	
 	// Pipe example - demonstrates piping data to stream
-	app.get('/stream-pipe', fn (mut c hono.Context) http.Response {
-		return hono.c_stream(mut c, fn (mut stream hono.StreamContext) ! {
+	app.get('/stream-pipe', fn (mut c vono.Context) http.Response {
+		return vono.c_stream(mut c, fn (mut stream vono.StreamContext) ! {
 			// Create some sample data to pipe
 			sample_data := 'This is sample data that will be piped to the stream.\n'.repeat(5)
 			
@@ -293,7 +293,7 @@ fn main() {
 	// REST API endpoints for demonstration
 	// =========================================================================
 	
-	app.get('/api/status', fn (mut c hono.Context) http.Response {
+	app.get('/api/status', fn (mut c vono.Context) http.Response {
 		return c.json('{"status":"running","streaming_endpoints":["/stream","/stream-text","/sse","/sse-multiline","/sse-retry","/sse-error","/sse-counter","/stream-pipe"]}')
 	})
 

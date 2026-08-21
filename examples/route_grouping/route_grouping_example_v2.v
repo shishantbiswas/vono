@@ -2,18 +2,18 @@
 // Demonstrate new features: sub-application middleware inheritance, all() method, notFound/onError handler
 
 import net.http
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
 	println('🚀 vono 路由分组增强示例启动中...')
 	
 	//Create the main application
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// ========================================
 	// 1. Customize notFound processor
 	// ========================================
-	app.not_found(fn (mut c hono.Context) http.Response {
+	app.not_found(fn (mut c vono.Context) http.Response {
 		c.status(404)
 		return c.json('{"error": "Not Found", "message": "The requested resource does not exist", "path": "${c.path}"}')
 	})
@@ -21,7 +21,7 @@ fn main() {
 	// ========================================
 	// 2. Customize onError handler
 	// ========================================
-	app.on_error(fn (error_msg string, status_code int, mut c hono.Context) http.Response {
+	app.on_error(fn (error_msg string, status_code int, mut c vono.Context) http.Response {
 		c.status(status_code)
 		return c.json('{"error": "Internal Error", "message": "${error_msg}", "code": ${status_code}}')
 	})
@@ -29,37 +29,37 @@ fn main() {
 	// ========================================
 	// 3. Global middleware
 	// ========================================
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		println('[GLOBAL] ${c.req.method} ${c.path}')
 		return next(mut c)
 	})
 	
 	//Root route
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.html(generate_index_page())
 	})
 	
 	// ========================================
 	// 4. all() method example - matches all HTTP methods
 	// ========================================
-	app.all('/echo', fn (mut c hono.Context) http.Response {
+	app.all('/echo', fn (mut c vono.Context) http.Response {
 		return c.json('{"method": "${c.req.method}", "path": "${c.path}", "message": "Echo endpoint handles all HTTP methods"}')
 	})
 	
 	// ========================================
 	// 5. Sub-application middleware inheritance example - API routing group
 	// ========================================
-	mut api := hono.Hono.new()
+	mut api := vono.Vono.new()
 	
 	//Middleware for API sub-applications (only valid for /api/* routes)
-	api.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	api.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		println('[API] Request to API endpoint: ${c.path}')
 		//Add API version header
 		c.headers['X-API-Version'] = '1.0'
 		return next(mut c)
 	})
 	
-	api.get('/version', fn (mut c hono.Context) http.Response {
+	api.get('/version', fn (mut c vono.Context) http.Response {
 		return c.json('{"version": "1.0.0", "name": "vono API"}')
 	})
 	
@@ -68,10 +68,10 @@ fn main() {
 	// ========================================
 	// 6. Books sub-application (with authentication middleware)
 	// ========================================
-	mut books := hono.Hono.new()
+	mut books := vono.Vono.new()
 	
 	// Authentication middleware for Books sub-application
-	books.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	books.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		println('[BOOKS] Auth check for: ${c.path}')
 		//Mock authentication check
 		auth_header := c.req.header.get_custom('Authorization') or { '' }
@@ -83,22 +83,22 @@ fn main() {
 		return next(mut c)
 	})
 	
-	books.get('/', fn (mut c hono.Context) http.Response {
+	books.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('[{"id": 1, "title": "V Programming"}, {"id": 2, "title": "Web Development"}]')
 	})
 	
-	books.get('/:id', fn (mut c hono.Context) http.Response {
+	books.get('/:id', fn (mut c vono.Context) http.Response {
 		book_id := c.params['id']
 		return c.json('{"id": "${book_id}", "title": "V Programming", "author": "V Team"}')
 	})
 	
-	books.post('/', fn (mut c hono.Context) http.Response {
+	books.post('/', fn (mut c vono.Context) http.Response {
 		c.status(201)
 		return c.json('{"message": "Book created", "body": "${c.body}"}')
 	})
 	
 	// Use all() to handle all methods
-	books.all('/stats', fn (mut c hono.Context) http.Response {
+	books.all('/stats', fn (mut c vono.Context) http.Response {
 		return c.json('{"method": "${c.req.method}", "total_books": 100, "message": "Stats endpoint"}')
 	})
 	
@@ -107,10 +107,10 @@ fn main() {
 	// ========================================
 	// 7. Admin sub-application (with strict authentication middleware)
 	// ========================================
-	mut admin := hono.Hono.new()
+	mut admin := vono.Vono.new()
 	
 	// Strict authentication middleware for Admin sub-application
-	admin.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	admin.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		println('[ADMIN] Strict auth check for: ${c.path}')
 		auth_header := c.req.header.get_custom('Authorization') or { '' }
 		if !auth_header.starts_with('Bearer admin-') {
@@ -121,11 +121,11 @@ fn main() {
 		return next(mut c)
 	})
 	
-	admin.get('/', fn (mut c hono.Context) http.Response {
+	admin.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('{"page": "Admin Dashboard", "stats": {"users": 100, "books": 50}}')
 	})
 	
-	admin.get('/users', fn (mut c hono.Context) http.Response {
+	admin.get('/users', fn (mut c vono.Context) http.Response {
 		return c.json('[{"id": 1, "name": "Admin User", "role": "admin"}]')
 	})
 	
@@ -134,7 +134,7 @@ fn main() {
 	// ========================================
 	// 8. Health check (no middleware)
 	// ========================================
-	app.get('/health', fn (mut c hono.Context) http.Response {
+	app.get('/health', fn (mut c vono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
 	
@@ -213,18 +213,18 @@ fn generate_index_page() string {
     <div class="group">
         <h2>💻 代码示例</h2>
         <pre>// 1. Customize notFound processor
-app.not_found(fn (mut c hono.Context) http.Response {
+app.not_found(fn (mut c vono.Context) http.Response {
     c.status(404)
     return c.json(\'{"error": "Not Found"}\')
 })
 
 // 2. all() method - matches all HTTP methods
-app.all(\'/echo\', fn (mut c hono.Context) http.Response {
+app.all(\'/echo\', fn (mut c vono.Context) http.Response {
     return c.json(\'{"method": "\' + c.req.method + \'"}\')
 })
 
 // 3. Sub-application middleware inheritance
-mut books := hono.Hono.new()
+mut books := vono.Vono.new()
 books.use(auth_middleware)  // Only valid for /api/books/*
 books.get(\'/\', handler)
 app.route(\'/api/books\', mut books)</pre>

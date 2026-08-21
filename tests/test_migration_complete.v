@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -30,7 +30,7 @@ fn main() {
 fn test_all_advanced_features() {
 	println('\n📋 验证所有高级功能已迁移...')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	// Function list verification
 	features := [
@@ -55,9 +55,9 @@ fn test_all_advanced_features() {
 	println('\n  🔧 核心接口验证:')
 	
 	// 1. Route addition
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: '/test/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}
@@ -100,8 +100,8 @@ fn test_performance_improvements() {
 	println('\n📈 验证性能提升...')
 	
 	//Create test route
-	mut enhanced_router := hono.FastRouter.new()
-	mut original_router := hono.ContextHybridRouter.new()
+	mut enhanced_router := vono.FastRouter.new()
+	mut original_router := vono.ContextHybridRouter.new()
 	
 	//Add the same test route
 	test_routes := [
@@ -113,17 +113,17 @@ fn test_performance_improvements() {
 	]
 	
 	for route in test_routes {
-		enhanced_handler := hono.ContextHandler{
+		enhanced_handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('enhanced')
 			}
 		}
 		enhanced_router.add_route('GET', enhanced_handler, '') or { continue }
 		
-		original_handler := hono.ContextHandler{
+		original_handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('original')
 			}
 		}
@@ -195,7 +195,7 @@ fn test_performance_improvements() {
 fn test_backward_compatibility() {
 	println('\n🔄 验证向后兼容性...')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	// Test whether the original interface remains compatible
 	_ := [
@@ -210,9 +210,9 @@ fn test_backward_compatibility() {
 	println('  📋 兼容性测试清单:')
 	
 	// 1. add_route compatibility
-	handler1 := hono.ContextHandler{
+	handler1 := vono.ContextHandler{
 		path: '/users/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('user')
 		}
 	}
@@ -261,7 +261,7 @@ fn test_backward_compatibility() {
 fn test_new_features() {
 	println('\n🆕 验证新增功能...')
 	
-	mut router := hono.FastRouter.new_with_cache_size(50)
+	mut router := vono.FastRouter.new_with_cache_size(50)
 	
 	// List of new features
 	_ := [
@@ -277,9 +277,9 @@ fn test_new_features() {
 	println('  🎯 新增功能验证:')
 	
 	// 1. LRU cache
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: '/test/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}
@@ -338,7 +338,7 @@ fn test_new_features() {
 fn test_final_benchmark() {
 	println('\n🏁 最终性能基准测试...')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	//Add multiple types of routes
 	routes := [
@@ -362,9 +362,9 @@ fn test_final_benchmark() {
 	]
 	
 	for route in routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('benchmark')
 			}
 		}

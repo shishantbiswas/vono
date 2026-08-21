@@ -1,9 +1,9 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 // Redirect function test
 fn redirect_basic_test() bool {
-	mut c := hono.Context.new(
+	mut c := vono.Context.new(
 		http.Request{
 			method: .get
 			url: '/test'
@@ -32,7 +32,7 @@ fn redirect_basic_test() bool {
 }
 
 fn redirect_with_status_test() bool {
-	mut c := hono.Context.new(
+	mut c := vono.Context.new(
 		http.Request{
 			method: .get
 			url: '/test'
@@ -64,7 +64,7 @@ fn redirect_multiple_status_codes_test() bool {
 	status_codes := [301, 302, 303, 307, 308]
 	
 	for code in status_codes {
-		mut c := hono.Context.new(
+		mut c := vono.Context.new(
 			http.Request{
 				method: .get
 				url: '/test'
@@ -94,7 +94,7 @@ fn redirect_multiple_status_codes_test() bool {
 }
 
 fn redirect_relative_url_test() bool {
-	mut c := hono.Context.new(
+	mut c := vono.Context.new(
 		http.Request{
 			method: .get
 			url: '/test'
@@ -119,7 +119,7 @@ fn redirect_relative_url_test() bool {
 }
 
 fn redirect_with_existing_headers_test() bool {
-	mut c := hono.Context.new(
+	mut c := vono.Context.new(
 		http.Request{
 			method: .get
 			url: '/test'

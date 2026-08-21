@@ -8,7 +8,7 @@ module main
 
 import net.http
 import x.json2
-import meiseayoung.hono
+import meiseayoung.vono
 
 // Pet structure - used to demonstrate API data
 struct Pet {
@@ -36,7 +36,7 @@ __global (
 )
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	// =========================================================================
 	// 1. Basic Usage - Using OpenAPI Builder API
@@ -44,7 +44,7 @@ fn main() {
 	
 	// Build OpenAPI specification using the fluent builder API
 	// Note: In V, we need to create a mutable builder first, then chain methods
-	mut builder := hono.OpenAPIBuilder.new()
+	mut builder := vono.OpenAPIBuilder.new()
 	builder.openapi('3.0.0')
 	builder.title('Pet Store API')
 	builder.version('1.0.0')
@@ -55,31 +55,31 @@ fn main() {
 	
 	// Define GET /pets endpoint
 	mut pets_path := builder.path('/pets')
-	pets_path.get(hono.OpenAPIOperation{
+	pets_path.get(vono.OpenAPIOperation{
 		summary: 'List all pets'
 		description: 'Returns a list of all pets in the store'
 		operation_id: 'listPets'
 		tags: ['pets']
 		parameters: [
-			hono.OpenAPIParameter{
+			vono.OpenAPIParameter{
 				name: 'limit'
 				in_location: 'query'
 				description: 'Maximum number of pets to return'
 				required: false
-				schema: hono.OpenAPISchema{
+				schema: vono.OpenAPISchema{
 					schema_type: 'integer'
 					format: 'int32'
 				}
 			},
 		]
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'A list of pets'
 				content: {
-					'application/json': hono.OpenAPIMediaType{
-						schema: hono.OpenAPISchema{
+					'application/json': vono.OpenAPIMediaType{
+						schema: vono.OpenAPISchema{
 							schema_type: 'array'
-							items: &hono.OpenAPISchema{
+							items: &vono.OpenAPISchema{
 								ref: '#/components/schemas/Pet'
 							}
 						}
@@ -88,28 +88,28 @@ fn main() {
 			}
 		}
 	})
-	pets_path.post(hono.OpenAPIOperation{
+	pets_path.post(vono.OpenAPIOperation{
 		summary: 'Create a pet'
 		description: 'Creates a new pet in the store'
 		operation_id: 'createPet'
 		tags: ['pets']
-		request_body: hono.OpenAPIRequestBody{
+		request_body: vono.OpenAPIRequestBody{
 			description: 'Pet to add to the store'
 			required: true
 			content: {
-				'application/json': hono.OpenAPIMediaType{
-					schema: hono.OpenAPISchema{
+				'application/json': vono.OpenAPIMediaType{
+					schema: vono.OpenAPISchema{
 						ref: '#/components/schemas/NewPet'
 					}
 				}
 			}
 		}
 		responses: {
-			'201': hono.OpenAPIResponse{
+			'201': vono.OpenAPIResponse{
 				description: 'Pet created successfully'
 				content: {
-					'application/json': hono.OpenAPIMediaType{
-						schema: hono.OpenAPISchema{
+					'application/json': vono.OpenAPIMediaType{
+						schema: vono.OpenAPISchema{
 							ref: '#/components/schemas/Pet'
 						}
 					}
@@ -121,61 +121,61 @@ fn main() {
 	
 	// Define GET/DELETE /pets/{id} endpoint
 	mut pet_by_id_path := builder.path('/pets/{id}')
-	pet_by_id_path.get(hono.OpenAPIOperation{
+	pet_by_id_path.get(vono.OpenAPIOperation{
 		summary: 'Get a pet by ID'
 		description: 'Returns a single pet by its ID'
 		operation_id: 'getPetById'
 		tags: ['pets']
 		parameters: [
-			hono.OpenAPIParameter{
+			vono.OpenAPIParameter{
 				name: 'id'
 				in_location: 'path'
 				description: 'ID of the pet to retrieve'
 				required: true
-				schema: hono.OpenAPISchema{
+				schema: vono.OpenAPISchema{
 					schema_type: 'integer'
 					format: 'int64'
 				}
 			},
 		]
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'Pet found'
 				content: {
-					'application/json': hono.OpenAPIMediaType{
-						schema: hono.OpenAPISchema{
+					'application/json': vono.OpenAPIMediaType{
+						schema: vono.OpenAPISchema{
 							ref: '#/components/schemas/Pet'
 						}
 					}
 				}
 			}
-			'404': hono.OpenAPIResponse{
+			'404': vono.OpenAPIResponse{
 				description: 'Pet not found'
 			}
 		}
 	})
-	pet_by_id_path.delete(hono.OpenAPIOperation{
+	pet_by_id_path.delete(vono.OpenAPIOperation{
 		summary: 'Delete a pet'
 		description: 'Deletes a pet by its ID'
 		operation_id: 'deletePet'
 		tags: ['pets']
 		parameters: [
-			hono.OpenAPIParameter{
+			vono.OpenAPIParameter{
 				name: 'id'
 				in_location: 'path'
 				description: 'ID of the pet to delete'
 				required: true
-				schema: hono.OpenAPISchema{
+				schema: vono.OpenAPISchema{
 					schema_type: 'integer'
 					format: 'int64'
 				}
 			},
 		]
 		responses: {
-			'204': hono.OpenAPIResponse{
+			'204': vono.OpenAPIResponse{
 				description: 'Pet deleted successfully'
 			}
-			'404': hono.OpenAPIResponse{
+			'404': vono.OpenAPIResponse{
 				description: 'Pet not found'
 			}
 		}
@@ -183,34 +183,34 @@ fn main() {
 	pet_by_id_path.done()
 	
 	// Add reusable schemas to components
-	builder.add_schema('Pet', hono.OpenAPISchema{
+	builder.add_schema('Pet', vono.OpenAPISchema{
 		schema_type: 'object'
 		required: ['id', 'name']
 		properties: {
-			'id': hono.OpenAPISchema{
+			'id': vono.OpenAPISchema{
 				schema_type: 'integer'
 				format: 'int64'
 				description: 'Unique identifier for the pet'
 			}
-			'name': hono.OpenAPISchema{
+			'name': vono.OpenAPISchema{
 				schema_type: 'string'
 				description: 'Name of the pet'
 			}
-			'tag': hono.OpenAPISchema{
+			'tag': vono.OpenAPISchema{
 				schema_type: 'string'
 				description: 'Tag for categorizing the pet'
 			}
 		}
 	})
-	builder.add_schema('NewPet', hono.OpenAPISchema{
+	builder.add_schema('NewPet', vono.OpenAPISchema{
 		schema_type: 'object'
 		required: ['name']
 		properties: {
-			'name': hono.OpenAPISchema{
+			'name': vono.OpenAPISchema{
 				schema_type: 'string'
 				description: 'Name of the pet'
 			}
-			'tag': hono.OpenAPISchema{
+			'tag': vono.OpenAPISchema{
 				schema_type: 'string'
 				description: 'Tag for categorizing the pet'
 			}
@@ -230,7 +230,7 @@ fn main() {
 	// =========================================================================
 	
 	// Serve Swagger UI at /ui with default options
-	app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{
+	app.get('/ui', vono.swagger_ui(vono.SwaggerUIOptions{
 		url: '/doc'
 		title: 'Pet Store API Documentation'
 	}))
@@ -240,7 +240,7 @@ fn main() {
 	// =========================================================================
 	
 	// Serve Swagger UI at /docs with custom options
-	app.get('/docs', hono.swagger_ui(hono.SwaggerUIOptions{
+	app.get('/docs', vono.swagger_ui(vono.SwaggerUIOptions{
 		url: '/doc'
 		title: 'Pet Store API - Custom Theme'
 		deep_linking: true
@@ -268,12 +268,12 @@ fn main() {
 	]
 
 	// GET /pets - List all pets
-	app.get('/pets', fn (mut c hono.Context) http.Response {
+	app.get('/pets', fn (mut c vono.Context) http.Response {
 		return c.json(json2.encode(g_pets))
 	})
 
 	// POST /pets - Create a new pet
-	app.post('/pets', fn (mut c hono.Context) http.Response {
+	app.post('/pets', fn (mut c vono.Context) http.Response {
 		println(c.body)
 		pet_dic := json2.decode[Pet](c.body) or {
 			panic(err)
@@ -286,7 +286,7 @@ fn main() {
 	})
 
 	// GET /pets/:id - Get a pet by ID
-	app.get('/pets/:id', fn (mut c hono.Context) http.Response {
+	app.get('/pets/:id', fn (mut c vono.Context) http.Response {
 		pet_id := c.params['id'] or { '' }
 		for pet in g_pets {
 			if pet.id == pet_id.int() {
@@ -298,7 +298,7 @@ fn main() {
 	})
 
 	// DELETE /pets/:id - Delete a pet
-	app.delete('/pets/:id', fn (mut c hono.Context) http.Response {
+	app.delete('/pets/:id', fn (mut c vono.Context) http.Response {
 		pet_id := c.params['id'] or { '' }
 		for i, pet in g_pets {
 			if pet.id == pet_id.int() {

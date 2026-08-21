@@ -4,10 +4,10 @@
 
 | 文件 | 说明 |
 |------|------|
-| `benchmark_veb_vs_hono.v` | 路由匹配性能测试（纯路由，不启动服务器） |
+| `benchmark_veb_vs_vono.v` | 路由匹配性能测试（纯路由，不启动服务器） |
 | `server_veb.v` | veb HTTP 服务器示例（端口 8080）- V 语言官方新版 web 框架 |
 | `server_vweb.v` | vweb HTTP 服务器示例（端口 8080）- 旧版兼容 |
-| `server_hono.v` | vono HTTP 服务器示例（端口 8081） |
+| `server_vono.v` | vono HTTP 服务器示例（端口 8081） |
 | `http_benchmark.v` | HTTP 压测工具（自动对比两个服务器） |
 | `run_benchmark.ps1` | Windows PowerShell 一键测试脚本 |
 
@@ -24,7 +24,7 @@ cd examples
 
 ```bash
 cd examples
-v run benchmark_veb_vs_hono.v
+v run benchmark_veb_vs_vono.v
 ```
 
 ### 2. HTTP 服务器压测
@@ -38,7 +38,7 @@ v run server_veb.v
 
 终端 2 - 启动 vono 服务器：
 ```bash
-v run server_hono.v
+v run server_vono.v
 ```
 
 终端 3 - 运行压测：
@@ -69,7 +69,7 @@ ab -n 10000 -c 100 http://localhost:8081/
 ```bash
 cd examples
 v -prod server_veb.v -o server_veb.exe
-v -prod server_hono.v -o server_hono.exe
+v -prod server_vono.v -o server_vono.exe
 v -prod http_benchmark.v -o http_benchmark.exe
 ```
 

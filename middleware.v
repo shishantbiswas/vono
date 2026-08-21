@@ -1,7 +1,7 @@
 // middleware.v - middleware unified export module
 // This module provides a unified access interface for all built-in middleware
-// Usage: After importing hono, it can be called through hono.cors(), hono.jwt_middleware(), etc.
-module hono
+// Usage: After importing vono, it can be called through vono.cors(), vono.jwt_middleware(), etc.
+module vono
 
 import net.http
 import time
@@ -113,16 +113,16 @@ import rand
 //
 // Usage example:
 // // 1. Create OpenAPI documentation
-//      spec := hono.OpenAPIBuilder.new()
+//      spec := vono.OpenAPIBuilder.new()
 //          .openapi('3.0.0')
 //          .title('My API')
 //          .version('1.0.0')
 //          .description('API description')
 //          .server('https://api.example.com', 'Production')
 //          .path('/users')
-//              .get(hono.OpenAPIOperation{
+//              .get(vono.OpenAPIOperation{
 //                  summary: 'Get all users'
-//                  responses: { '200': hono.OpenAPIResponse{ description: 'Success' } }
+//                  responses: { '200': vono.OpenAPIResponse{ description: 'Success' } }
 //              })
 //              .done()
 //          .build()!
@@ -131,40 +131,40 @@ import rand
 //      app.doc('/doc', spec)
 //
 // // 3. Register Swagger UI route
-//      app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
+//      app.get('/ui', vono.swagger_ui(vono.SwaggerUIOptions{ url: '/doc' }))
 //
 // ============================================================================
 
 // ============================================================================
 //Middleware shortcut alias function
-// Provide a more concise calling method, consistent with the Hono.js style
+// Provide a more concise calling method, consistent with the Vono.js style
 // ============================================================================
 
 // cors_middleware - alias function for CORS middleware
 // Usage example:
-//   app.use(hono.cors_middleware())
-//   app.use(hono.cors_middleware(CorsOptions{ origin: 'https://example.com' }))
+//   app.use(vono.cors_middleware())
+//   app.use(vono.cors_middleware(CorsOptions{ origin: 'https://example.com' }))
 pub fn cors_middleware(options ...CorsOptions) ContextMiddleware {
 	return cors(...options)
 }
 
 // jwt_auth - Alias ​​function for JWT authentication middleware
 // Usage example:
-//   app.use('/api/*', hono.jwt_auth(JwtOptions{ secret: 'my-secret' }))
+//   app.use('/api/*', vono.jwt_auth(JwtOptions{ secret: 'my-secret' }))
 pub fn jwt_auth(options JwtOptions) ContextMiddleware {
 	return jwt_middleware(options)
 }
 
 // bearer - Alias ​​function of Bearer Token authentication middleware
 // Usage example:
-//   app.use('/api/*', hono.bearer(BearerAuthOptions{ token: 'my-token' }))
+//   app.use('/api/*', vono.bearer(BearerAuthOptions{ token: 'my-token' }))
 pub fn bearer(options BearerAuthOptions) ContextMiddleware {
 	return bearer_auth(options)
 }
 
 // gzip - alias function for compression middleware (default uses gzip)
 // Usage example:
-//   app.use(hono.gzip())
+//   app.use(vono.gzip())
 pub fn gzip(options ...CompressOptions) ContextMiddleware {
 	if options.len > 0 {
 		return compress(options[0])
@@ -176,7 +176,7 @@ pub fn gzip(options ...CompressOptions) ContextMiddleware {
 
 // deflate_compress - alias function for compression middleware (using deflate)
 // Usage example:
-//   app.use(hono.deflate_compress())
+//   app.use(vono.deflate_compress())
 pub fn deflate_compress(options ...CompressOptions) ContextMiddleware {
 	if options.len > 0 {
 		return compress(options[0])
@@ -189,14 +189,14 @@ pub fn deflate_compress(options ...CompressOptions) ContextMiddleware {
 // rate_limiter - Alias ​​function of rate limiting middleware
 // Usage example:
 //   store := MemoryStore.new()
-//   app.use(hono.rate_limiter(RateLimitOptions{ store: store, limit: 100 }))
+//   app.use(vono.rate_limiter(RateLimitOptions{ store: store, limit: 100 }))
 pub fn rate_limiter(options RateLimitOptions) ContextMiddleware {
 	return rate_limit(options)
 }
 
 // validate_json - Convenience function for JSON body validation middleware
 // Usage example:
-//   app.post('/users', hono.validate_json(v_object({
+//   app.post('/users', vono.validate_json(v_object({
 //       'name': v_string().required()
 //       'email': v_string().required()
 //   })), handler)
@@ -206,7 +206,7 @@ pub fn validate_json(schema ObjectSchema, options ...ValidatorOptions) ContextMi
 
 // validate_query - Convenience function for Query parameter validation middleware
 // Usage example:
-//   app.get('/search', hono.validate_query(v_object({
+//   app.get('/search', vono.validate_query(v_object({
 //       'q': v_string().required()
 //       'page': v_int().min(1)
 //   })), handler)
@@ -216,7 +216,7 @@ pub fn validate_query(schema ObjectSchema, options ...ValidatorOptions) ContextM
 
 // validate_params - Convenience function for Path parameter validation middleware
 // Usage example:
-//   app.get('/users/:id', hono.validate_params(v_object({
+//   app.get('/users/:id', vono.validate_params(v_object({
 //       'id': v_int().required().min(1)
 //   })), handler)
 pub fn validate_params(schema ObjectSchema, options ...ValidatorOptions) ContextMiddleware {
@@ -225,7 +225,7 @@ pub fn validate_params(schema ObjectSchema, options ...ValidatorOptions) Context
 
 // validate_headers - Convenience function for Header validation middleware
 // Usage example:
-//   app.use(hono.validate_headers(v_object({
+//   app.use(vono.validate_headers(v_object({
 //       'X-API-Key': v_string().required()
 //   })))
 pub fn validate_headers(schema ObjectSchema, options ...ValidatorOptions) ContextMiddleware {
@@ -234,7 +234,7 @@ pub fn validate_headers(schema ObjectSchema, options ...ValidatorOptions) Contex
 
 // validate_form - Convenience function for Form data validation middleware
 // Usage example:
-//   app.post('/login', hono.validate_form(v_object({
+//   app.post('/login', vono.validate_form(v_object({
 //       'username': v_string().required()
 //       'password': v_string().required().min(6)
 //   })), handler)
@@ -248,10 +248,10 @@ pub fn validate_form(schema ObjectSchema, options ...ValidatorOptions) ContextMi
 
 // combine_middlewares - combines multiple middlewares into one
 // Usage example:
-//   combined := hono.combine_middlewares([
-//       hono.cors_middleware(),
-//       hono.gzip(),
-//       hono.rate_limiter(options)
+//   combined := vono.combine_middlewares([
+//       vono.cors_middleware(),
+//       vono.gzip(),
+//       vono.rate_limiter(options)
 //   ])
 //   app.use(combined)
 pub fn combine_middlewares(middlewares []ContextMiddleware) ContextMiddleware {
@@ -366,7 +366,7 @@ pub fn timing() ContextMiddleware {
 //
 // Usage example:
 // // Create OpenAPI documentation
-//   spec := hono.OpenAPIBuilder.new()
+//   spec := vono.OpenAPIBuilder.new()
 //       .openapi('3.0.0')
 //       .title('My API')
 //       .version('1.0.0')
@@ -374,10 +374,10 @@ pub fn timing() ContextMiddleware {
 //
 // // Register documents and UI routes
 //   app.doc('/doc', spec)
-//   app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
+//   app.get('/ui', vono.swagger_ui(vono.SwaggerUIOptions{ url: '/doc' }))
 //
 //With custom options:
-//   app.get('/swagger', hono.swagger_ui(hono.SwaggerUIOptions{
+//   app.get('/swagger', vono.swagger_ui(vono.SwaggerUIOptions{
 //       url: '/api/doc'
 //       title: 'My API Documentation'
 //       deep_linking: true
@@ -389,14 +389,14 @@ pub fn timing() ContextMiddleware {
 
 // swagger - short alias for the Swagger UI handler
 // Usage example:
-//   app.get('/docs', hono.swagger(hono.SwaggerUIOptions{ url: '/doc' }))
+//   app.get('/docs', vono.swagger(vono.SwaggerUIOptions{ url: '/doc' }))
 pub fn swagger(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	return swagger_ui(...options)
 }
 
 // openapi_ui - Another alias for the Swagger UI handler
 // Usage example:
-//   app.get('/api-docs', hono.openapi_ui(hono.SwaggerUIOptions{ url: '/openapi.json' }))
+//   app.get('/api-docs', vono.openapi_ui(vono.SwaggerUIOptions{ url: '/openapi.json' }))
 pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	return swagger_ui(...options)
 }
@@ -432,22 +432,22 @@ pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 // - compute_accept_key() - compute the handshake response key
 //
 // Usage example:
-//   app.get('/ws', hono.upgrade_websocket(fn (c hono.Context) hono.WSEvents {
-//       return hono.WSEvents{
-//           on_open: fn (mut ws hono.WSContext) {
+//   app.get('/ws', vono.upgrade_websocket(fn (c vono.Context) vono.WSEvents {
+//       return vono.WSEvents{
+//           on_open: fn (mut ws vono.WSContext) {
 //               ws.send('Welcome!') or {}
 //           }
-//           on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+//           on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 //               ws.send('Echo: ${event.data}') or {}
 //           }
-//           on_close: fn (event hono.WSCloseEvent, mut ws hono.WSContext) {
+//           on_close: fn (event vono.WSCloseEvent, mut ws vono.WSContext) {
 //               println('Closed: ${event.code}')
 //           }
 //       }
 //   }))
 //
 //With configuration options:
-//   app.get('/ws', hono.upgrade_websocket(factory, hono.WebSocketOptions{
+//   app.get('/ws', vono.upgrade_websocket(factory, vono.WebSocketOptions{
 // ping_interval: 30000 // 30 seconds ping interval
 // max_message_size: 1048576 // 1MB maximum message size
 // timeout: 60000 // 60 seconds timeout
@@ -457,9 +457,9 @@ pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 
 // websocket - Alias ​​function for WebSocket upgrade handler
 // Usage example:
-//   app.get('/ws', hono.websocket(fn (c hono.Context) hono.WSEvents {
-//       return hono.WSEvents{
-//           on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+//   app.get('/ws', vono.websocket(fn (c vono.Context) vono.WSEvents {
+//       return vono.WSEvents{
+//           on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 //               ws.send('Echo: ${event.data}') or {}
 //           }
 //       }
@@ -470,14 +470,14 @@ pub fn websocket(factory WSHandlerFactory, options ...WebSocketOptions) fn (mut 
 
 // ws - Short alias for the WebSocket upgrade handler
 // Usage example:
-//   app.get('/ws', hono.ws(handler_factory))
+//   app.get('/ws', vono.ws(handler_factory))
 pub fn ws(factory WSHandlerFactory, options ...WebSocketOptions) fn (mut Context) http.Response {
 	return upgrade_websocket(factory, ...options)
 }
 
 // is_ws_upgrade - Checks if the request is an alias for a WebSocket upgrade request
 // Usage example:
-//   if hono.is_ws_upgrade(c) {
+//   if vono.is_ws_upgrade(c) {
 //       // Handle WebSocket upgrade
 //   }
 pub fn is_ws_upgrade(c Context) bool {

@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 // Context Store function test
@@ -38,12 +38,12 @@ fn (stats TestStats) print_summary() {
 }
 
 //Create a Context for testing
-fn create_test_context() hono.Context {
+fn create_test_context() vono.Context {
 	req := http.Request{
 		method: .get
 		url: '/test'
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 //Test 1: Basic set and get operations
@@ -161,7 +161,7 @@ fn test_get_client_ip_forwarded_for() bool {
 		url: '/test'
 		header: headers
 	}
-	ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	ctx := vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
 	// should return the first IP
 	ip := ctx.get_client_ip()
@@ -178,7 +178,7 @@ fn test_get_client_ip_real_ip() bool {
 		url: '/test'
 		header: headers
 	}
-	ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	ctx := vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
 	ip := ctx.get_client_ip()
 	return ip == '10.20.30.40'
@@ -195,7 +195,7 @@ fn test_get_client_ip_priority() bool {
 		url: '/test'
 		header: headers
 	}
-	ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	ctx := vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
 	// X-Forwarded-For should take precedence
 	ip := ctx.get_client_ip()

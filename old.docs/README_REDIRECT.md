@@ -1,13 +1,13 @@
 # Redirect 功能文档
 
-vono 现在支持 HTTP 重定向功能，与 Hono.js 的 `c.redirect()` API 兼容。
+vono 现在支持 HTTP 重定向功能，与 Vono.js 的 `c.redirect()` API 兼容。
 
 ## 基本用法
 
 ### 基本重定向 (302 Found)
 
 ```v
-app.get('/old-page', fn (mut c hono.Context) hono.Response {
+app.get('/old-page', fn (mut c vono.Context) vono.Response {
     return c.redirect('https://example.com/new-page')
 })
 ```
@@ -16,23 +16,23 @@ app.get('/old-page', fn (mut c hono.Context) hono.Response {
 
 ```v
 // 301 Moved Permanently - 永久重定向
-app.get('/old-url', fn (mut c hono.Context) hono.Response {
+app.get('/old-url', fn (mut c vono.Context) vono.Response {
     return c.redirect('https://example.com/new-url', 301)
 })
 
 // 303 See Other - 通常用于 POST 后重定向
-app.post('/form-submit', fn (mut c hono.Context) hono.Response {
+app.post('/form-submit', fn (mut c vono.Context) vono.Response {
     // 处理表单数据...
     return c.redirect('/success', 303)
 })
 
 // 307 Temporary Redirect - 临时重定向，保持请求方法
-app.get('/temp-redirect', fn (mut c hono.Context) hono.Response {
+app.get('/temp-redirect', fn (mut c vono.Context) vono.Response {
     return c.redirect('/new-location', 307)
 })
 
 // 308 Permanent Redirect - 永久重定向，保持请求方法
-app.get('/perm-redirect', fn (mut c hono.Context) hono.Response {
+app.get('/perm-redirect', fn (mut c vono.Context) vono.Response {
     return c.redirect('/new-location', 308)
 })
 ```
@@ -60,7 +60,7 @@ app.get('/perm-redirect', fn (mut c hono.Context) hono.Response {
 ### 1. 基本页面重定向
 
 ```v
-app.get('/home', fn (mut c hono.Context) hono.Response {
+app.get('/home', fn (mut c vono.Context) vono.Response {
     return c.redirect('/')
 })
 ```
@@ -68,7 +68,7 @@ app.get('/home', fn (mut c hono.Context) hono.Response {
 ### 2. 条件重定向
 
 ```v
-app.get('/mobile-check', fn (mut c hono.Context) hono.Response {
+app.get('/mobile-check', fn (mut c vono.Context) vono.Response {
     user_agent := c.req.header.get_custom('User-Agent') or { '' }
     
     if user_agent.contains('Mobile') {
@@ -82,7 +82,7 @@ app.get('/mobile-check', fn (mut c hono.Context) hono.Response {
 ### 3. 表单提交后重定向 (PRG 模式)
 
 ```v
-app.post('/login', fn (mut c hono.Context) hono.Response {
+app.post('/login', fn (mut c vono.Context) vono.Response {
     // 验证用户凭据...
     if login_successful {
         return c.redirect('/dashboard', 303)
@@ -95,11 +95,11 @@ app.post('/login', fn (mut c hono.Context) hono.Response {
 ### 4. URL 规范化
 
 ```v
-app.get('/UPPERCASE', fn (mut c hono.Context) hono.Response {
+app.get('/UPPERCASE', fn (mut c vono.Context) vono.Response {
     return c.redirect('/lowercase', 301)
 })
 
-app.get('/trailing-slash/', fn (mut c hono.Context) hono.Response {
+app.get('/trailing-slash/', fn (mut c vono.Context) vono.Response {
     return c.redirect('/trailing-slash', 301)
 })
 ```
@@ -107,7 +107,7 @@ app.get('/trailing-slash/', fn (mut c hono.Context) hono.Response {
 ### 5. 外部重定向
 
 ```v
-app.get('/external', fn (mut c hono.Context) hono.Response {
+app.get('/external', fn (mut c vono.Context) vono.Response {
     return c.redirect('https://external-site.com')
 })
 ```
@@ -134,12 +134,12 @@ app.get('/external', fn (mut c hono.Context) hono.Response {
 
 查看 `examples/redirect_demo.v` 获取完整的使用示例。
 
-## 与 Hono.js 的兼容性
+## 与 Vono.js 的兼容性
 
-vono 的 `c.redirect()` 方法与 Hono.js 的 API 完全兼容：
+vono 的 `c.redirect()` 方法与 Vono.js 的 API 完全兼容：
 
 ```javascript
-// Hono.js
+// Vono.js
 c.redirect('https://example.com')
 c.redirect('https://example.com', 301)
 ```

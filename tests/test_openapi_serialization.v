@@ -3,7 +3,7 @@
 // **Validates: Requirements 3.1, 3.2, 3.4**
 module main
 
-import hono
+import vono
 import x.json2
 
 struct TestStats {
@@ -41,18 +41,18 @@ fn (stats TestStats) print_summary() {
 
 // Test 1: OpenAPIDocument to_json_str basic function
 fn test_document_to_json_str() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test API'
 			version: '1.0.0'
 		}
 		paths: {
-			'/users': hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			'/users': vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: 'Get users'
 					responses: {
-						'200': hono.OpenAPIResponse{
+						'200': vono.OpenAPIResponse{
 							description: 'Success'
 						}
 					}
@@ -70,10 +70,10 @@ fn test_document_to_json_str() bool {
 
 // Test 2: Field name mapping (schema_type -> type, in_location -> in)
 fn test_field_name_mapping() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: 'id'
 		in_location: 'path'
-		schema: hono.OpenAPISchema{
+		schema: vono.OpenAPISchema{
 			schema_type: 'integer'
 		}
 	}
@@ -91,7 +91,7 @@ fn test_field_name_mapping() bool {
 
 //Test 3: ref field mapping
 fn test_ref_field_mapping() bool {
-	schema := hono.OpenAPISchema{
+	schema := vono.OpenAPISchema{
 		ref: '#/components/schemas/User'
 	}
 	
@@ -103,7 +103,7 @@ fn test_ref_field_mapping() bool {
 
 // Test 4: Optional fields omitted - empty string should not be present
 fn test_optional_fields_omission_strings() bool {
-	info := hono.OpenAPIInfo{
+	info := vono.OpenAPIInfo{
 		title: 'Test'
 		version: '1.0.0'
 		// description is empty, should be omitted
@@ -120,9 +120,9 @@ fn test_optional_fields_omission_strings() bool {
 
 // Test 5: Optional fields omitted - empty array should not be present
 fn test_optional_fields_omission_arrays() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test'
 			version: '1.0.0'
 		}
@@ -140,9 +140,9 @@ fn test_optional_fields_omission_arrays() bool {
 
 // Test 6: Optional fields omitted - empty map should not appear
 fn test_optional_fields_omission_maps() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test'
 			version: '1.0.0'
 		}
@@ -157,7 +157,7 @@ fn test_optional_fields_omission_maps() bool {
 
 // Test 7: boolean false should not appear (unless required)
 fn test_optional_boolean_omission() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: 'test'
 		in_location: 'query'
 		required: false  // should be omitted
@@ -174,7 +174,7 @@ fn test_optional_boolean_omission() bool {
 
 // Test 8: boolean true should appear
 fn test_boolean_true_included() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: 'test'
 		in_location: 'query'
 		required: true
@@ -191,35 +191,35 @@ fn test_boolean_true_included() bool {
 
 // Test 9: Nested structure serialization
 fn test_nested_structure_serialization() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test API'
 			version: '1.0.0'
-			contact: hono.OpenAPIContact{
+			contact: vono.OpenAPIContact{
 				name: 'Support'
 				email: 'support@example.com'
 			}
 		}
 		paths: {
-			'/users': hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			'/users': vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: 'Get users'
 					parameters: [
-						hono.OpenAPIParameter{
+						vono.OpenAPIParameter{
 							name: 'limit'
 							in_location: 'query'
-							schema: hono.OpenAPISchema{
+							schema: vono.OpenAPISchema{
 								schema_type: 'integer'
 							}
 						}
 					]
 					responses: {
-						'200': hono.OpenAPIResponse{
+						'200': vono.OpenAPIResponse{
 							description: 'Success'
 							content: {
-								'application/json': hono.OpenAPIMediaType{
-									schema: hono.OpenAPISchema{
+								'application/json': vono.OpenAPIMediaType{
+									schema: vono.OpenAPISchema{
 										schema_type: 'array'
 									}
 								}
@@ -243,9 +243,9 @@ fn test_nested_structure_serialization() bool {
 
 //Test 10: to_json_pretty formatted output
 fn test_to_json_pretty() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test'
 			version: '1.0.0'
 		}
@@ -264,7 +264,7 @@ fn test_to_json_pretty() bool {
 fn test_from_json_basic() bool {
 	json_str := '{"openapi":"3.0.0","info":{"title":"Test API","version":"1.0.0"},"paths":{}}'
 	
-	doc := hono.OpenAPIDocument.from_json_str(json_str) or {
+	doc := vono.OpenAPIDocument.from_json_str(json_str) or {
 		println('Error: ${err}')
 		return false
 	}
@@ -279,7 +279,7 @@ fn test_from_json_basic() bool {
 fn test_from_json_nested() bool {
 	json_str := '{"openapi":"3.0.0","info":{"title":"Test","version":"1.0.0","contact":{"name":"Support","email":"test@example.com"}},"paths":{"/users":{"get":{"summary":"Get users","responses":{"200":{"description":"OK"}}}}}}'
 	
-	doc := hono.OpenAPIDocument.from_json_str(json_str) or {
+	doc := vono.OpenAPIDocument.from_json_str(json_str) or {
 		println('Error: ${err}')
 		return false
 	}
@@ -300,7 +300,7 @@ fn test_from_json_field_mapping() bool {
 		return false
 	}
 	
-	param := hono.OpenAPIParameter.from_json(parsed)
+	param := vono.OpenAPIParameter.from_json(parsed)
 	
 	ok_name := param.name == 'id'
 	ok_in := param.in_location == 'path'
@@ -310,19 +310,19 @@ fn test_from_json_field_mapping() bool {
 
 // Test 14: Round trip serialization - simple documentation
 fn test_round_trip_simple() bool {
-	original := hono.OpenAPIDocument{
+	original := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Test API'
 			version: '1.0.0'
 			description: 'A test API'
 		}
 		paths: {
-			'/health': hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			'/health': vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: 'Health check'
 					responses: {
-						'200': hono.OpenAPIResponse{
+						'200': vono.OpenAPIResponse{
 							description: 'OK'
 						}
 					}
@@ -335,7 +335,7 @@ fn test_round_trip_simple() bool {
 	json_str := original.to_json_str()
 	
 	// Deserialize
-	restored := hono.OpenAPIDocument.from_json_str(json_str) or {
+	restored := vono.OpenAPIDocument.from_json_str(json_str) or {
 		println('Error: ${err}')
 		return false
 	}
@@ -354,40 +354,40 @@ fn test_round_trip_simple() bool {
 
 // Test 15: Round trip serialization - complex documents
 fn test_round_trip_complex() bool {
-	original := hono.OpenAPIDocument{
+	original := vono.OpenAPIDocument{
 		openapi: '3.1.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'Complex API'
 			version: '2.0.0'
 			description: 'A complex test API'
-			contact: hono.OpenAPIContact{
+			contact: vono.OpenAPIContact{
 				name: 'API Support'
 				email: 'support@example.com'
 				url: 'https://example.com/support'
 			}
-			license: hono.OpenAPILicense{
+			license: vono.OpenAPILicense{
 				name: 'MIT'
 				url: 'https://opensource.org/licenses/MIT'
 			}
 		}
 		servers: [
-			hono.OpenAPIServer{
+			vono.OpenAPIServer{
 				url: 'https://api.example.com'
 				description: 'Production'
 			}
 		]
 		paths: {
-			'/users': hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			'/users': vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: 'List users'
 					operation_id: 'listUsers'
 					tags: ['users']
 					parameters: [
-						hono.OpenAPIParameter{
+						vono.OpenAPIParameter{
 							name: 'limit'
 							in_location: 'query'
 							required: false
-							schema: hono.OpenAPISchema{
+							schema: vono.OpenAPISchema{
 								schema_type: 'integer'
 								minimum: 1
 								maximum: 100
@@ -395,11 +395,11 @@ fn test_round_trip_complex() bool {
 						}
 					]
 					responses: {
-						'200': hono.OpenAPIResponse{
+						'200': vono.OpenAPIResponse{
 							description: 'Success'
 							content: {
-								'application/json': hono.OpenAPIMediaType{
-									schema: hono.OpenAPISchema{
+								'application/json': vono.OpenAPIMediaType{
+									schema: vono.OpenAPISchema{
 										schema_type: 'array'
 									}
 								}
@@ -407,22 +407,22 @@ fn test_round_trip_complex() bool {
 						}
 					}
 				}
-				post: hono.OpenAPIOperation{
+				post: vono.OpenAPIOperation{
 					summary: 'Create user'
 					operation_id: 'createUser'
 					tags: ['users']
-					request_body: hono.OpenAPIRequestBody{
+					request_body: vono.OpenAPIRequestBody{
 						required: true
 						content: {
-							'application/json': hono.OpenAPIMediaType{
-								schema: hono.OpenAPISchema{
+							'application/json': vono.OpenAPIMediaType{
+								schema: vono.OpenAPISchema{
 									schema_type: 'object'
 									required: ['name', 'email']
 									properties: {
-										'name': hono.OpenAPISchema{
+										'name': vono.OpenAPISchema{
 											schema_type: 'string'
 										}
-										'email': hono.OpenAPISchema{
+										'email': vono.OpenAPISchema{
 											schema_type: 'string'
 											format: 'email'
 										}
@@ -432,7 +432,7 @@ fn test_round_trip_complex() bool {
 						}
 					}
 					responses: {
-						'201': hono.OpenAPIResponse{
+						'201': vono.OpenAPIResponse{
 							description: 'Created'
 						}
 					}
@@ -440,7 +440,7 @@ fn test_round_trip_complex() bool {
 			}
 		}
 		tags: [
-			hono.OpenAPITag{
+			vono.OpenAPITag{
 				name: 'users'
 				description: 'User operations'
 			}
@@ -451,7 +451,7 @@ fn test_round_trip_complex() bool {
 	json_str := original.to_json_str()
 	
 	// Deserialize
-	restored := hono.OpenAPIDocument.from_json_str(json_str) or {
+	restored := vono.OpenAPIDocument.from_json_str(json_str) or {
 		println('Error: ${err}')
 		return false
 	}

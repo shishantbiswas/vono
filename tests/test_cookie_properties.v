@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import rand
 import time
@@ -42,7 +42,7 @@ fn (stats PropertyTestStats) print_summary() {
 }
 
 //Create a test Context with Cookie header
-fn create_context_with_cookies(cookie_header string) hono.Context {
+fn create_context_with_cookies(cookie_header string) vono.Context {
 	mut headers := http.new_header()
 	if cookie_header.len > 0 {
 		headers.add_custom('Cookie', cookie_header) or {}
@@ -53,16 +53,16 @@ fn create_context_with_cookies(cookie_header string) hono.Context {
 		url: '/test'
 		header: headers
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 //Create an empty test Context
-fn create_empty_context() hono.Context {
+fn create_empty_context() vono.Context {
 	req := http.Request{
 		method: .get
 		url: '/test'
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 
@@ -120,7 +120,7 @@ fn test_property_3_cookie_roundtrip() bool {
 		
 		//Set Cookie
 		mut ctx := create_empty_context()
-		hono.set_cookie(mut ctx, name, value)
+		vono.set_cookie(mut ctx, name, value)
 		
 		// Get the value in the Set-Cookie header
 		set_cookie_header := ctx.headers['Set-Cookie'] or {
@@ -144,7 +144,7 @@ fn test_property_3_cookie_roundtrip() bool {
 		verify_ctx := create_context_with_cookies('${name}=${cookie_value}')
 		
 		// Get Cookie and verify
-		retrieved := hono.get_cookie(verify_ctx, name) or {
+		retrieved := vono.get_cookie(verify_ctx, name) or {
 			println('  Iteration ${i}: Failed to get cookie')
 			return false
 		}
@@ -177,7 +177,7 @@ fn test_property_4_signed_cookie_roundtrip() bool {
 		
 		// Set signed cookie
 		mut ctx := create_empty_context()
-		hono.set_signed_cookie(mut ctx, name, value, secret) or {
+		vono.set_signed_cookie(mut ctx, name, value, secret) or {
 			println('  Iteration ${i}: Failed to set signed cookie: ${err}')
 			return false
 		}
@@ -204,7 +204,7 @@ fn test_property_4_signed_cookie_roundtrip() bool {
 		verify_ctx := create_context_with_cookies('${name}=${cookie_value}')
 		
 		// Get and verify the signed cookie
-		retrieved := hono.get_signed_cookie(verify_ctx, name, secret) or {
+		retrieved := vono.get_signed_cookie(verify_ctx, name, secret) or {
 			println('  Iteration ${i}: Failed to get signed cookie: ${err}')
 			return false
 		}
@@ -236,7 +236,7 @@ fn test_property_5_signed_cookie_tamper_detection() bool {
 		
 		// Set signed cookie
 		mut ctx := create_empty_context()
-		hono.set_signed_cookie(mut ctx, name, value, secret) or {
+		vono.set_signed_cookie(mut ctx, name, value, secret) or {
 			println('  Iteration ${i}: Failed to set signed cookie: ${err}')
 			return false
 		}
@@ -285,7 +285,7 @@ fn test_property_5_signed_cookie_tamper_detection() bool {
 			verify_ctx := create_context_with_cookies('${name}=${tampered_value}')
 			
 			// validation should fail
-			if _ := hono.get_signed_cookie(verify_ctx, name, secret) {
+			if _ := vono.get_signed_cookie(verify_ctx, name, secret) {
 				println('  Iteration ${i}: Tampered cookie was accepted (should have been rejected)')
 				return false
 			}

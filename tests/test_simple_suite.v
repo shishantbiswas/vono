@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import os
 
 // Simplified test statistics
@@ -38,7 +38,7 @@ fn (stats TestStats) print_summary() {
 // 1. Test configuration management
 fn test_config_management() bool {
 	//Test default configuration
-	config := hono.default_config()
+	config := vono.default_config()
 	
 	if config.server.host != '127.0.0.1' {
 		return false
@@ -49,7 +49,7 @@ fn test_config_management() bool {
 	}
 	
 	//Test configuration verification
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		return false
 	}
 	
@@ -59,13 +59,13 @@ fn test_config_management() bool {
 // 2. Test log system
 fn test_logging_system() bool {
 	//Create test logger
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.debug
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.debug
+		output: vono.LogOutput.console
 		enable_colors: false
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Test basic logging method
 	logger.info('测试信息日志')
@@ -73,11 +73,11 @@ fn test_logging_system() bool {
 	logger.error('测试错误日志')
 	
 	//Test log level conversion
-	if hono.parse_log_level('info') != hono.LogLevel.info {
+	if vono.parse_log_level('info') != vono.LogLevel.info {
 		return false
 	}
 	
-	if hono.log_level_to_string(hono.LogLevel.error) != 'ERROR' {
+	if vono.log_level_to_string(vono.LogLevel.error) != 'ERROR' {
 		return false
 	}
 	
@@ -94,10 +94,10 @@ fn test_security_validation() bool {
 		'C:\\Windows\\System32'
 	]
 	
-	options := hono.PathValidationOptions{}
+	options := vono.PathValidationOptions{}
 	
 	for path in dangerous_paths {
-		hono.validate_file_path(path, options) or {
+		vono.validate_file_path(path, options) or {
 			// Validation failure is the expected result
 			continue
 		}
@@ -107,7 +107,7 @@ fn test_security_validation() bool {
 	
 	//Test safe path
 	safe_path := 'documents/file.txt'
-	hono.validate_file_path(safe_path, options) or {
+	vono.validate_file_path(safe_path, options) or {
 		return false  // The safe path should pass verification
 	}
 	
@@ -118,11 +118,11 @@ fn test_security_validation() bool {
 fn test_error_handling() bool {
 	//Test error type
 	error_types := [
-		hono.ErrorType.bad_request,
-		hono.ErrorType.unauthorized,
-		hono.ErrorType.forbidden,
-		hono.ErrorType.not_found,
-		hono.ErrorType.internal_server_error
+		vono.ErrorType.bad_request,
+		vono.ErrorType.unauthorized,
+		vono.ErrorType.forbidden,
+		vono.ErrorType.not_found,
+		vono.ErrorType.internal_server_error
 	]
 	
 	//Verify error code
@@ -147,13 +147,13 @@ fn test_config_file_operations() bool {
 	}
 	
 	//Create and save configuration
-	config := hono.default_config()
-	hono.save_config(config, config_path) or {
+	config := vono.default_config()
+	vono.save_config(config, config_path) or {
 		return false
 	}
 	
 	//Load configuration
-	loaded_config := hono.load_config(config_path) or {
+	loaded_config := vono.load_config(config_path) or {
 		return false
 	}
 	
@@ -174,7 +174,7 @@ fn test_env_config() bool {
 	os.setenv('HONO_PORT', '9090', true)
 	os.setenv('HONO_ENV', 'production', true)
 	
-	config := hono.load_config_from_env()
+	config := vono.load_config_from_env()
 	
 	//Verify environment variable configuration
 	success := config.server.host == '0.0.0.0' &&
@@ -191,8 +191,8 @@ fn test_env_config() bool {
 
 // 7. Test configuration summary
 fn test_config_summary() bool {
-	config := hono.default_config()
-	summary := hono.get_config_summary(config)
+	config := vono.default_config()
+	summary := vono.get_config_summary(config)
 	
 	// Verification summary contains key information
 	return summary.contains('应用配置摘要') &&
@@ -204,13 +204,13 @@ fn test_config_summary() bool {
 
 // 8. Test configuration merge
 fn test_config_merge() bool {
-	base_config := hono.default_config()
-	mut override_config := hono.AppConfig{}
+	base_config := vono.default_config()
+	mut override_config := vono.AppConfig{}
 	override_config.server.host = '0.0.0.0'
 	override_config.server.port = 9000
 	override_config.env = 'production'
 	
-	merged_config := hono.merge_config(base_config, override_config)
+	merged_config := vono.merge_config(base_config, override_config)
 	
 	//Verify merge results
 	return merged_config.server.host == '0.0.0.0' &&
@@ -221,7 +221,7 @@ fn test_config_merge() bool {
 
 // 9. Test the upload configuration structure
 fn test_upload_config_struct() bool {
-	config := hono.ChunkUploadConfig{
+	config := vono.ChunkUploadConfig{
 		chunk_size: 1024 * 1024
 		max_file_size: 100 * 1024 * 1024
 		temp_dir: './test_uploads/chunks'
@@ -238,7 +238,7 @@ fn test_upload_config_struct() bool {
 // 10. Test cache configuration
 fn test_cache_config() bool {
 	//Test cache configuration structure
-	cache_config := hono.CacheConfig{
+	cache_config := vono.CacheConfig{
 		enabled: true
 		max_size: 1000
 		default_ttl: 300

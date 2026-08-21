@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -23,7 +23,7 @@ fn main() {
 fn test_regex_compilation_cache() {
 	println('\n📊 测试正则表达式编译缓存效果...')
 	
-	mut fast_router := hono.FastRouter.new()
+	mut fast_router := vono.FastRouter.new()
 	
 	//Add some dynamic routing
 	test_routes := [
@@ -37,9 +37,9 @@ fn test_regex_compilation_cache() {
 	//Test route compilation time
 	start_time := time.now()
 	for route in test_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -84,10 +84,10 @@ fn test_route_matching_performance() {
 	println('\n📊 测试路由匹配性能对比...')
 	
 	//Create FastRouter
-	mut fast_router := hono.FastRouter.new()
+	mut fast_router := vono.FastRouter.new()
 	
 	//Create HybridRouter (for comparison)
-	mut hybrid_router := hono.ContextHybridRouter.new()
+	mut hybrid_router := vono.ContextHybridRouter.new()
 	
 	//Add the same route to both routers
 	mut test_routes := []string{}
@@ -95,9 +95,9 @@ fn test_route_matching_performance() {
 		route := '/api/v${i}/users/:id/posts/:post_id'
 		test_routes << route
 		
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -155,14 +155,14 @@ fn test_route_matching_performance() {
 fn test_cache_warmup_effect() {
 	println('\n📊 测试缓存预热效果...')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	//Add route
 	for _ in 0 .. 50 {
 		route := '/api/users/:id/items/:item_id'
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -213,14 +213,14 @@ fn test_cache_warmup_effect() {
 fn test_batch_route_addition() {
 	println('\n📊 测试批量路由添加性能...')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	//Test batch addition performance
 	start_time := time.now()
 	for i in 0 .. 1000 {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: '/api/v1/resource${i}/:id'
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}

@@ -20,17 +20,17 @@ module main
 import net.http
 import time
 import os
-import hono
+import vono
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	// =========================================================================
 	// Middleware - Runs before WebSocket upgrade
 	// =========================================================================
 	
 	// Logger middleware - logs all requests including WebSocket upgrades
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		start := time.now()
 		response := next(mut c)
 		duration := time.since(start)
@@ -42,7 +42,7 @@ fn main() {
 	// Static HTML page for testing WebSocket
 	// =========================================================================
 	
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		// Try to load the HTML file from the examples directory
 		html_content := os.read_file('examples/websocket_test.html') or {
 			// Fallback to a simple HTML page if file not found
@@ -56,15 +56,15 @@ fn main() {
 	// =========================================================================
 	
 	// Simple echo WebSocket - echoes back any message received
-	app.ws('/ws/echo', fn (c hono.Context) hono.WSEvents {
-		return hono.WSEvents{
-			on_open: fn (mut ws hono.WSContext) {
+	app.ws('/ws/echo', fn (c vono.Context) vono.WSEvents {
+		return vono.WSEvents{
+			on_open: fn (mut ws vono.WSContext) {
 				println('[Echo] Client connected')
 				ws.send('Welcome to the echo server!') or {
 					println('[Echo] Failed to send welcome: ${err}')
 				}
 			}
-			on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+			on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 				if event.is_binary {
 					println('[Echo] Received binary message: ${event.data_bytes.len} bytes')
 					ws.send_bytes(event.data_bytes) or {
@@ -77,10 +77,10 @@ fn main() {
 					}
 				}
 			}
-			on_close: fn (event hono.WSCloseEvent, mut ws hono.WSContext) {
+			on_close: fn (event vono.WSCloseEvent, mut ws vono.WSContext) {
 				println('[Echo] Client disconnected - Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.was_clean}')
 			}
-			on_error: fn (error string, mut ws hono.WSContext) {
+			on_error: fn (error string, mut ws vono.WSContext) {
 				println('[Echo] Error: ${error}')
 			}
 		}
@@ -92,15 +92,15 @@ fn main() {
 	
 	// Chat room WebSocket - demonstrates route parameters and query parameters
 	// URL format: /ws/chat/:room?username=xxx
-	app.ws('/ws/chat/:room', fn (c hono.Context) hono.WSEvents {
+	app.ws('/ws/chat/:room', fn (c vono.Context) vono.WSEvents {
 		// Access route parameters from the HTTP context
 		room := c.params['room'] or { 'general' }
 		username := c.query['username'] or { 'anonymous' }
 		
 		println('[Chat] User "${username}" joining room "${room}"')
 		
-		return hono.WSEvents{
-			on_open: fn [room, username] (mut ws hono.WSContext) {
+		return vono.WSEvents{
+			on_open: fn [room, username] (mut ws vono.WSContext) {
 				// Access preserved context data
 				actual_room := ws.params['room'] or { room }
 				actual_user := ws.query['username'] or { username }
@@ -117,7 +117,7 @@ fn main() {
 				join_msg := '{"type":"join","user":"${actual_user}","room":"${actual_room}"}'
 				ws.send_json(join_msg) or {}
 			}
-			on_message: fn [room, username] (event hono.WSMessageEvent, mut ws hono.WSContext) {
+			on_message: fn [room, username] (event vono.WSMessageEvent, mut ws vono.WSContext) {
 				actual_room := ws.params['room'] or { room }
 				actual_user := ws.query['username'] or { username }
 				
@@ -129,13 +129,13 @@ fn main() {
 					println('[Chat] Failed to send response: ${err}')
 				}
 			}
-			on_close: fn [room, username] (event hono.WSCloseEvent, mut ws hono.WSContext) {
+			on_close: fn [room, username] (event vono.WSCloseEvent, mut ws vono.WSContext) {
 				actual_room := ws.params['room'] or { room }
 				actual_user := ws.query['username'] or { username }
 				
 				println('[Chat/${actual_room}] ${actual_user} disconnected (code: ${event.code})')
 			}
-			on_error: fn [room, username] (error string, mut ws hono.WSContext) {
+			on_error: fn [room, username] (error string, mut ws vono.WSContext) {
 				actual_room := ws.params['room'] or { room }
 				actual_user := ws.query['username'] or { username }
 				
@@ -149,24 +149,24 @@ fn main() {
 	// =========================================================================
 	
 	// Configured WebSocket - demonstrates custom options
-	app.ws('/ws/configured', fn (c hono.Context) hono.WSEvents {
-		return hono.WSEvents{
-			on_open: fn (mut ws hono.WSContext) {
+	app.ws('/ws/configured', fn (c vono.Context) vono.WSEvents {
+		return vono.WSEvents{
+			on_open: fn (mut ws vono.WSContext) {
 				println('[Configured] Client connected with custom settings')
 				ws.send('Connected with custom configuration!') or {}
 			}
-			on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+			on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 				println('[Configured] Message: ${event.data}')
 				ws.send('Received: ${event.data}') or {}
 			}
-			on_close: fn (event hono.WSCloseEvent, mut ws hono.WSContext) {
+			on_close: fn (event vono.WSCloseEvent, mut ws vono.WSContext) {
 				println('[Configured] Disconnected')
 			}
-			on_error: fn (error string, mut ws hono.WSContext) {
+			on_error: fn (error string, mut ws vono.WSContext) {
 				println('[Configured] Error: ${error}')
 			}
 		}
-	}, hono.WebSocketOptions{
+	}, vono.WebSocketOptions{
 		ping_interval: 15000      // Send ping every 15 seconds
 		max_message_size: 65536   // Max 64KB messages
 		timeout: 30000            // 30 second timeout
@@ -178,9 +178,9 @@ fn main() {
 	// =========================================================================
 	
 	// Subprotocol WebSocket - demonstrates protocol negotiation
-	app.ws('/ws/protocol', fn (c hono.Context) hono.WSEvents {
-		return hono.WSEvents{
-			on_open: fn (mut ws hono.WSContext) {
+	app.ws('/ws/protocol', fn (c vono.Context) vono.WSEvents {
+		return vono.WSEvents{
+			on_open: fn (mut ws vono.WSContext) {
 				protocol := ws.protocol
 				println('[Protocol] Client connected with protocol: ${protocol}')
 				
@@ -190,7 +190,7 @@ fn main() {
 					ws.send('Connected with protocol: ${protocol}') or {}
 				}
 			}
-			on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+			on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 				protocol := ws.protocol
 				println('[Protocol] Message (${protocol}): ${event.data}')
 				
@@ -200,14 +200,14 @@ fn main() {
 					ws.send('Echo: ${event.data}') or {}
 				}
 			}
-			on_close: fn (event hono.WSCloseEvent, mut ws hono.WSContext) {
+			on_close: fn (event vono.WSCloseEvent, mut ws vono.WSContext) {
 				println('[Protocol] Disconnected')
 			}
-			on_error: fn (error string, mut ws hono.WSContext) {
+			on_error: fn (error string, mut ws vono.WSContext) {
 				println('[Protocol] Error: ${error}')
 			}
 		}
-	}, hono.WebSocketOptions{
+	}, vono.WebSocketOptions{
 		protocols: ['json', 'text', 'binary']
 	})
 
@@ -216,13 +216,13 @@ fn main() {
 	// =========================================================================
 	
 	// Binary WebSocket - demonstrates binary message handling
-	app.ws('/ws/binary', fn (c hono.Context) hono.WSEvents {
-		return hono.WSEvents{
-			on_open: fn (mut ws hono.WSContext) {
+	app.ws('/ws/binary', fn (c vono.Context) vono.WSEvents {
+		return vono.WSEvents{
+			on_open: fn (mut ws vono.WSContext) {
 				println('[Binary] Client connected')
 				ws.send('Binary WebSocket ready. Send binary data!') or {}
 			}
-			on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
+			on_message: fn (event vono.WSMessageEvent, mut ws vono.WSContext) {
 				if event.is_binary {
 					println('[Binary] Received ${event.data_bytes.len} bytes')
 					
@@ -238,10 +238,10 @@ fn main() {
 					ws.send('Please send binary data, not text!') or {}
 				}
 			}
-			on_close: fn (event hono.WSCloseEvent, mut ws hono.WSContext) {
+			on_close: fn (event vono.WSCloseEvent, mut ws vono.WSContext) {
 				println('[Binary] Disconnected')
 			}
-			on_error: fn (error string, mut ws hono.WSContext) {
+			on_error: fn (error string, mut ws vono.WSContext) {
 				println('[Binary] Error: ${error}')
 			}
 		}
@@ -251,11 +251,11 @@ fn main() {
 	// REST API endpoints for demonstration
 	// =========================================================================
 	
-	app.get('/api/rooms', fn (mut c hono.Context) http.Response {
+	app.get('/api/rooms', fn (mut c vono.Context) http.Response {
 		return c.json('{"rooms":["general","tech","random"]}')
 	})
 
-	app.get('/api/status', fn (mut c hono.Context) http.Response {
+	app.get('/api/status', fn (mut c vono.Context) http.Response {
 		return c.json('{"status":"running","websocket_endpoints":["/ws/echo","/ws/chat/:room","/ws/configured","/ws/protocol","/ws/binary"]}')
 	})
 

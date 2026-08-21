@@ -10,7 +10,7 @@ module main
 import net.http
 
 //Due to limitations of the V language module system, the necessary code is directly included here.
-//In actual use, you should import meiseayoung.hono
+//In actual use, you should import meiseayoung.vono
 
 fn main() {
 	println('=== uSockets 服务器测试 ===')
@@ -20,11 +20,11 @@ fn main() {
 	println('请使用以下方式测试 uSockets 服务器:')
 	println('')
 	println('方式 1: 安装 vono 到 vpm')
-	println('  v install meiseayoung.hono')
+	println('  v install meiseayoung.vono')
 	println('  v run tests/test_usockets_server.v')
 	println('')
 	println('方式 2: 使用符号链接')
-	println('  ln -s $(pwd) ~/.vmodules/hono')
+	println('  ln -s $(pwd) ~/.vmodules/vono')
 	println('  v run tests/test_usockets_server.v')
 	println('')
 	println('方式 3: 直接编译测试')

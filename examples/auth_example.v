@@ -1,6 +1,6 @@
 module main
 
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import x.json2
 
@@ -27,13 +27,13 @@ struct ProtectedAdminResponse {
 
 fn main() {
 	//Create database manager
-	db_manager := hono.new_database_manager('auth_system.db') or {
+	db_manager := vono.new_database_manager('auth_system.db') or {
 		eprintln('Failed to create database manager: $err')
 		return
 	}
 
 	//Create authentication manager
-	mut auth_manager := hono.new_auth_manager(db_manager)
+	mut auth_manager := vono.new_auth_manager(db_manager)
 	
 	//Initialize authentication related table
 	auth_manager.init_tables() or {
@@ -41,11 +41,11 @@ fn main() {
 		return
 	}
 
-	//Create Hono application
-	mut app := hono.Hono{}
+	//Create Vono application
+	mut app := vono.Vono{}
 
 	//Register authentication route
-	hono.register_auth_routes(mut app, mut auth_manager)
+	vono.register_auth_routes(mut app, mut auth_manager)
 
 	//Add some example menu items
 	create_sample_menus(mut auth_manager)
@@ -54,7 +54,7 @@ fn main() {
 	create_sample_users(mut auth_manager)
 
 	//Add some protected routing examples
-	app.get('/api/protected/user', fn [auth_manager] (mut c hono.Context) http.Response {
+	app.get('/api/protected/user', fn [auth_manager] (mut c vono.Context) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
 		user := auth_manager.verify_token(token) or {
 			c.status(401)
@@ -71,7 +71,7 @@ fn main() {
 		}))
 	})
 
-	app.get('/api/protected/admin', fn [auth_manager] (mut c hono.Context) http.Response {
+	app.get('/api/protected/admin', fn [auth_manager] (mut c vono.Context) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
 		user := auth_manager.verify_token(token) or {
 			c.status(401)
@@ -95,7 +95,7 @@ fn main() {
 	})
 
 	//Add static file service
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.file('public/auth.html')
 	})
 
@@ -114,7 +114,7 @@ fn main() {
 }
 
 //Create a sample menu
-fn create_sample_menus(mut auth_manager hono.AuthManager) {
+fn create_sample_menus(mut auth_manager vono.AuthManager) {
 	//Create root menu
 	auth_manager.create_menu_item('仪表板', '/dashboard', '📊', 0, 1, ['read']) or { println('仪表板插入失败') }
 	auth_manager.create_menu_item('用户管理', '/users', '👥', 0, 2, ['read', 'write', 'manage']) or { println('用户管理插入失败') }
@@ -149,18 +149,18 @@ fn create_sample_menus(mut auth_manager hono.AuthManager) {
 }
 
 //Create sample user
-fn create_sample_users(mut auth_manager hono.AuthManager) {
+fn create_sample_users(mut auth_manager vono.AuthManager) {
 	//Create admin user
-	auth_manager.create_user('admin', 'admin@example.com', 'admin123', hono.UserRole.admin) or { return }
+	auth_manager.create_user('admin', 'admin@example.com', 'admin123', vono.UserRole.admin) or { return }
 	
 	//Create manager user
-	auth_manager.create_user('manager', 'manager@example.com', 'manager123', hono.UserRole.manager) or { return }
+	auth_manager.create_user('manager', 'manager@example.com', 'manager123', vono.UserRole.manager) or { return }
 	
 	//Create a normal user
-	auth_manager.create_user('user', 'user@example.com', 'user123', hono.UserRole.user) or { return }
+	auth_manager.create_user('user', 'user@example.com', 'user123', vono.UserRole.user) or { return }
 	
 	//Create guest user
-	auth_manager.create_user('guest', 'guest@example.com', 'guest123', hono.UserRole.guest) or { return }
+	auth_manager.create_user('guest', 'guest@example.com', 'guest123', vono.UserRole.guest) or { return }
 
 	println('✅ 示例用户已创建')
 } 

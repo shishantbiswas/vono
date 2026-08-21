@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import crypto.sha256
 import crypto.sha512

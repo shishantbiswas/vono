@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import strings
 import net.http
@@ -50,11 +50,11 @@ fn test_cache_system(mut stats TestStats) {
 	stats.start_test('缓存系统')
 	
 	//Create cache
-	mut cache := hono.ContextLRUCache.new(3)
+	mut cache := vono.ContextLRUCache.new(3)
 	
 	//Create test data
-	test_match := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{ path: '/test' }
+	test_match := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{ path: '/test' }
 		params: {'id': '123'}
 		path: '/test'
 		base_path: ''
@@ -105,7 +105,7 @@ fn test_security_validation(mut stats TestStats) {
 	]
 	
 	for path in dangerous_paths {
-		result := hono.validate_file_path(path, hono.PathValidationOptions{}) or { '' }
+		result := vono.validate_file_path(path, vono.PathValidationOptions{}) or { '' }
 		if result != '' {
 			stats.fail_test('危险路径未被拒绝: ${path}')
 			return
@@ -120,7 +120,7 @@ fn test_security_validation(mut stats TestStats) {
 	]
 	
 	for path in safe_paths {
-		result := hono.validate_file_path(path, hono.PathValidationOptions{}) or {
+		result := vono.validate_file_path(path, vono.PathValidationOptions{}) or {
 			stats.fail_test('安全路径被错误拒绝: ${path} - ${err}')
 			return
 		}
@@ -138,7 +138,7 @@ fn test_security_validation(mut stats TestStats) {
 	]
 	
 	for hash in invalid_hashes {
-		result := hono.validate_file_hash(hash) or { '' }
+		result := vono.validate_file_hash(hash) or { '' }
 		if result != '' {
 			stats.fail_test('无效哈希未被拒绝: ${hash}')
 			return
@@ -147,7 +147,7 @@ fn test_security_validation(mut stats TestStats) {
 	
 	// Test for valid hash (32 characters)
 	valid_hash := 'a1b2c3d4e5f67890123456789012abcd'
-	result := hono.validate_file_hash(valid_hash) or {
+	result := vono.validate_file_hash(valid_hash) or {
 		stats.fail_test('有效哈希被错误拒绝: ${err}')
 		return
 	}
@@ -204,7 +204,7 @@ fn test_error_handling(mut stats TestStats) {
 fn test_router_system(mut stats TestStats) {
 	stats.start_test('路由系统')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	//Add route
 	routes := [
@@ -214,9 +214,9 @@ fn test_router_system(mut stats TestStats) {
 	]
 	
 	for route in routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route[0]
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -270,7 +270,7 @@ fn test_config_management(mut stats TestStats) {
 	stats.start_test('配置管理')
 	
 	//Test default configuration
-	config := hono.default_config()
+	config := vono.default_config()
 	
 	if config.server.host != '127.0.0.1' {
 		stats.fail_test('默认主机地址不正确')
@@ -286,7 +286,7 @@ fn test_config_management(mut stats TestStats) {
 	mut invalid_config := config
 	invalid_config.server.port = 0
 	
-	hono.validate_config(invalid_config) or {
+	vono.validate_config(invalid_config) or {
 		// Should validation fail
 		stats.pass_test()
 		return
@@ -300,21 +300,21 @@ fn test_logging_system(mut stats TestStats) {
 	stats.start_test('日志系统')
 	
 	//Create test logger
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.debug
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.debug
+		output: vono.LogOutput.console
 		enable_colors: false
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Test log level conversion
-	if hono.parse_log_level('info') != hono.LogLevel.info {
+	if vono.parse_log_level('info') != vono.LogLevel.info {
 		stats.fail_test('日志级别解析失败')
 		return
 	}
 	
-	if hono.log_level_to_string(hono.LogLevel.error) != 'ERROR' {
+	if vono.log_level_to_string(vono.LogLevel.error) != 'ERROR' {
 		stats.fail_test('日志级别转字符串失败')
 		return
 	}
@@ -333,7 +333,7 @@ fn test_file_upload_config(mut stats TestStats) {
 	stats.start_test('文件上传配置')
 	
 	//Create upload configuration
-	config := hono.ChunkUploadConfig{
+	config := vono.ChunkUploadConfig{
 		upload_dir: './test_uploads'
 		max_file_size: 1024 * 1024  // 1MB
 		chunk_size: 1024            // 1KB
@@ -351,7 +351,7 @@ fn test_file_upload_config(mut stats TestStats) {
 	}
 	
 	//Create upload manager
-	mut manager := hono.new_chunk_upload_manager(config)
+	mut manager := vono.new_chunk_upload_manager(config)
 	
 	// Verification manager created successfully
 	if manager.config.chunk_size != 1024 {
@@ -390,9 +390,9 @@ fn test_performance(mut stats TestStats) {
 	//Test cache performance
 	start_time2 := time.now()
 	
-	mut cache := hono.ContextLRUCache.new(1000)
-	test_match := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{ path: '/test' }
+	mut cache := vono.ContextLRUCache.new(1000)
+	test_match := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{ path: '/test' }
 		params: {}
 		path: '/test'
 		base_path: ''
@@ -421,10 +421,10 @@ fn test_memory_management(mut stats TestStats) {
 	stats.start_test('内存管理')
 	
 	//Test cache cleanup
-	mut cache := hono.ContextLRUCache.new(5)
+	mut cache := vono.ContextLRUCache.new(5)
 	
-	test_match := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{ path: '/test' }
+	test_match := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{ path: '/test' }
 		params: {}
 		path: '/test'
 		base_path: ''
@@ -465,14 +465,14 @@ fn test_integration(mut stats TestStats) {
 	stats.start_test('集成测试')
 	
 	//Create a complete application
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add route
-	app.get('/health', fn (mut c hono.Context) http.Response {
+	app.get('/health', fn (mut c vono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
 	
-	app.get('/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/users/:id', fn (mut c vono.Context) http.Response {
 		user_id := c.params['id']
 		return c.json('{"user_id": "${user_id}"}')
 	})
@@ -486,9 +486,9 @@ fn test_integration(mut stats TestStats) {
 	}
 	
 	//Create cache
-	mut cache := hono.ContextLRUCache.new(100)
-	test_match := hono.ContextRouteMatch{
-		handler: hono.ContextHandler{ path: '/test' }
+	mut cache := vono.ContextLRUCache.new(100)
+	test_match := vono.ContextRouteMatch{
+		handler: vono.ContextHandler{ path: '/test' }
 		params: {}
 		path: '/test'
 		base_path: ''
@@ -504,24 +504,24 @@ fn test_integration(mut stats TestStats) {
 	}
 	
 	//Create logger
-	log_config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.console
+	log_config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.console
 		enable_colors: false
 	}
-	mut logger := hono.new_logger(log_config)
+	mut logger := vono.new_logger(log_config)
 	logger.info_with_module('集成测试完成', 'TEST')
 	
 	stats.pass_test()
 }
 
 //Auxiliary function: Create test Context
-fn create_test_context() hono.Context {
+fn create_test_context() vono.Context {
 	req := http.Request{
 		method: .get
 		url: '/test'
 	}
-	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
+	return vono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
 fn main() {

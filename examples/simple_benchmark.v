@@ -22,18 +22,18 @@ fn main() {
 	// test vono
 	println('')
 	println('测试 vono (http://127.0.0.1:8081/)...')
-	hono_result := benchmark_server('http://127.0.0.1:8081/')
-	println('  结果: ${hono_result.rps:.0} req/s | avg: ${hono_result.avg_ms:.2}ms | 成功: ${hono_result.success}/${hono_result.total}')
+	vono_result := benchmark_server('http://127.0.0.1:8081/')
+	println('  结果: ${vono_result.rps:.0} req/s | avg: ${vono_result.avg_ms:.2}ms | 成功: ${vono_result.success}/${vono_result.total}')
 	
 	// Compare
 	println('')
 	println('═══════════════════════════════════════════════════════════════')
-	if veb_result.rps > 0 && hono_result.rps > 0 {
-		if hono_result.rps > veb_result.rps {
-			ratio := hono_result.rps / veb_result.rps
+	if veb_result.rps > 0 && vono_result.rps > 0 {
+		if vono_result.rps > veb_result.rps {
+			ratio := vono_result.rps / veb_result.rps
 			println('vono 快 ${ratio:.2}x')
 		} else {
-			ratio := veb_result.rps / hono_result.rps
+			ratio := veb_result.rps / vono_result.rps
 			println('veb 快 ${ratio:.2}x')
 		}
 	}

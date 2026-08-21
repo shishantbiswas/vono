@@ -6,7 +6,7 @@
 // adding an operation with that method to a path item SHALL succeed and be preserved in the document.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -78,13 +78,13 @@ fn random_path() string {
 const http_methods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options']
 
 // Generate a random operation with a unique summary for identification
-fn generate_operation(method string) hono.OpenAPIOperation {
-	return hono.OpenAPIOperation{
+fn generate_operation(method string) vono.OpenAPIOperation {
+	return vono.OpenAPIOperation{
 		summary: 'Test ${method} operation - ${random_string(5, 10)}'
 		description: 'Description for ${method}'
 		operation_id: '${method}_${random_string(5, 10)}'
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'Success response for ${method}'
 			}
 		}
@@ -92,12 +92,12 @@ fn generate_operation(method string) hono.OpenAPIOperation {
 }
 
 // Check if an operation is set (has responses)
-fn is_operation_set(op hono.OpenAPIOperation) bool {
+fn is_operation_set(op vono.OpenAPIOperation) bool {
 	return op.responses.len > 0
 }
 
 // Get operation from path item by method name
-fn get_operation_by_method(path_item hono.OpenAPIPathItem, method string) hono.OpenAPIOperation {
+fn get_operation_by_method(path_item vono.OpenAPIPathItem, method string) vono.OpenAPIOperation {
 	return match method {
 		'get' { path_item.get }
 		'post' { path_item.post }
@@ -106,7 +106,7 @@ fn get_operation_by_method(path_item hono.OpenAPIPathItem, method string) hono.O
 		'patch' { path_item.patch }
 		'head' { path_item.head }
 		'options' { path_item.options }
-		else { hono.OpenAPIOperation{} }
+		else { vono.OpenAPIOperation{} }
 	}
 }
 
@@ -116,7 +116,7 @@ fn test_http_method_via_builder(method string) bool {
 	op := generate_operation(method)
 
 	// Build document using the builder - step by step
-	mut builder := hono.OpenAPIBuilder.new()
+	mut builder := vono.OpenAPIBuilder.new()
 	builder.openapi('3.0.0')
 	builder.title('Test API')
 	builder.version('1.0.0')
@@ -216,7 +216,7 @@ fn test_all_methods_on_same_path() PropertyTestStats {
 		options_op := generate_operation('options')
 
 		// Build document with all methods on the same path
-		mut builder := hono.OpenAPIBuilder.new()
+		mut builder := vono.OpenAPIBuilder.new()
 		builder.openapi('3.0.0')
 		builder.title('Test API')
 		builder.version('1.0.0')

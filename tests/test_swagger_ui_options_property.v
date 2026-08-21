@@ -7,7 +7,7 @@
 // (title in <title> tag, url in SwaggerUIBundle config, etc.).
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -83,8 +83,8 @@ fn random_int(min int, max int) int {
 }
 
 // Generate random SwaggerUIOptions
-fn generate_random_options() hono.SwaggerUIOptions {
-	return hono.SwaggerUIOptions{
+fn generate_random_options() vono.SwaggerUIOptions {
+	return vono.SwaggerUIOptions{
 		url:                         random_url_path()
 		title:                       random_string(5, 20)
 		deep_linking:                rand.int_in_range(0, 2) or { 0 } == 1
@@ -99,66 +99,66 @@ fn generate_random_options() hono.SwaggerUIOptions {
 }
 
 // Test: Title appears in HTML <title> tag
-fn test_title_in_html(options hono.SwaggerUIOptions, html string) bool {
+fn test_title_in_html(options vono.SwaggerUIOptions, html string) bool {
 	expected := '<title>${options.title}</title>'
 	return html.contains(expected)
 }
 
 // Test: URL appears in SwaggerUIBundle config
-fn test_url_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_url_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected := 'url: "${options.url}"'
 	return html.contains(expected)
 }
 
 // Test: deepLinking option appears correctly
-fn test_deep_linking_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_deep_linking_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.deep_linking { 'true' } else { 'false' }
 	expected := 'deepLinking: ${expected_value}'
 	return html.contains(expected)
 }
 
 // Test: displayRequestDuration option appears correctly
-fn test_display_request_duration_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_display_request_duration_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.display_request_duration { 'true' } else { 'false' }
 	expected := 'displayRequestDuration: ${expected_value}'
 	return html.contains(expected)
 }
 
 // Test: defaultModelsExpandDepth option appears correctly
-fn test_default_models_expand_depth_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_default_models_expand_depth_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected := 'defaultModelsExpandDepth: ${options.default_models_expand_depth}'
 	return html.contains(expected)
 }
 
 // Test: docExpansion option appears correctly
-fn test_doc_expansion_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_doc_expansion_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected := 'docExpansion: "${options.doc_expansion}"'
 	return html.contains(expected)
 }
 
 // Test: filter option appears correctly
-fn test_filter_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_filter_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.filter { 'true' } else { 'false' }
 	expected := 'filter: ${expected_value}'
 	return html.contains(expected)
 }
 
 // Test: showExtensions option appears correctly
-fn test_show_extensions_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_show_extensions_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.show_extensions { 'true' } else { 'false' }
 	expected := 'showExtensions: ${expected_value}'
 	return html.contains(expected)
 }
 
 // Test: showCommonExtensions option appears correctly
-fn test_show_common_extensions_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_show_common_extensions_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.show_common_extensions { 'true' } else { 'false' }
 	expected := 'showCommonExtensions: ${expected_value}'
 	return html.contains(expected)
 }
 
 // Test: tryItOutEnabled option appears correctly
-fn test_try_it_out_enabled_in_config(options hono.SwaggerUIOptions, html string) bool {
+fn test_try_it_out_enabled_in_config(options vono.SwaggerUIOptions, html string) bool {
 	expected_value := if options.try_it_out_enabled { 'true' } else { 'false' }
 	expected := 'tryItOutEnabled: ${expected_value}'
 	return html.contains(expected)
@@ -185,14 +185,14 @@ fn test_cdn_resources_included(html string) bool {
 // Test: Custom CSS URL appears when provided
 fn test_custom_css_url_included() bool {
 	custom_url := 'https://example.com/custom.css'
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:            '/doc'
 		title:          'Test API'
 		custom_css_url: custom_url
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 	html := response.body
 
@@ -202,14 +202,14 @@ fn test_custom_css_url_included() bool {
 // Test: Custom JS URL appears when provided
 fn test_custom_js_url_included() bool {
 	custom_url := 'https://example.com/custom.js'
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:           '/doc'
 		title:         'Test API'
 		custom_js_url: custom_url
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 	html := response.body
 
@@ -219,14 +219,14 @@ fn test_custom_js_url_included() bool {
 // Test: Custom CSS inline appears when provided
 fn test_custom_css_inline_included() bool {
 	custom_css := '.swagger-ui { background: red; }'
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:        '/doc'
 		title:      'Test API'
 		custom_css: custom_css
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 	html := response.body
 
@@ -236,14 +236,14 @@ fn test_custom_css_inline_included() bool {
 // Test: Custom JS inline appears when provided
 fn test_custom_js_inline_included() bool {
 	custom_js := 'console.log("Custom JS loaded");'
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:       '/doc'
 		title:     'Test API'
 		custom_js: custom_js
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 	html := response.body
 
@@ -252,13 +252,13 @@ fn test_custom_js_inline_included() bool {
 
 // Test: Response has correct Content-Type
 fn test_response_content_type() bool {
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:   '/doc'
 		title: 'Test API'
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 
 	content_type := response.header.get(.content_type) or { '' }
@@ -267,13 +267,13 @@ fn test_response_content_type() bool {
 
 // Test: Response status code is 200
 fn test_response_status_code() bool {
-	options := hono.SwaggerUIOptions{
+	options := vono.SwaggerUIOptions{
 		url:   '/doc'
 		title: 'Test API'
 	}
 
-	handler := hono.swagger_ui(options)
-	mut ctx := hono.Context{}
+	handler := vono.swagger_ui(options)
+	mut ctx := vono.Context{}
 	response := handler(mut ctx)
 
 	return response.status_code == 200
@@ -292,8 +292,8 @@ fn test_swagger_ui_options_property() PropertyTestStats {
 		options := generate_random_options()
 
 		// Generate HTML using the swagger_ui handler
-		handler := hono.swagger_ui(options)
-		mut ctx := hono.Context{}
+		handler := vono.swagger_ui(options)
+		mut ctx := vono.Context{}
 		response := handler(mut ctx)
 		html := response.body
 

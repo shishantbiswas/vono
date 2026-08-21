@@ -3,7 +3,7 @@
 //
 // Please start the server before using:
 // Terminal 1: v run server_veb.v (port 8080)
-// Terminal 2: v run server_hono.v (port 8081)
+// Terminal 2: v run server_vono.v (port 8081)
 
 module main
 
@@ -12,7 +12,7 @@ import time
 
 // test configuration
 const veb_base_url = 'http://127.0.0.1:8080'
-const hono_base_url = 'http://127.0.0.1:8081'
+const vono_base_url = 'http://127.0.0.1:8081'
 const requests_per_endpoint = 200
 
 // test endpoint
@@ -48,14 +48,14 @@ fn main() {
 	println('╠═══════════════════════════════════════════════════════════════╣')
 	println('║ 请确保已启动以下服务器:                                       ║')
 	println('║   - veb:    v run server_veb.v   (端口 8080)                  ║')
-	println('║   - vono: v run server_hono.v  (端口 8081)                  ║')
+	println('║   - vono: v run server_vono.v  (端口 8081)                  ║')
 	println('╚═══════════════════════════════════════════════════════════════╝')
 	println('')
 	
 	// Check if the server is available
 	println('检查服务器状态...')
 	veb_available := check_server(veb_base_url)
-	hono_available := check_server(hono_base_url)
+	vono_available := check_server(vono_base_url)
 	
 	if !veb_available {
 		println('⚠️  veb 服务器 (${veb_base_url}) 不可用')
@@ -63,13 +63,13 @@ fn main() {
 		println('✅ veb 服务器 (${veb_base_url}) 已就绪')
 	}
 	
-	if !hono_available {
-		println('⚠️  vono 服务器 (${hono_base_url}) 不可用')
+	if !vono_available {
+		println('⚠️  vono 服务器 (${vono_base_url}) 不可用')
 	} else {
-		println('✅ vono 服务器 (${hono_base_url}) 已就绪')
+		println('✅ vono 服务器 (${vono_base_url}) 已就绪')
 	}
 	
-	if !veb_available && !hono_available {
+	if !veb_available && !vono_available {
 		println('')
 		println('❌ 没有可用的服务器，请先启动服务器后再运行测试')
 		return
@@ -80,7 +80,7 @@ fn main() {
 	println('─────────────────────────────────────────────────────────────────')
 	
 	mut veb_results := []BenchmarkResult{}
-	mut hono_results := []BenchmarkResult{}
+	mut vono_results := []BenchmarkResult{}
 	
 	for endpoint in test_endpoints {
 		println('')
@@ -92,20 +92,20 @@ fn main() {
 			print_single_result('veb', result)
 		}
 		
-		if hono_available {
-			result := run_benchmark('vono', hono_base_url, endpoint)
-			hono_results << result
+		if vono_available {
+			result := run_benchmark('vono', vono_base_url, endpoint)
+			vono_results << result
 			print_single_result('vono', result)
 		}
 	}
 	
 	//Print comparison results
-	if veb_available && hono_available {
-		print_comparison_table(veb_results, hono_results)
+	if veb_available && vono_available {
+		print_comparison_table(veb_results, vono_results)
 	}
 	
 	// print summary
-	print_summary(veb_results, hono_results, veb_available, hono_available)
+	print_summary(veb_results, vono_results, veb_available, vono_available)
 }
 
 fn check_server(base_url string) bool {
@@ -172,7 +172,7 @@ fn print_single_result(name string, r BenchmarkResult) {
 	println('  ${name}: ${r.rps:.0} req/s | avg: ${r.avg_time_ms:.2}ms | min: ${r.min_time_ms:.2}ms | max: ${r.max_time_ms:.2}ms | 成功: ${r.success_count}/${r.total_requests}')
 }
 
-fn print_comparison_table(veb_results []BenchmarkResult, hono_results []BenchmarkResult) {
+fn print_comparison_table(veb_results []BenchmarkResult, vono_results []BenchmarkResult) {
 	println('')
 	println('╔═══════════════════════════════════════════════════════════════════════════════════════╗')
 	println('║                              性能对比表                                               ║')
@@ -181,27 +181,27 @@ fn print_comparison_table(veb_results []BenchmarkResult, hono_results []Benchmar
 	println('╠═══════════════════════════════════════════════════════════════════════════════════════╣')
 	
 	for i, veb_r in veb_results {
-		if i >= hono_results.len {
+		if i >= vono_results.len {
 			break
 		}
-		hono_r := hono_results[i]
+		vono_r := vono_results[i]
 		
-		diff := hono_r.rps - veb_r.rps
+		diff := vono_r.rps - veb_r.rps
 		diff_pct := if veb_r.rps > 0 { (diff / veb_r.rps) * 100.0 } else { 0.0 }
-		winner := if hono_r.rps > veb_r.rps { 'vono' } else { 'veb' }
+		winner := if vono_r.rps > veb_r.rps { 'vono' } else { 'veb' }
 		
 		name := veb_r.endpoint
 		veb_rps := '${veb_r.rps:.0}'
-		hono_rps := '${hono_r.rps:.0}'
+		vono_rps := '${vono_r.rps:.0}'
 		diff_str := if diff > 0 { '+${diff_pct:.1}%' } else { '${diff_pct:.1}%' }
 		
-		println('║ ${name:-23} │ ${veb_rps:-12} │ ${hono_rps:-14} │ ${diff_str:-9} │ ${winner:-14} ║')
+		println('║ ${name:-23} │ ${veb_rps:-12} │ ${vono_rps:-14} │ ${diff_str:-9} │ ${winner:-14} ║')
 	}
 	
 	println('╚═══════════════════════════════════════════════════════════════════════════════════════╝')
 }
 
-fn print_summary(veb_results []BenchmarkResult, hono_results []BenchmarkResult, veb_available bool, hono_available bool) {
+fn print_summary(veb_results []BenchmarkResult, vono_results []BenchmarkResult, veb_available bool, vono_available bool) {
 	println('')
 	println('╔═══════════════════════════════════════════════════════════════╗')
 	println('║                        测试总结                               ║')
@@ -216,12 +216,12 @@ fn print_summary(veb_results []BenchmarkResult, hono_results []BenchmarkResult, 
 		println('║ veb 平均吞吐量:    ${avg_rps:-40.0} req/s ║')
 	}
 	
-	if hono_available && hono_results.len > 0 {
+	if vono_available && vono_results.len > 0 {
 		mut total_rps := f64(0.0)
-		for r in hono_results {
+		for r in vono_results {
 			total_rps += r.rps
 		}
-		avg_rps := total_rps / f64(hono_results.len)
+		avg_rps := total_rps / f64(vono_results.len)
 		println('║ vono 平均吞吐量: ${avg_rps:-40.0} req/s ║')
 	}
 	

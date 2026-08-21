@@ -1,16 +1,16 @@
 //Test cache hit rate
 module main
 
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import time
 
 fn main() {
 	println('=== 缓存命中率测试 ===')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
-	app.get('/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/users/:id', fn (mut c vono.Context) http.Response {
 		user_id := c.params['id'] or { 'unknown' }
 		return c.json('{"user_id": "${user_id}"}')
 	})

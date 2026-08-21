@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Vono"
   text: "High Performance HTTP server"
-  tagline: Hono inspired web framework written in Vlang.
+  tagline: Vono inspired web framework written in Vlang.
   actions:
     - theme: brand
       text: Gettings Started

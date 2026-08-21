@@ -1,5 +1,5 @@
 // veb vs vono performance comparison test
-// Run: v run benchmark_veb_vs_hono.v
+// Run: v run benchmark_veb_vs_vono.v
 // 
 //Test content:
 // 1. Route matching performance (pure routing, no server startup)
@@ -9,7 +9,7 @@
 module main
 
 import time
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 // ============================================
@@ -173,8 +173,8 @@ fn print_result(r BenchmarkResult) {
 	println('└─────────────────────────────────────────────────────────────┘')
 }
 
-fn print_comparison(name string, simple_result BenchmarkResult, hono_result BenchmarkResult) {
-	speedup := f64(simple_result.avg_time_ns) / f64(hono_result.avg_time_ns)
+fn print_comparison(name string, simple_result BenchmarkResult, vono_result BenchmarkResult) {
+	speedup := f64(simple_result.avg_time_ns) / f64(vono_result.avg_time_ns)
 	winner := if speedup > 1.0 { 'vono' } else { 'SimpleRouter' }
 	ratio := if speedup > 1.0 { speedup } else { 1.0 / speedup }
 	
@@ -183,7 +183,7 @@ fn print_comparison(name string, simple_result BenchmarkResult, hono_result Benc
 	println(' ${name} 对比结果')
 	println('═══════════════════════════════════════════════════════════════')
 	println(' SimpleRouter: ${simple_result.avg_time_ns} ns/op (${simple_result.ops_per_sec:.0} ops/s)')
-	println(' vono:       ${hono_result.avg_time_ns} ns/op (${hono_result.ops_per_sec:.0} ops/s)')
+	println(' vono:       ${vono_result.avg_time_ns} ns/op (${vono_result.ops_per_sec:.0} ops/s)')
 	println(' 胜出:         ${winner} (快 ${ratio:.2}x)')
 	println('═══════════════════════════════════════════════════════════════')
 }
@@ -214,26 +214,26 @@ fn main() {
 	simple_router.add_dynamic('/api/categories/:cat/items/:item', ['cat', 'item'])
 	
 	//Initialize vono
-	mut hono_app := hono.Hono.new()
-	hono_app.get('/', fn (mut c hono.Context) http.Response {
+	mut vono_app := vono.Vono.new()
+	vono_app.get('/', fn (mut c vono.Context) http.Response {
 		return c.text('Hello World')
 	})
-	hono_app.get('/api/health', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/health', fn (mut c vono.Context) http.Response {
 		return c.text('OK')
 	})
-	hono_app.get('/api/users', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/users', fn (mut c vono.Context) http.Response {
 		return c.json('{"users": []}')
 	})
-	hono_app.get('/api/users/:id', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/users/:id', fn (mut c vono.Context) http.Response {
 		return c.json('{"id": "123"}')
 	})
-	hono_app.get('/api/users/:id/posts', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/users/:id/posts', fn (mut c vono.Context) http.Response {
 		return c.json('{"posts": []}')
 	})
-	hono_app.get('/api/users/:user_id/posts/:post_id', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/users/:user_id/posts/:post_id', fn (mut c vono.Context) http.Response {
 		return c.json('{"post": {}}')
 	})
-	hono_app.get('/api/categories/:cat/items/:item', fn (mut c hono.Context) http.Response {
+	vono_app.get('/api/categories/:cat/items/:item', fn (mut c vono.Context) http.Response {
 		return c.json('{"item": {}}')
 	})
 	
@@ -251,15 +251,15 @@ fn main() {
 	})
 	print_result(simple_static_result)
 	
-	hono_static_result := benchmark('vono 静态路由', iterations, fn [mut hono_app] () bool {
+	vono_static_result := benchmark('vono 静态路由', iterations, fn [mut vono_app] () bool {
 		for path in static_paths {
-			hono_app.fast_router.match_route('GET', path) or { continue }
+			vono_app.fast_router.match_route('GET', path) or { continue }
 		}
 		return true
 	})
-	print_result(hono_static_result)
+	print_result(vono_static_result)
 	
-	print_comparison('静态路由', simple_static_result, hono_static_result)
+	print_comparison('静态路由', simple_static_result, vono_static_result)
 	
 	// ============================================
 	//Test 2: Dynamic routing performance
@@ -275,15 +275,15 @@ fn main() {
 	})
 	print_result(simple_dynamic_result)
 	
-	hono_dynamic_result := benchmark('vono 动态路由', iterations, fn [mut hono_app] () bool {
+	vono_dynamic_result := benchmark('vono 动态路由', iterations, fn [mut vono_app] () bool {
 		for path in dynamic_paths {
-			hono_app.fast_router.match_route('GET', path) or { continue }
+			vono_app.fast_router.match_route('GET', path) or { continue }
 		}
 		return true
 	})
-	print_result(hono_dynamic_result)
+	print_result(vono_dynamic_result)
 	
-	print_comparison('动态路由', simple_dynamic_result, hono_dynamic_result)
+	print_comparison('动态路由', simple_dynamic_result, vono_dynamic_result)
 	
 	// ============================================
 	// Test 3: Hybrid routing performance
@@ -303,15 +303,15 @@ fn main() {
 	})
 	print_result(simple_mixed_result)
 	
-	hono_mixed_result := benchmark('vono 混合路由', iterations, fn [mut hono_app, all_paths] () bool {
+	vono_mixed_result := benchmark('vono 混合路由', iterations, fn [mut vono_app, all_paths] () bool {
 		for path in all_paths {
-			hono_app.fast_router.match_route('GET', path) or { continue }
+			vono_app.fast_router.match_route('GET', path) or { continue }
 		}
 		return true
 	})
-	print_result(hono_mixed_result)
+	print_result(vono_mixed_result)
 	
-	print_comparison('混合路由', simple_mixed_result, hono_mixed_result)
+	print_comparison('混合路由', simple_mixed_result, vono_mixed_result)
 	
 	// ============================================
 	// Router statistics
@@ -319,7 +319,7 @@ fn main() {
 	println('\n【路由器统计信息】')
 	println('─────────────────────────────────────────────────────────────────')
 	
-	static_count, dynamic_count, cache_count, _ := hono_app.get_router_stats()
+	static_count, dynamic_count, cache_count, _ := vono_app.get_router_stats()
 	println('vono FastRouter:')
 	println('  - 静态路由数: ${static_count}')
 	println('  - 动态路由数: ${dynamic_count}')

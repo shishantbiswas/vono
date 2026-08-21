@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -17,12 +17,12 @@ fn main() {
 fn test_large_scale_repeated_matching() {
 	println('\n📊 大规模重复匹配测试...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add a complex dynamic route
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id/replies/:reply_id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}
@@ -85,7 +85,7 @@ fn test_large_scale_repeated_matching() {
 fn test_multi_route_cache_effect() {
 	println('\n📊 多路由缓存效果测试...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add multiple complex dynamic routes
 	routes_and_paths := [
@@ -113,9 +113,9 @@ fn test_multi_route_cache_effect() {
 	
 	//Add route
 	for item in routes_and_paths {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: item['route']
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}

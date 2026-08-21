@@ -31,7 +31,7 @@
 app.listen_high_concurrency(8081)
 
 // 或使用自定义配置
-config := hono.HighConcurrencyConfig{
+config := vono.HighConcurrencyConfig{
     port: 8081
     timeout_secs: 5           // 较短超时
     keepalive_timeout: 3      // Keep-Alive 超时

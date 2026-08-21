@@ -4,7 +4,7 @@
 // 2. Middleware precalculation (sorting at startup)
 // 3. Reuse cache key
 
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -47,7 +47,7 @@ fn (stats TestStats) print_summary() {
 fn test_zero_middleware_flag(mut stats TestStats) {
 	stats.start_test('零中间件标志 (has_middlewares)')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Newly created applications should have no middleware
 	if app.has_middlewares {
@@ -56,7 +56,7 @@ fn test_zero_middleware_flag(mut stats TestStats) {
 	}
 	
 	// Flag should be true after adding middleware
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
 	
@@ -72,19 +72,19 @@ fn test_zero_middleware_flag(mut stats TestStats) {
 fn test_middleware_precompute(mut stats TestStats) {
 	stats.start_test('中间件预计算 (sorted_middleware_prefixes)')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add route
-	app.get('/test', fn (mut c hono.Context) http.Response {
+	app.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 	
 	//Create a sub-application and add middleware
-	mut sub_app := hono.Hono.new()
-	sub_app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	mut sub_app := vono.Vono.new()
+	sub_app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
-	sub_app.get('/hello', fn (mut c hono.Context) http.Response {
+	sub_app.get('/hello', fn (mut c vono.Context) http.Response {
 		return c.text('hello')
 	})
 	
@@ -119,12 +119,12 @@ fn test_middleware_precompute(mut stats TestStats) {
 fn test_fast_router_cache_key_reuse(mut stats TestStats) {
 	stats.start_test('FastRouter cache key 复用')
 	
-	mut router := hono.FastRouter.new()
+	mut router := vono.FastRouter.new()
 	
 	//Add static route
-	static_handler := hono.ContextHandler{
+	static_handler := vono.ContextHandler{
 		path: '/users'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('users')
 		}
 	}
@@ -134,9 +134,9 @@ fn test_fast_router_cache_key_reuse(mut stats TestStats) {
 	}
 	
 	//Add dynamic route
-	dynamic_handler := hono.ContextHandler{
+	dynamic_handler := vono.ContextHandler{
 		path: '/users/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('user')
 		}
 	}
@@ -189,12 +189,12 @@ fn test_fast_router_cache_key_reuse(mut stats TestStats) {
 fn test_hybrid_router_cache_key_reuse(mut stats TestStats) {
 	stats.start_test('HybridRouter cache key 复用')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add dynamic route
-	dynamic_handler := hono.ContextHandler{
+	dynamic_handler := vono.ContextHandler{
 		path: '/posts/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('post')
 		}
 	}
@@ -230,10 +230,10 @@ fn test_middleware_performance_comparison(mut stats TestStats) {
 	stats.start_test('中间件性能对比')
 	
 	//Create a router without middleware
-	mut router_no_mw := hono.FastRouter.new()
-	handler := hono.ContextHandler{
+	mut router_no_mw := vono.FastRouter.new()
+	handler := vono.ContextHandler{
 		path: '/api/users/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('user')
 		}
 	}
@@ -256,11 +256,11 @@ fn test_middleware_performance_comparison(mut stats TestStats) {
 	duration_no_mw := time.since(start_no_mw)
 	
 	//Create an application with middleware
-	mut app_with_mw := hono.Hono.new()
-	app_with_mw.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	mut app_with_mw := vono.Vono.new()
+	app_with_mw.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
-	app_with_mw.get('/api/users/:id', fn (mut c hono.Context) http.Response {
+	app_with_mw.get('/api/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('user')
 	})
 	app_with_mw.precompute_middleware_prefixes()
@@ -289,30 +289,30 @@ fn test_middleware_performance_comparison(mut stats TestStats) {
 fn test_precompute_sorting(mut stats TestStats) {
 	stats.start_test('预计算排序正确性')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Add multiple sub-applications to simulate prefixes of different lengths
-	mut sub1 := hono.Hono.new()
-	sub1.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	mut sub1 := vono.Vono.new()
+	sub1.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
-	sub1.get('/test', fn (mut c hono.Context) http.Response {
+	sub1.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 	
-	mut sub2 := hono.Hono.new()
-	sub2.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	mut sub2 := vono.Vono.new()
+	sub2.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
-	sub2.get('/test', fn (mut c hono.Context) http.Response {
+	sub2.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 	
-	mut sub3 := hono.Hono.new()
-	sub3.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	mut sub3 := vono.Vono.new()
+	sub3.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		return next(mut c)
 	})
-	sub3.get('/test', fn (mut c hono.Context) http.Response {
+	sub3.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 	

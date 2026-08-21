@@ -6,7 +6,7 @@
 // adding a parameter with that location SHALL succeed and be preserved in the document.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -78,13 +78,13 @@ fn random_path() string {
 const param_locations = ['path', 'query', 'header', 'cookie']
 
 // Generate a random parameter with a specific location
-fn generate_parameter(location string) hono.OpenAPIParameter {
-	return hono.OpenAPIParameter{
+fn generate_parameter(location string) vono.OpenAPIParameter {
+	return vono.OpenAPIParameter{
 		name: random_string(3, 10)
 		in_location: location
 		description: 'Test ${location} parameter - ${random_string(5, 10)}'
 		required: location == 'path' || rand.int_in_range(0, 2) or { 0 } == 1
-		schema: hono.OpenAPISchema{
+		schema: vono.OpenAPISchema{
 			schema_type: 'string'
 		}
 	}
@@ -97,18 +97,18 @@ fn test_param_location_via_builder(location string) bool {
 	param := generate_parameter(location)
 
 	// Create an operation with the parameter
-	op := hono.OpenAPIOperation{
+	op := vono.OpenAPIOperation{
 		summary: 'Test operation with ${location} parameter'
 		parameters: [param]
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'Success'
 			}
 		}
 	}
 
 	// Build document using the builder
-	mut builder := hono.OpenAPIBuilder.new()
+	mut builder := vono.OpenAPIBuilder.new()
 	builder.openapi('3.0.0')
 	builder.title('Test API')
 	builder.version('1.0.0')
@@ -194,18 +194,18 @@ fn test_all_locations_in_same_operation() PropertyTestStats {
 		cookie_param := generate_parameter('cookie')
 
 		// Create an operation with all parameters
-		op := hono.OpenAPIOperation{
+		op := vono.OpenAPIOperation{
 			summary: 'Test operation with all parameter locations'
 			parameters: [path_param, query_param, header_param, cookie_param]
 			responses: {
-				'200': hono.OpenAPIResponse{
+				'200': vono.OpenAPIResponse{
 					description: 'Success'
 				}
 			}
 		}
 
 		// Build document
-		mut builder := hono.OpenAPIBuilder.new()
+		mut builder := vono.OpenAPIBuilder.new()
 		builder.openapi('3.0.0')
 		builder.title('Test API')
 		builder.version('1.0.0')

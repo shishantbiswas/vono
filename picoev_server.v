@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import net
 import net.http
@@ -22,19 +22,19 @@ pub:
 // picoev request context
 struct PicoevRequestContext {
 mut:
-	app    &Hono = unsafe { nil }
+	app    &Vono = unsafe { nil }
 	config PicoevConfig
 }
 
 // Start the server using picoev
-pub fn (mut app Hono) listen_picoev(port int) {
+pub fn (mut app Vono) listen_picoev(port int) {
 	app.listen_picoev_with_config(PicoevConfig{
 		port: port
 	})
 }
 
 // Start the server using picoev (with configuration)
-pub fn (mut app Hono) listen_picoev_with_config(config PicoevConfig) {
+pub fn (mut app Vono) listen_picoev_with_config(config PicoevConfig) {
 	mut ctx := &PicoevRequestContext{
 		app: unsafe { &app }
 		config: config
@@ -127,7 +127,7 @@ fn get_picoev_ws_version(req picohttpparser.Request) string {
 }
 
 // Handle WebSocket upgrade for picoev
-fn handle_picoev_ws_upgrade(mut ctx PicoevRequestContext, req picohttpparser.Request, mut res picohttpparser.Response, route_match ContextRouteMatch, hono_ctx Context) bool {
+fn handle_picoev_ws_upgrade(mut ctx PicoevRequestContext, req picohttpparser.Request, mut res picohttpparser.Response, route_match ContextRouteMatch, vono_ctx Context) bool {
 	// Validate WebSocket version
 	ws_version := get_picoev_ws_version(req)
 	if ws_version != '13' {
@@ -154,7 +154,7 @@ fn handle_picoev_ws_upgrade(mut ctx PicoevRequestContext, req picohttpparser.Req
 	
 	// Execute the route handler to get WSEvents
 	// The handler should return a 101 response with WebSocket context stored
-	mut mutable_ctx := hono_ctx
+	mut mutable_ctx := vono_ctx
 	response := route_match.handler.handle(mut mutable_ctx)
 	
 	// Check if this is a WebSocket upgrade response
@@ -210,11 +210,11 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 	// Prioritize using fast routers
 	if ctx.app.use_fast_router {
 		if route_match := ctx.app.fast_router.match_route(method_str, path) {
-			mut hono_ctx := create_picoev_context(req, route_match.params, query_map)
+			mut vono_ctx := create_picoev_context(req, route_match.params, query_map)
 			
 			// Handle WebSocket upgrade if detected
 			if is_ws_upgrade {
-				if handle_picoev_ws_upgrade(mut ctx, req, mut res, route_match, hono_ctx) {
+				if handle_picoev_ws_upgrade(mut ctx, req, mut res, route_match, vono_ctx) {
 					// WebSocket upgrade successful, connection is now in WebSocket mode
 					return
 				}
@@ -224,25 +224,25 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 			
 			// Optimization: Zero middleware fast path
 			if !ctx.app.has_middlewares {
-				response := route_match.handler.handle(mut hono_ctx)
-				send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
+				response := route_match.handler.handle(mut vono_ctx)
+				send_picoev_response(mut res, vono_ctx, response, keepalive, ctx.config)
 				return
 			}
 			
 			middlewares := get_middlewares_for_path_picoev_optimized(ctx.app, path)
-			response := exec_middlewares_picoev(0, middlewares, mut hono_ctx, route_match.handler)
-			send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
+			response := exec_middlewares_picoev(0, middlewares, mut vono_ctx, route_match.handler)
+			send_picoev_response(mut res, vono_ctx, response, keepalive, ctx.config)
 			return
 		}
 	}
 	
 	// Fallback to hybrid router
 	if route_match := ctx.app.context_hybrid_router.match_route(method_str, path) {
-		mut hono_ctx := create_picoev_context(req, route_match.params, query_map)
+		mut vono_ctx := create_picoev_context(req, route_match.params, query_map)
 		
 		// Handle WebSocket upgrade if detected
 		if is_ws_upgrade {
-			if handle_picoev_ws_upgrade(mut ctx, req, mut res, route_match, hono_ctx) {
+			if handle_picoev_ws_upgrade(mut ctx, req, mut res, route_match, vono_ctx) {
 				// WebSocket upgrade successful
 				return
 			}
@@ -251,23 +251,23 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 		
 		// Optimization: Zero middleware fast path
 		if !ctx.app.has_middlewares {
-			response := route_match.handler.handle(mut hono_ctx)
-			send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
+			response := route_match.handler.handle(mut vono_ctx)
+			send_picoev_response(mut res, vono_ctx, response, keepalive, ctx.config)
 			return
 		}
 		
 		middlewares := get_middlewares_for_path_picoev_optimized(ctx.app, path)
-		response := exec_middlewares_picoev(0, middlewares, mut hono_ctx, route_match.handler)
-		send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
+		response := exec_middlewares_picoev(0, middlewares, mut vono_ctx, route_match.handler)
+		send_picoev_response(mut res, vono_ctx, response, keepalive, ctx.config)
 		return
 	}
 	
 	// 404 Not Found
-	mut hono_ctx := create_picoev_context(req, map[string]string{}, query_map)
+	mut vono_ctx := create_picoev_context(req, map[string]string{}, query_map)
 	
 	if handler := ctx.app.not_found_handler {
-		response := handler(mut hono_ctx)
-		send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
+		response := handler(mut vono_ctx)
+		send_picoev_response(mut res, vono_ctx, response, keepalive, ctx.config)
 		return
 	}
 	
@@ -345,7 +345,7 @@ fn contains_ignore_case(haystack string, needle string) bool {
 }
 
 // Get all middleware corresponding to the path (optimized version: use presorted prefix list)
-fn get_middlewares_for_path_picoev_optimized(app &Hono, path string) []ContextMiddleware {
+fn get_middlewares_for_path_picoev_optimized(app &Vono, path string) []ContextMiddleware {
 	// Optimization: When there is only global middleware, return the reference directly (avoid cloning)
 	if app.route_middlewares.len == 0 {
 		return app.context_middlewares
@@ -366,7 +366,7 @@ fn get_middlewares_for_path_picoev_optimized(app &Hono, path string) []ContextMi
 }
 
 // Get all middleware corresponding to the path (retain compatibility with old versions)
-fn get_middlewares_for_path_picoev(app &Hono, path string) []ContextMiddleware {
+fn get_middlewares_for_path_picoev(app &Vono, path string) []ContextMiddleware {
 	return get_middlewares_for_path_picoev_optimized(app, path)
 }
 

@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import os
 import time
 import strings
@@ -40,11 +40,11 @@ fn (stats TestStats) print_summary() {
 
 // 1. Test cache system
 fn test_cache_system() bool {
-	mut cache := hono.ContextLRUCache.new(3)
+	mut cache := vono.ContextLRUCache.new(3)
 
 	//Create a simple handler for testing
-	mut app := hono.Hono.new()
-	app.get('/test', fn (mut c hono.Context) http.Response {
+	mut app := vono.Vono.new()
+	app.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 
@@ -76,10 +76,10 @@ fn test_security_validation() bool {
 		'..\\..\\windows\\system32',
 	]
 
-	options := hono.PathValidationOptions{}
+	options := vono.PathValidationOptions{}
 
 	for path in dangerous_paths {
-		result := hono.validate_file_path(path, options) or { '' }
+		result := vono.validate_file_path(path, options) or { '' }
 		if result != '' {
 			return false // Dangerous paths should be rejected
 		}
@@ -87,14 +87,14 @@ fn test_security_validation() bool {
 
 	//Test safe path
 	safe_path := 'documents/file.txt'
-	result := hono.validate_file_path(safe_path, options) or { '' }
+	result := vono.validate_file_path(safe_path, options) or { '' }
 	return result != '' // The safe path should pass verification
 }
 
 // 3. Test configuration management
 fn test_config_management() bool {
 	//Test default configuration
-	config := hono.default_config()
+	config := vono.default_config()
 
 	if config.server.host != '127.0.0.1' {
 		return false
@@ -105,7 +105,7 @@ fn test_config_management() bool {
 	}
 
 	//Test configuration verification
-	hono.validate_config(config) or { return false }
+	vono.validate_config(config) or { return false }
 
 	return true
 }
@@ -113,13 +113,13 @@ fn test_config_management() bool {
 // 4. Test log system
 fn test_logging_system() bool {
 	//Create test logger
-	config := hono.LoggerConfig{
+	config := vono.LoggerConfig{
 		level:         .debug
 		output:        .console
 		enable_colors: false
 	}
 
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 
 	//Test basic logging method
 	logger.info('测试信息日志')
@@ -127,11 +127,11 @@ fn test_logging_system() bool {
 	logger.error('测试错误日志')
 
 	//Test log level conversion
-	if hono.parse_log_level('info') != .info {
+	if vono.parse_log_level('info') != .info {
 		return false
 	}
 
-	if hono.log_level_to_string(.error) != 'ERROR' {
+	if vono.log_level_to_string(.error) != 'ERROR' {
 		return false
 	}
 
@@ -157,13 +157,13 @@ fn test_string_optimization() bool {
 
 // 6. Test FastRouter route matching
 fn test_fast_router_matching() bool {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	//Add test route
-	app.get('/users', fn (mut c hono.Context) http.Response {
+	app.get('/users', fn (mut c vono.Context) http.Response {
 		return c.text('get_users')
 	})
-	app.get('/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('get_user')
 	})
 
@@ -188,11 +188,11 @@ fn test_fast_router_matching() bool {
 
 // 7. Test memory management
 fn test_memory_management() bool {
-	mut cache := hono.ContextLRUCache.new(5)
+	mut cache := vono.ContextLRUCache.new(5)
 
 	//Create test application
-	mut app := hono.Hono.new()
-	app.get('/test', fn (mut c hono.Context) http.Response {
+	mut app := vono.Vono.new()
+	app.get('/test', fn (mut c vono.Context) http.Response {
 		return c.text('test')
 	})
 
@@ -226,12 +226,12 @@ fn test_memory_management() bool {
 
 // 8. Test HybridRouter route matching
 fn test_hybrid_router_matching() bool {
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 
 	//Create test handler
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path:    '/users/:id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('user')
 		}
 	}
@@ -260,11 +260,11 @@ fn test_config_file_operations() bool {
 	}
 
 	//Create and save configuration
-	config := hono.default_config()
-	hono.save_config(config, config_path) or { return false }
+	config := vono.default_config()
+	vono.save_config(config, config_path) or { return false }
 
 	//Load configuration
-	loaded_config := hono.load_config(config_path) or { return false }
+	loaded_config := vono.load_config(config_path) or { return false }
 
 	//Verify configuration content
 	success := loaded_config.server.host == config.server.host &&
@@ -278,11 +278,11 @@ fn test_config_file_operations() bool {
 
 // 10. Test router performance
 fn test_router_performance() bool {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	//Add multiple routes
 	for i in 0 .. 100 {
-		app.get('/api/v1/resource${i}/:id', fn (mut c hono.Context) http.Response {
+		app.get('/api/v1/resource${i}/:id', fn (mut c vono.Context) http.Response {
 			return c.text('response')
 		})
 	}

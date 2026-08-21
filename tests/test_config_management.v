@@ -1,10 +1,10 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import os
 
 fn test_default_config() {
 	println('=== 测试默认配置 ===')
 	
-	config := hono.default_config()
+	config := vono.default_config()
 	
 	//Verify default value
 	assert config.server.host == '127.0.0.1'
@@ -21,31 +21,31 @@ fn test_default_config() {
 fn test_config_validation() {
 	println('=== 测试配置验证 ===')
 	
-	mut config := hono.default_config()
+	mut config := vono.default_config()
 	
 	//Test valid configuration
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		panic('有效配置验证失败: ${err}')
 	}
 	println('✅ 有效配置验证通过')
 	
 	//Test invalid port
 	config.server.port = 0
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		println('✅ 无效端口验证通过: ${err}')
 		config.server.port = 8080  // recover
 	}
 	
 	//Test invalid log level
 	config.log.level = 'invalid'
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		println('✅ 无效日志级别验证通过: ${err}')
 		config.log.level = 'info'  // recover
 	}
 	
 	//Test invalid environment
 	config.env = 'invalid'
-	hono.validate_config(config) or {
+	vono.validate_config(config) or {
 		println('✅ 无效环境验证通过: ${err}')
 		config.env = 'development'  // recover
 	}
@@ -62,16 +62,16 @@ fn test_config_file_operations() {
 	}
 	
 	//Create default configuration
-	config := hono.default_config()
+	config := vono.default_config()
 	
 	//Save configuration
-	hono.save_config(config, config_path) or {
+	vono.save_config(config, config_path) or {
 		panic('保存配置失败: ${err}')
 	}
 	println('✅ 配置保存成功')
 	
 	//Load configuration
-	loaded_config := hono.load_config(config_path) or {
+	loaded_config := vono.load_config(config_path) or {
 		panic('加载配置失败: ${err}')
 	}
 	println('✅ 配置加载成功')
@@ -95,7 +95,7 @@ fn test_env_config_loading() {
 	os.setenv('HONO_ENV', 'production', true)
 	os.setenv('HONO_DEBUG', 'true', true)
 	
-	config := hono.load_config_from_env()
+	config := vono.load_config_from_env()
 	
 	//Verify environment variable configuration
 	assert config.server.host == '0.0.0.0'
@@ -115,8 +115,8 @@ fn test_env_config_loading() {
 fn test_config_summary() {
 	println('=== 测试配置摘要 ===')
 	
-	config := hono.default_config()
-	summary := hono.get_config_summary(config)
+	config := vono.default_config()
+	summary := vono.get_config_summary(config)
 	
 	// Verification summary contains key information
 	assert summary.contains('应用配置摘要')
@@ -133,13 +133,13 @@ fn test_config_summary() {
 fn test_config_merge() {
 	println('=== 测试配置合并 ===')
 	
-	base_config := hono.default_config()
-	mut override_config := hono.AppConfig{}
+	base_config := vono.default_config()
+	mut override_config := vono.AppConfig{}
 	override_config.server.host = '0.0.0.0'
 	override_config.server.port = 9000
 	override_config.env = 'production'
 	
-	merged_config := hono.merge_config(base_config, override_config)
+	merged_config := vono.merge_config(base_config, override_config)
 	
 	//Verify merge results
 	assert merged_config.server.host == '0.0.0.0'

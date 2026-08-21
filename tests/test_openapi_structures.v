@@ -1,5 +1,5 @@
 // test_openapi_structures.v - Test OpenAPI data structures
-import meiseayoung.hono
+import meiseayoung.vono
 
 // OpenAPI data structure test
 // Test the data structure definition of OpenAPI 3.0/3.1 specification
@@ -39,7 +39,7 @@ fn (stats TestStats) print_summary() {
 
 //Test 1: OpenAPIContact structure
 fn test_openapi_contact() bool {
-	contact := hono.OpenAPIContact{
+	contact := vono.OpenAPIContact{
 		name: 'API Support'
 		url: 'https://example.com/support'
 		email: 'support@example.com'
@@ -51,7 +51,7 @@ fn test_openapi_contact() bool {
 
 //Test 2: OpenAPILicense structure
 fn test_openapi_license() bool {
-	license := hono.OpenAPILicense{
+	license := vono.OpenAPILicense{
 		name: 'MIT'
 		url: 'https://opensource.org/licenses/MIT'
 	}
@@ -61,15 +61,15 @@ fn test_openapi_license() bool {
 
 //Test 3: OpenAPIInfo structure
 fn test_openapi_info() bool {
-	info := hono.OpenAPIInfo{
+	info := vono.OpenAPIInfo{
 		title: 'My API'
 		version: '1.0.0'
 		description: 'A sample API'
 		terms_of_service: 'https://example.com/tos'
-		contact: hono.OpenAPIContact{
+		contact: vono.OpenAPIContact{
 			name: 'Support'
 		}
-		license: hono.OpenAPILicense{
+		license: vono.OpenAPILicense{
 			name: 'MIT'
 		}
 	}
@@ -80,7 +80,7 @@ fn test_openapi_info() bool {
 
 //Test 4: OpenAPIServer structure
 fn test_openapi_server() bool {
-	server := hono.OpenAPIServer{
+	server := vono.OpenAPIServer{
 		url: 'https://api.example.com'
 		description: 'Production server'
 	}
@@ -90,10 +90,10 @@ fn test_openapi_server() bool {
 
 //Test 5: OpenAPITag structure
 fn test_openapi_tag() bool {
-	tag := hono.OpenAPITag{
+	tag := vono.OpenAPITag{
 		name: 'users'
 		description: 'User operations'
-		external_docs: hono.OpenAPIExternalDocs{
+		external_docs: vono.OpenAPIExternalDocs{
 			url: 'https://docs.example.com/users'
 			description: 'User documentation'
 		}
@@ -104,13 +104,13 @@ fn test_openapi_tag() bool {
 
 //Test 6: OpenAPIParameter structure
 fn test_openapi_parameter() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: 'id'
 		in_location: 'path'
 		description: 'User ID'
 		required: true
 		deprecated: false
-		schema: hono.OpenAPISchema{
+		schema: vono.OpenAPISchema{
 			schema_type: 'integer'
 			format: 'int64'
 		}
@@ -122,11 +122,11 @@ fn test_openapi_parameter() bool {
 
 //Test 7: OpenAPIResponse structure
 fn test_openapi_response() bool {
-	response := hono.OpenAPIResponse{
+	response := vono.OpenAPIResponse{
 		description: 'Successful response'
 		content: {
-			'application/json': hono.OpenAPIMediaType{
-				schema: hono.OpenAPISchema{
+			'application/json': vono.OpenAPIMediaType{
+				schema: vono.OpenAPISchema{
 					schema_type: 'object'
 				}
 			}
@@ -138,13 +138,13 @@ fn test_openapi_response() bool {
 
 //Test 8: OpenAPIOperation structure
 fn test_openapi_operation() bool {
-	op := hono.OpenAPIOperation{
+	op := vono.OpenAPIOperation{
 		summary: 'Get user'
 		description: 'Get user by ID'
 		operation_id: 'getUser'
 		tags: ['users']
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'Success'
 			}
 		}
@@ -156,20 +156,20 @@ fn test_openapi_operation() bool {
 
 //Test 9: OpenAPIPathItem structure
 fn test_openapi_path_item() bool {
-	path_item := hono.OpenAPIPathItem{
+	path_item := vono.OpenAPIPathItem{
 		summary: 'User operations'
-		get: hono.OpenAPIOperation{
+		get: vono.OpenAPIOperation{
 			summary: 'Get user'
 			responses: {
-				'200': hono.OpenAPIResponse{
+				'200': vono.OpenAPIResponse{
 					description: 'Success'
 				}
 			}
 		}
-		post: hono.OpenAPIOperation{
+		post: vono.OpenAPIOperation{
 			summary: 'Create user'
 			responses: {
-				'201': hono.OpenAPIResponse{
+				'201': vono.OpenAPIResponse{
 					description: 'Created'
 				}
 			}
@@ -182,17 +182,17 @@ fn test_openapi_path_item() bool {
 
 //Test 10: OpenAPISchema structure
 fn test_openapi_schema() bool {
-	schema := hono.OpenAPISchema{
+	schema := vono.OpenAPISchema{
 		schema_type: 'object'
 		title: 'User'
 		description: 'User object'
 		required: ['id', 'name']
 		properties: {
-			'id': hono.OpenAPISchema{
+			'id': vono.OpenAPISchema{
 				schema_type: 'integer'
 				format: 'int64'
 			}
-			'name': hono.OpenAPISchema{
+			'name': vono.OpenAPISchema{
 				schema_type: 'string'
 			}
 		}
@@ -205,7 +205,7 @@ fn test_openapi_schema() bool {
 
 //Test 11: OpenAPISecurityScheme structure
 fn test_openapi_security_scheme() bool {
-	scheme := hono.OpenAPISecurityScheme{
+	scheme := vono.OpenAPISecurityScheme{
 		scheme_type: 'http'
 		description: 'Bearer token authentication'
 		scheme: 'bearer'
@@ -218,14 +218,14 @@ fn test_openapi_security_scheme() bool {
 
 // Test 12: OpenAPIComponents structure
 fn test_openapi_components() bool {
-	components := hono.OpenAPIComponents{
+	components := vono.OpenAPIComponents{
 		schemas: {
-			'User': hono.OpenAPISchema{
+			'User': vono.OpenAPISchema{
 				schema_type: 'object'
 			}
 		}
 		security_schemes: {
-			'bearerAuth': hono.OpenAPISecurityScheme{
+			'bearerAuth': vono.OpenAPISecurityScheme{
 				scheme_type: 'http'
 				scheme: 'bearer'
 			}
@@ -237,23 +237,23 @@ fn test_openapi_components() bool {
 
 //Test 13: OpenAPIDocument structure
 fn test_openapi_document() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: 'My API'
 			version: '1.0.0'
 		}
 		servers: [
-			hono.OpenAPIServer{
+			vono.OpenAPIServer{
 				url: 'https://api.example.com'
 			}
 		]
 		paths: {
-			'/users': hono.OpenAPIPathItem{
-				get: hono.OpenAPIOperation{
+			'/users': vono.OpenAPIPathItem{
+				get: vono.OpenAPIOperation{
 					summary: 'List users'
 					responses: {
-						'200': hono.OpenAPIResponse{
+						'200': vono.OpenAPIResponse{
 							description: 'Success'
 						}
 					}
@@ -261,7 +261,7 @@ fn test_openapi_document() bool {
 			}
 		}
 		tags: [
-			hono.OpenAPITag{
+			vono.OpenAPITag{
 				name: 'users'
 			}
 		]
@@ -275,7 +275,7 @@ fn test_openapi_document() bool {
 fn test_parameter_locations() bool {
 	locations := ['path', 'query', 'header', 'cookie']
 	for loc in locations {
-		param := hono.OpenAPIParameter{
+		param := vono.OpenAPIParameter{
 			name: 'test'
 			in_location: loc
 		}
@@ -288,34 +288,34 @@ fn test_parameter_locations() bool {
 
 // Test 15: HTTP method support
 fn test_http_methods() bool {
-	path_item := hono.OpenAPIPathItem{
-		get: hono.OpenAPIOperation{
+	path_item := vono.OpenAPIPathItem{
+		get: vono.OpenAPIOperation{
 			summary: 'GET'
-			responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+			responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 		}
-		post: hono.OpenAPIOperation{
+		post: vono.OpenAPIOperation{
 			summary: 'POST'
-			responses: {'201': hono.OpenAPIResponse{description: 'Created'}}
+			responses: {'201': vono.OpenAPIResponse{description: 'Created'}}
 		}
-		put: hono.OpenAPIOperation{
+		put: vono.OpenAPIOperation{
 			summary: 'PUT'
-			responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+			responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 		}
-		delete: hono.OpenAPIOperation{
+		delete: vono.OpenAPIOperation{
 			summary: 'DELETE'
-			responses: {'204': hono.OpenAPIResponse{description: 'No Content'}}
+			responses: {'204': vono.OpenAPIResponse{description: 'No Content'}}
 		}
-		patch: hono.OpenAPIOperation{
+		patch: vono.OpenAPIOperation{
 			summary: 'PATCH'
-			responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+			responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 		}
-		head: hono.OpenAPIOperation{
+		head: vono.OpenAPIOperation{
 			summary: 'HEAD'
-			responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+			responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 		}
-		options: hono.OpenAPIOperation{
+		options: vono.OpenAPIOperation{
 			summary: 'OPTIONS'
-			responses: {'200': hono.OpenAPIResponse{description: 'OK'}}
+			responses: {'200': vono.OpenAPIResponse{description: 'OK'}}
 		}
 	}
 	return path_item.get.summary == 'GET' && 

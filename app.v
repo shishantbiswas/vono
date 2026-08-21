@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import net.urllib
 import net.http
@@ -25,10 +25,10 @@ pub type NotFoundHandler = fn (mut c Context) http.Response
 // Error handler type - use simple error messages and status codes
 pub type ErrorHandler = fn (error_msg string, status_code int, mut c Context) http.Response
 
-pub struct Hono {
+pub struct Vono {
 mut:
 	server            http.Server     = http.Server{}
-	routes            map[string]Hono = {}
+	routes            map[string]Vono = {}
 	base_path         string
 	not_found_handler ?NotFoundHandler // Custom 404 handler
 	error_handler     ?ErrorHandler    // Custom error handler
@@ -50,7 +50,7 @@ pub mut:
 type ContextMiddleware = fn (mut c Context, next fn (mut Context) http.Response) http.Response
 
 // Context interface method
-pub fn (mut app Hono) get(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) get(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{
 		path:    path
 		handler: handler
@@ -70,7 +70,7 @@ pub fn (mut app Hono) get(path string, handler fn (mut Context) http.Response) {
 	app.context_router.handlers.get << h
 }
 
-pub fn (mut app Hono) post(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) post(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{
 		path:    path
 		handler: handler
@@ -90,7 +90,7 @@ pub fn (mut app Hono) post(path string, handler fn (mut Context) http.Response) 
 	app.context_router.handlers.post << h
 }
 
-pub fn (mut app Hono) put(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) put(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
 
 	// Add to fast router
@@ -107,7 +107,7 @@ pub fn (mut app Hono) put(path string, handler fn (mut Context) http.Response) {
 	app.context_trie_router.add_route('PUT', path, h)
 }
 
-pub fn (mut app Hono) delete(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) delete(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
 
 	// Add to fast router
@@ -124,7 +124,7 @@ pub fn (mut app Hono) delete(path string, handler fn (mut Context) http.Response
 	app.context_trie_router.add_route('DELETE', path, h)
 }
 
-pub fn (mut app Hono) patch(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) patch(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
 
 	// Add to fast router
@@ -141,7 +141,7 @@ pub fn (mut app Hono) patch(path string, handler fn (mut Context) http.Response)
 	app.context_trie_router.add_route('PATCH', path, h)
 }
 
-pub fn (mut app Hono) head(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) head(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
 
 	// Add to fast router
@@ -158,7 +158,7 @@ pub fn (mut app Hono) head(path string, handler fn (mut Context) http.Response) 
 	app.context_trie_router.add_route('HEAD', path, h)
 }
 
-pub fn (mut app Hono) options(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) options(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
 
 	// Add to fast router
@@ -196,7 +196,7 @@ pub fn (mut app Hono) options(path string, handler fn (mut Context) http.Respons
 //           }
 //       }
 //   })
-pub fn (mut app Hono) ws(path string, factory WSHandlerFactory, options ...WebSocketOptions) {
+pub fn (mut app Vono) ws(path string, factory WSHandlerFactory, options ...WebSocketOptions) {
 	// Create the WebSocket upgrade handler
 	ws_handler := upgrade_websocket(factory, ...options)
 
@@ -205,7 +205,7 @@ pub fn (mut app Hono) ws(path string, factory WSHandlerFactory, options ...WebSo
 }
 
 // all() method - registers the same handler for all HTTP methods
-pub fn (mut app Hono) all(path string, handler fn (mut Context) http.Response) {
+pub fn (mut app Vono) all(path string, handler fn (mut Context) http.Response) {
 	app.get(path, handler)
 	app.post(path, handler)
 	app.put(path, handler)
@@ -216,34 +216,34 @@ pub fn (mut app Hono) all(path string, handler fn (mut Context) http.Response) {
 }
 
 // Context middleware
-pub fn (mut app Hono) use(mw ContextMiddleware) {
+pub fn (mut app Vono) use(mw ContextMiddleware) {
 	app.context_middlewares << mw
 	app.has_middlewares = true
 }
 
 // Precomputed middleware prefix sorting (called before server startup)
-pub fn (mut app Hono) precompute_middleware_prefixes() {
+pub fn (mut app Vono) precompute_middleware_prefixes() {
 	app.sorted_middleware_prefixes = app.route_middlewares.keys()
 	app.sorted_middleware_prefixes.sort(a.len < b.len)
 	app.has_middlewares = app.context_middlewares.len > 0 || app.route_middlewares.len > 0
 }
 
 // notFound() - Custom 404 handler
-pub fn (mut app Hono) not_found(handler NotFoundHandler) {
+pub fn (mut app Vono) not_found(handler NotFoundHandler) {
 	app.not_found_handler = handler
 }
 
 // onError() - custom error handler
-pub fn (mut app Hono) on_error(handler ErrorHandler) {
+pub fn (mut app Vono) on_error(handler ErrorHandler) {
 	app.error_handler = handler
 }
 
 struct ServerHanler {
 mut:
-	app Hono
+	app Vono
 }
 
-fn server_hanler_new(app Hono) ServerHanler {
+fn server_hanler_new(app Vono) ServerHanler {
 	return ServerHanler{
 		app: app
 	}
@@ -395,7 +395,7 @@ fn (mut s ServerHanler) exec_context_middlewares(idx int, mut ctx Context, handl
 	}
 }
 
-pub fn (mut app Hono) listen(port string) {
+pub fn (mut app Vono) listen(port string) {
 	// Parse port number
 	port_num := port.trim(':').int()
 	if port_num <= 0 {
@@ -416,7 +416,7 @@ pub fn (mut app Hono) listen(port string) {
 }
 
 // Start using traditional http.Server (preserve compatibility)
-pub fn (mut app Hono) listen_http(port string) {
+pub fn (mut app Vono) listen_http(port string) {
 	app.server.addr = port
 	app.server.handler = server_hanler_new(app)
 	// Add timeout configuration to support better Keep-Alive
@@ -425,7 +425,7 @@ pub fn (mut app Hono) listen_http(port string) {
 	app.server.listen_and_serve()
 }
 
-pub fn (mut app Hono) route(prefix string, mut subapp Hono) {
+pub fn (mut app Vono) route(prefix string, mut subapp Vono) {
 	// Save sub-application reference
 	app.routes[prefix] = subapp
 
@@ -457,7 +457,7 @@ pub fn (mut app Hono) route(prefix string, mut subapp Hono) {
 }
 
 // Auxiliary function: merge routes for specified HTTP methods
-fn (mut app Hono) merge_routes_for_method(method string, prefix string, handlers []IHandler) {
+fn (mut app Vono) merge_routes_for_method(method string, prefix string, handlers []IHandler) {
 	for handler in handlers {
 		// Create new path with prefix
 		mut new_path := ''
@@ -520,12 +520,12 @@ pub fn (h PrefixedHandler) handle(mut c Context) http.Response {
 	return h.inner.handle(mut c)
 }
 
-pub fn (mut app Hono) set_base_path(base_path string) {
+pub fn (mut app Vono) set_base_path(base_path string) {
 	app.base_path = base_path
 }
 
 // Routing statistics
-pub fn (app Hono) get_router_stats() (int, int, int, int) {
+pub fn (app Vono) get_router_stats() (int, int, int, int) {
 	if app.use_fast_router {
 		static_count, dynamic_count, cache_count := app.fast_router.get_stats()
 		return static_count, dynamic_count, cache_count, 0
@@ -537,7 +537,7 @@ pub fn (app Hono) get_router_stats() (int, int, int, int) {
 }
 
 // clear cache
-pub fn (mut app Hono) clear_cache() {
+pub fn (mut app Vono) clear_cache() {
 	if app.use_fast_router {
 		app.fast_router.clear_cache()
 	} else {
@@ -546,13 +546,13 @@ pub fn (mut app Hono) clear_cache() {
 }
 
 // Enable/disable fast router
-pub fn (mut app Hono) set_fast_router_enabled(enabled bool) {
+pub fn (mut app Vono) set_fast_router_enabled(enabled bool) {
 	app.use_fast_router = enabled
 	println('[INFO] FastRouter ${if enabled { 'enabled' } else { 'disabled' }}')
 }
 
 // Get router performance analysis
-pub fn (mut app Hono) analyze_router_performance() {
+pub fn (mut app Vono) analyze_router_performance() {
 	if app.use_fast_router {
 		app.fast_router.analyze_performance()
 	} else {
@@ -560,10 +560,10 @@ pub fn (mut app Hono) analyze_router_performance() {
 	}
 }
 
-pub fn Hono.new() Hono {
-	return Hono{
+pub fn Vono.new() Vono {
+	return Vono{
 		server:                     http.Server{}
-		routes:                     map[string]Hono{}
+		routes:                     map[string]Vono{}
 		base_path:                  ''
 		not_found_handler:          none
 		error_handler:              none
@@ -592,7 +592,7 @@ pub fn Hono.new() Hono {
 //       .version('1.0.0')
 //       .build()!
 //   app.doc('/doc', spec)
-pub fn (mut app Hono) doc(path string, spec OpenAPIDocument) {
+pub fn (mut app Vono) doc(path string, spec OpenAPIDocument) {
 	// Pre-serialize OpenAPI documents into JSON strings
 	json_content := spec.to_json_str()
 
@@ -619,7 +619,7 @@ pub fn (mut app Hono) doc(path string, spec OpenAPIDocument) {
 //           .version('1.0.0')
 //           .build() or { panic(err) }
 //   })
-pub fn (mut app Hono) doc_fn(path string, builder fn () OpenAPIDocument) {
+pub fn (mut app Vono) doc_fn(path string, builder fn () OpenAPIDocument) {
 	app.get(path, fn [builder] (mut c Context) http.Response {
 		// Call the builder function on every request
 		spec := builder()

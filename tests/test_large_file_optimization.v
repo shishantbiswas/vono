@@ -1,11 +1,11 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import os
 
 fn main() {
 	println('=== 测试大文件处理内存优化 ===')
 	
 	//Create a test configuration and use a smaller buffer to facilitate testing
-	config := hono.ChunkUploadConfig{
+	config := vono.ChunkUploadConfig{
 		chunk_size: 1024 * 1024  // 1MB
 		max_file_size: 100 * 1024 * 1024  // 100MB
 		temp_dir: './test_uploads/chunks'
@@ -13,7 +13,7 @@ fn main() {
 		merge_buffer_size: 4096  // 4KB buffer for testing
 	}
 	
-	mut manager := hono.new_chunk_upload_manager(config)
+	mut manager := vono.new_chunk_upload_manager(config)
 	
 	println('1. 配置验证')
 	println('   缓冲区大小: ${config.merge_buffer_size} bytes')
@@ -90,7 +90,7 @@ fn main() {
 	println('   - 支持任意大小文件的合并，不受内存限制')
 }
 
-fn cleanup_test_files(config hono.ChunkUploadConfig) {
+fn cleanup_test_files(config vono.ChunkUploadConfig) {
 	// Clean test files
 	if os.exists('./test_uploads') {
 		os.rmdir_all('./test_uploads') or {

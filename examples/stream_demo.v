@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import os
 
@@ -27,7 +27,7 @@ fn main() {
 	
 	// Test traditional file service
 	println('\n--- 传统文件服务测试 ---')
-	mut ctx1 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
+	mut ctx1 := vono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response1 := ctx1.file('stream_test.txt')
 	
 	if response1.status_code == 200 && response1.body.len == test_content.len {
@@ -38,7 +38,7 @@ fn main() {
 	
 	//Test streaming file service
 	println('\n--- 流式文件服务测试 ---')
-	mut ctx2 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
+	mut ctx2 := vono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response2 := ctx2.file_stream('stream_test.txt')
 	
 	if response2.status_code == 200 && response2.body.len == test_content.len {
@@ -49,7 +49,7 @@ fn main() {
 	
 	// Test smart file service
 	println('\n--- 智能文件服务测试 ---')
-	mut ctx3 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
+	mut ctx3 := vono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response3 := ctx3.file_smart('stream_test.txt')
 	
 	if response3.status_code == 200 && response3.body.len == test_content.len {
@@ -60,7 +60,7 @@ fn main() {
 	
 	//Test custom options
 	println('\n--- 自定义选项测试 ---')
-	custom_options := hono.FileOptions{
+	custom_options := vono.FileOptions{
 		stream_threshold: 1024  // 1KB threshold, force streaming
 		buffer_size: 2048
 		enable_range: true
@@ -70,7 +70,7 @@ fn main() {
 		}
 	}
 	
-	mut ctx4 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
+	mut ctx4 := vono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response4 := ctx4.file_stream_with_options('stream_test.txt', custom_options)
 	
 	if response4.status_code == 200 && response4.body.len == test_content.len {
@@ -104,12 +104,12 @@ fn main() {
 		header: range_header
 	}
 	
-	range_options := hono.FileOptions{
+	range_options := vono.FileOptions{
 		enable_range: true
 		stream_threshold: 0  // force streaming
 	}
 	
-	mut ctx5 := hono.Context.new(range_req, map[string]string{}, map[string]string{}, '')
+	mut ctx5 := vono.Context.new(range_req, map[string]string{}, map[string]string{}, '')
 	response5 := ctx5.file_stream_with_options('stream_test.txt', range_options)
 	
 	if response5.status_code == 206 {  // Partial Content

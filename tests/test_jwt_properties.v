@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import rand
 import time
 
@@ -89,10 +89,10 @@ fn generate_random_claims() map[string]string {
 }
 
 // Generate a random JwtPayload
-fn generate_random_payload() hono.JwtPayload {
+fn generate_random_payload() vono.JwtPayload {
 	now := time.now().unix()
 	
-	return hono.JwtPayload{
+	return vono.JwtPayload{
 		sub: generate_random_subject()
 		iss: generate_random_issuer()
 		aud: 'test-audience'
@@ -105,12 +105,12 @@ fn generate_random_payload() hono.JwtPayload {
 }
 
 // Random selection algorithm
-fn random_algorithm() hono.JwtAlgorithm {
+fn random_algorithm() vono.JwtAlgorithm {
 	idx := rand.int_in_range(0, 3) or { 0 }
 	return match idx {
-		0 { hono.JwtAlgorithm.hs256 }
-		1 { hono.JwtAlgorithm.hs384 }
-		else { hono.JwtAlgorithm.hs512 }
+		0 { vono.JwtAlgorithm.hs256 }
+		1 { vono.JwtAlgorithm.hs384 }
+		else { vono.JwtAlgorithm.hs512 }
 	}
 }
 
@@ -131,13 +131,13 @@ fn test_property_6_jwt_sign_verify_roundtrip() bool {
 		alg := random_algorithm()
 		
 		//Sign JWT
-		token := hono.sign_jwt(payload, secret, alg) or {
+		token := vono.sign_jwt(payload, secret, alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
 		// Validate JWT
-		verified_payload := hono.verify_jwt(token, secret, alg) or {
+		verified_payload := vono.verify_jwt(token, secret, alg) or {
 			println('  Iteration ${i}: Failed to verify JWT: ${err}')
 			return false
 		}
@@ -219,20 +219,20 @@ fn test_property_7_jwt_expiration_enforcement() bool {
 		alg := random_algorithm()
 		
 		//Sign JWT
-		token := hono.sign_jwt(payload, secret, alg) or {
+		token := vono.sign_jwt(payload, secret, alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
 		// Validate JWT using option with expiration validation
-		verify_options := hono.JwtVerifyOptions{
+		verify_options := vono.JwtVerifyOptions{
 			exp: true
 			nbf: false
 			iat: false
 		}
 		
 		// Authentication should fail (because token has expired)
-		if _ := hono.verify_jwt_with_options(token, secret, alg, verify_options) {
+		if _ := vono.verify_jwt_with_options(token, secret, alg, verify_options) {
 			println('  Iteration ${i}: Expired JWT was accepted (should have been rejected)')
 			return false
 		}
@@ -252,7 +252,7 @@ fn test_property_7_jwt_expiration_enforcement() bool {
 fn test_property_8_jwt_algorithm_consistency() bool {
 	rand.seed([u32(time.now().unix()), u32(98765)])
 	
-	algorithms := [hono.JwtAlgorithm.hs256, hono.JwtAlgorithm.hs384, hono.JwtAlgorithm.hs512]
+	algorithms := [vono.JwtAlgorithm.hs256, vono.JwtAlgorithm.hs384, vono.JwtAlgorithm.hs512]
 	
 	for i in 0 .. test_iterations {
 		payload := generate_random_payload()
@@ -271,13 +271,13 @@ fn test_property_8_jwt_algorithm_consistency() bool {
 		verify_alg := algorithms[verify_alg_idx]
 		
 		//Sign JWT
-		token := hono.sign_jwt(payload, secret, sign_alg) or {
+		token := vono.sign_jwt(payload, secret, sign_alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
 		// Verification using different algorithms should fail
-		if _ := hono.verify_jwt(token, secret, verify_alg) {
+		if _ := vono.verify_jwt(token, secret, verify_alg) {
 			println('  Iteration ${i}: JWT verified with wrong algorithm (signed with ${sign_alg}, verified with ${verify_alg})')
 			return false
 		}

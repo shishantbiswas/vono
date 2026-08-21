@@ -14,7 +14,7 @@ vono项目中的LRU缓存实现存在以下内存泄漏问题：
 
 ### 1. 添加TTL和时间戳支持
 
-**文件**: `hono/cache.v`
+**文件**: `vono/cache.v`
 
 **修改内容**:
 - 为`ContextLRUCacheNode`添加时间戳字段：
@@ -258,10 +258,10 @@ TTL: 3600秒
 ### 基本使用
 ```v
 // 创建默认缓存（1小时TTL）
-mut cache := hono.ContextLRUCache.new(1000)
+mut cache := vono.ContextLRUCache.new(1000)
 
 // 创建自定义TTL缓存（30分钟TTL）
-mut cache := hono.ContextLRUCache.new_with_ttl(1000, 1800)
+mut cache := vono.ContextLRUCache.new_with_ttl(1000, 1800)
 ```
 
 ### 监控和维护

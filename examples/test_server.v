@@ -1,18 +1,18 @@
 //Test server - for high concurrency testing
 module main
 
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Simple test routing
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.text('OK')
 	})
 	
-	app.get('/delay', fn (mut c hono.Context) http.Response {
+	app.get('/delay', fn (mut c vono.Context) http.Response {
 		// Simulate some processing delays
 		return c.text('OK with delay')
 	})

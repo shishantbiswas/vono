@@ -6,7 +6,7 @@
 // the serialized JSON SHALL NOT contain those fields.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -66,7 +66,7 @@ fn random_string(min_len int, max_len int) string {
 
 // Test 1: Empty description should not appear in JSON
 fn test_empty_description_omitted() bool {
-	info := hono.OpenAPIInfo{
+	info := vono.OpenAPIInfo{
 		title: random_string(5, 15)
 		version: '1.0.0'
 		// description is empty - should be omitted
@@ -78,7 +78,7 @@ fn test_empty_description_omitted() bool {
 
 // Test 2: Empty contact should not appear in JSON
 fn test_empty_contact_omitted() bool {
-	info := hono.OpenAPIInfo{
+	info := vono.OpenAPIInfo{
 		title: random_string(5, 15)
 		version: '1.0.0'
 		// contact is empty - should be omitted
@@ -90,7 +90,7 @@ fn test_empty_contact_omitted() bool {
 
 // Test 3: Empty license should not appear in JSON
 fn test_empty_license_omitted() bool {
-	info := hono.OpenAPIInfo{
+	info := vono.OpenAPIInfo{
 		title: random_string(5, 15)
 		version: '1.0.0'
 		// license is empty - should be omitted
@@ -102,9 +102,9 @@ fn test_empty_license_omitted() bool {
 
 // Test 4: Empty servers array should not appear in JSON
 fn test_empty_servers_omitted() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: random_string(5, 15)
 			version: '1.0.0'
 		}
@@ -118,9 +118,9 @@ fn test_empty_servers_omitted() bool {
 
 // Test 5: Empty tags array should not appear in JSON
 fn test_empty_tags_omitted() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: random_string(5, 15)
 			version: '1.0.0'
 		}
@@ -134,9 +134,9 @@ fn test_empty_tags_omitted() bool {
 
 // Test 6: Empty components should not appear in JSON
 fn test_empty_components_omitted() bool {
-	doc := hono.OpenAPIDocument{
+	doc := vono.OpenAPIDocument{
 		openapi: '3.0.0'
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: random_string(5, 15)
 			version: '1.0.0'
 		}
@@ -150,7 +150,7 @@ fn test_empty_components_omitted() bool {
 
 // Test 7: False boolean values should not appear in JSON (for optional booleans)
 fn test_false_boolean_omitted() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: random_string(3, 10)
 		in_location: 'query'
 		required: false  // should be omitted
@@ -165,7 +165,7 @@ fn test_false_boolean_omitted() bool {
 
 // Test 8: True boolean values SHOULD appear in JSON
 fn test_true_boolean_included() bool {
-	param := hono.OpenAPIParameter{
+	param := vono.OpenAPIParameter{
 		name: random_string(3, 10)
 		in_location: 'query'
 		required: true  // should be included
@@ -180,12 +180,12 @@ fn test_true_boolean_included() bool {
 
 // Test 9: Empty operation should not appear in path item
 fn test_empty_operation_omitted() bool {
-	path_item := hono.OpenAPIPathItem{
+	path_item := vono.OpenAPIPathItem{
 		summary: random_string(5, 15)
-		get: hono.OpenAPIOperation{
+		get: vono.OpenAPIOperation{
 			summary: 'Get'
 			responses: {
-				'200': hono.OpenAPIResponse{description: 'OK'}
+				'200': vono.OpenAPIResponse{description: 'OK'}
 			}
 		}
 		// post, put, delete, etc. are empty - should be omitted
@@ -201,10 +201,10 @@ fn test_empty_operation_omitted() bool {
 
 // Test 10: Empty parameters array should not appear in operation
 fn test_empty_parameters_omitted() bool {
-	op := hono.OpenAPIOperation{
+	op := vono.OpenAPIOperation{
 		summary: random_string(5, 15)
 		responses: {
-			'200': hono.OpenAPIResponse{description: 'OK'}
+			'200': vono.OpenAPIResponse{description: 'OK'}
 		}
 		// parameters is empty - should be omitted
 	}
@@ -215,10 +215,10 @@ fn test_empty_parameters_omitted() bool {
 
 // Test 11: Empty request body should not appear in operation
 fn test_empty_request_body_omitted() bool {
-	op := hono.OpenAPIOperation{
+	op := vono.OpenAPIOperation{
 		summary: random_string(5, 15)
 		responses: {
-			'200': hono.OpenAPIResponse{description: 'OK'}
+			'200': vono.OpenAPIResponse{description: 'OK'}
 		}
 		// request_body is empty - should be omitted
 	}
@@ -229,7 +229,7 @@ fn test_empty_request_body_omitted() bool {
 
 // Test 12: Zero numeric values should not appear (for optional numerics)
 fn test_zero_numeric_omitted() bool {
-	schema := hono.OpenAPISchema{
+	schema := vono.OpenAPISchema{
 		schema_type: 'integer'
 		// minimum, maximum, min_length, max_length are 0 - should be omitted
 	}
@@ -244,7 +244,7 @@ fn test_zero_numeric_omitted() bool {
 
 // Test 13: Non-zero numeric values SHOULD appear
 fn test_nonzero_numeric_included() bool {
-	schema := hono.OpenAPISchema{
+	schema := vono.OpenAPISchema{
 		schema_type: 'integer'
 		minimum: 1
 		maximum: 100

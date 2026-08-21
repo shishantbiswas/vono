@@ -21,7 +21,7 @@
 // Note: uSockets has obvious advantages in high concurrency scenarios (~50% improvement)
 //The performance of the two is similar when concurrency is low
 
-module hono
+module vono
 
 import usockets
 import net.http
@@ -39,7 +39,7 @@ pub:
 // uSockets context extension data - stores application references and configuration
 struct UsocketsContextExt {
 mut:
-	app    &Hono = unsafe { nil }
+	app    &Vono = unsafe { nil }
 	config UsocketsConfig
 }
 
@@ -51,14 +51,14 @@ fn get_usockets_ext(s usockets.Socket) &UsocketsContextExt {
 }
 
 // Start the server using uSockets
-pub fn (mut app Hono) listen_usockets(port int) {
+pub fn (mut app Vono) listen_usockets(port int) {
 	app.listen_usockets_with_config(UsocketsConfig{
 		port: port
 	})
 }
 
 // Start the server using uSockets (with configuration)
-pub fn (mut app Hono) listen_usockets_with_config(config UsocketsConfig) {
+pub fn (mut app Vono) listen_usockets_with_config(config UsocketsConfig) {
 	// Optimization: Precomputed middleware prefix sorting
 	app.precompute_middleware_prefixes()
 
@@ -171,7 +171,7 @@ fn get_usockets_ws_version(raw_data string) string {
 
 // Handle WebSocket upgrade for uSockets
 // Returns true if upgrade was successful, false otherwise
-fn handle_usockets_ws_upgrade(s usockets.Socket, raw_data string, route_match ContextRouteMatch, hono_ctx Context) bool {
+fn handle_usockets_ws_upgrade(s usockets.Socket, raw_data string, route_match ContextRouteMatch, vono_ctx Context) bool {
 	// Validate WebSocket version
 	ws_version := get_usockets_ws_version(raw_data)
 	if ws_version != '13' {
@@ -190,7 +190,7 @@ fn handle_usockets_ws_upgrade(s usockets.Socket, raw_data string, route_match Co
 	accept_key := compute_accept_key(ws_key)
 	
 	// Execute the route handler to get WSEvents
-	mut mutable_ctx := hono_ctx
+	mut mutable_ctx := vono_ctx
 	response := route_match.handler.handle(mut mutable_ctx)
 	
 	// Check if this is a WebSocket upgrade response
@@ -259,13 +259,13 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 
 	if app.use_fast_router {
 		if route_match := app.fast_router.match_route(method, path) {
-			mut hono_ctx := create_usockets_context(method, path, route_match.params, query_map, body)
+			mut vono_ctx := create_usockets_context(method, path, route_match.params, query_map, body)
 			
 			// Handle WebSocket upgrade if detected
 			if is_ws_upgrade {
 				// Parse headers for WebSocket context
-				hono_ctx = create_usockets_context_with_headers(raw_data, method, path, route_match.params, query_map, body)
-				if handle_usockets_ws_upgrade(s, raw_data, route_match, hono_ctx) {
+				vono_ctx = create_usockets_context_with_headers(raw_data, method, path, route_match.params, query_map, body)
+				if handle_usockets_ws_upgrade(s, raw_data, route_match, vono_ctx) {
 					// WebSocket upgrade successful
 					return s
 				}
@@ -275,12 +275,12 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 			
 			// Optimization 1: Zero middleware fast path
 			if !app.has_middlewares {
-				response := route_match.handler.handle(mut hono_ctx)
-				send_usockets_response(s, hono_ctx, response, is_http11)
+				response := route_match.handler.handle(mut vono_ctx)
+				send_usockets_response(s, vono_ctx, response, is_http11)
 			} else {
 				middlewares := get_middlewares_for_path_usockets_optimized(app, path)
-				response := exec_middlewares_usockets(0, middlewares, mut hono_ctx, route_match.handler)
-				send_usockets_response(s, hono_ctx, response, is_http11)
+				response := exec_middlewares_usockets(0, middlewares, mut vono_ctx, route_match.handler)
+				send_usockets_response(s, vono_ctx, response, is_http11)
 			}
 			response_sent = true
 		}
@@ -289,13 +289,13 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 	// Fallback to hybrid router
 	if !response_sent {
 		if route_match := app.context_hybrid_router.match_route(method, path) {
-			mut hono_ctx := create_usockets_context(method, path, route_match.params, query_map, body)
+			mut vono_ctx := create_usockets_context(method, path, route_match.params, query_map, body)
 			
 			// Handle WebSocket upgrade if detected
 			if is_ws_upgrade {
 				// Parse headers for WebSocket context
-				hono_ctx = create_usockets_context_with_headers(raw_data, method, path, route_match.params, query_map, body)
-				if handle_usockets_ws_upgrade(s, raw_data, route_match, hono_ctx) {
+				vono_ctx = create_usockets_context_with_headers(raw_data, method, path, route_match.params, query_map, body)
+				if handle_usockets_ws_upgrade(s, raw_data, route_match, vono_ctx) {
 					// WebSocket upgrade successful
 					return s
 				}
@@ -305,12 +305,12 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 			
 			// Optimization 1: Zero middleware fast path
 			if !app.has_middlewares {
-				response := route_match.handler.handle(mut hono_ctx)
-				send_usockets_response(s, hono_ctx, response, is_http11)
+				response := route_match.handler.handle(mut vono_ctx)
+				send_usockets_response(s, vono_ctx, response, is_http11)
 			} else {
 				middlewares := get_middlewares_for_path_usockets_optimized(app, path)
-				response := exec_middlewares_usockets(0, middlewares, mut hono_ctx, route_match.handler)
-				send_usockets_response(s, hono_ctx, response, is_http11)
+				response := exec_middlewares_usockets(0, middlewares, mut vono_ctx, route_match.handler)
+				send_usockets_response(s, vono_ctx, response, is_http11)
 			}
 			response_sent = true
 		}
@@ -318,11 +318,11 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 
 	// 404 Not Found
 	if !response_sent {
-		mut hono_ctx := create_usockets_context(method, path, map[string]string{}, query_map, body)
+		mut vono_ctx := create_usockets_context(method, path, map[string]string{}, query_map, body)
 
 		if handler := app.not_found_handler {
-			response := handler(mut hono_ctx)
-			send_usockets_response(s, hono_ctx, response, is_http11)
+			response := handler(mut vono_ctx)
+			send_usockets_response(s, vono_ctx, response, is_http11)
 		} else {
 			conn_header := if is_http11 { 'keep-alive' } else { 'close' }
 			s.write_bytes('HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 9\r\nConnection: ${conn_header}\r\n\r\nNot Found')
@@ -652,7 +652,7 @@ fn parse_http_method_usockets(method string) http.Method {
 }
 
 // Get all middleware corresponding to the path (optimized version: use presorted prefix list)
-fn get_middlewares_for_path_usockets_optimized(app &Hono, path string) []ContextMiddleware {
+fn get_middlewares_for_path_usockets_optimized(app &Vono, path string) []ContextMiddleware {
 	// Optimization 2: When there is only global middleware, return the reference directly (avoid cloning)
 	if app.route_middlewares.len == 0 {
 		return app.context_middlewares
@@ -673,7 +673,7 @@ fn get_middlewares_for_path_usockets_optimized(app &Hono, path string) []Context
 }
 
 // Get all middleware corresponding to the path (retain compatibility with old versions)
-fn get_middlewares_for_path_usockets(app &Hono, path string) []ContextMiddleware {
+fn get_middlewares_for_path_usockets(app &Vono, path string) []ContextMiddleware {
 	return get_middlewares_for_path_usockets_optimized(app, path)
 }
 

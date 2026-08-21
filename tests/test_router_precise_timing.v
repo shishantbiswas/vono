@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -24,11 +24,11 @@ fn test_first_match_precision() {
 	mut first_match_times := []f64{}
 	
 	for round in 0 .. 10 {
-		mut router := hono.ContextHybridRouter.new()
+		mut router := vono.ContextHybridRouter.new()
 		
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route_path
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -81,11 +81,11 @@ fn test_component_timing() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id'
 	test_path := '/api/v1/users/123/posts/456/comments/789'
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: route_path
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}

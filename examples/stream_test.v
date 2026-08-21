@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import os
 import time
@@ -11,7 +11,7 @@ fn main() {
 	create_test_files()
 	
 	// Create application
-	mut app := &hono.Hono{}
+	mut app := &vono.Vono{}
 	
 	// test route
 	setup_test_routes(mut app)
@@ -57,29 +57,29 @@ fn create_test_files() {
 	println('  创建大文件: test_large.txt (${large_str.len} bytes)')
 }
 
-fn setup_test_routes(mut app hono.Hono) {
+fn setup_test_routes(mut app vono.Vono) {
 	// Traditional file service (memory loading)
-	app.get('/traditional/:filename', fn (mut c hono.Context) http.Response {
+	app.get('/traditional/:filename', fn (mut c vono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file(filename)
 	})
 	
 	// Streaming file service
-	app.get('/stream/:filename', fn (mut c hono.Context) http.Response {
+	app.get('/stream/:filename', fn (mut c vono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file_stream(filename)
 	})
 	
 	// Smart file service (automatic selection)
-	app.get('/smart/:filename', fn (mut c hono.Context) http.Response {
+	app.get('/smart/:filename', fn (mut c vono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file_smart(filename)
 	})
 	
 	// Streaming service with custom options
-	app.get('/custom/:filename', fn (mut c hono.Context) http.Response {
+	app.get('/custom/:filename', fn (mut c vono.Context) http.Response {
 		filename := c.params['filename']
-		options := hono.FileOptions{
+		options := vono.FileOptions{
 			stream_threshold: 100 * 1024  // 100KB threshold
 			buffer_size: 4096             // 4KB buffer
 			enable_range: true
@@ -89,9 +89,9 @@ fn setup_test_routes(mut app hono.Hono) {
 	})
 	
 	//Range request test
-	app.get('/range/:filename', fn (mut c hono.Context) http.Response {
+	app.get('/range/:filename', fn (mut c vono.Context) http.Response {
 		filename := c.params['filename']
-		options := hono.FileOptions{
+		options := vono.FileOptions{
 			enable_range: true
 			stream_threshold: 1024  // 1KB threshold, force streaming
 		}

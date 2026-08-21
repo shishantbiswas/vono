@@ -6,7 +6,7 @@
 // SHALL result in all operations being present in the final document.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -78,13 +78,13 @@ fn random_path() string {
 const http_methods = ['get', 'post', 'put', 'delete', 'patch', 'head', 'options']
 
 // Generate a random operation with a unique identifier
-fn generate_operation(method string, id string) hono.OpenAPIOperation {
-	return hono.OpenAPIOperation{
+fn generate_operation(method string, id string) vono.OpenAPIOperation {
+	return vono.OpenAPIOperation{
 		summary: 'Test ${method} operation - ${id}'
 		description: 'Description for ${method} - ${id}'
 		operation_id: '${method}_${id}'
 		responses: {
-			'200': hono.OpenAPIResponse{
+			'200': vono.OpenAPIResponse{
 				description: 'Success response for ${method}'
 			}
 		}
@@ -92,12 +92,12 @@ fn generate_operation(method string, id string) hono.OpenAPIOperation {
 }
 
 // Check if an operation is set (has responses)
-fn is_operation_set(op hono.OpenAPIOperation) bool {
+fn is_operation_set(op vono.OpenAPIOperation) bool {
 	return op.responses.len > 0
 }
 
 // Get operation from path item by method name
-fn get_operation_by_method(path_item hono.OpenAPIPathItem, method string) hono.OpenAPIOperation {
+fn get_operation_by_method(path_item vono.OpenAPIPathItem, method string) vono.OpenAPIOperation {
 	return match method {
 		'get' { path_item.get }
 		'post' { path_item.post }
@@ -106,7 +106,7 @@ fn get_operation_by_method(path_item hono.OpenAPIPathItem, method string) hono.O
 		'patch' { path_item.patch }
 		'head' { path_item.head }
 		'options' { path_item.options }
-		else { hono.OpenAPIOperation{} }
+		else { vono.OpenAPIOperation{} }
 	}
 }
 
@@ -145,13 +145,13 @@ fn test_multiple_operations_on_path() PropertyTestStats {
 		unique_id := random_string(5, 10)
 
 		// Create operations for selected methods
-		mut operations := map[string]hono.OpenAPIOperation{}
+		mut operations := map[string]vono.OpenAPIOperation{}
 		for method in methods {
 			operations[method] = generate_operation(method, unique_id)
 		}
 
 		// Build document using the builder
-		mut builder := hono.OpenAPIBuilder.new()
+		mut builder := vono.OpenAPIBuilder.new()
 		builder.openapi('3.0.0')
 		builder.title('Test API')
 		builder.version('1.0.0')
@@ -249,7 +249,7 @@ fn test_multiple_paths_with_operations() PropertyTestStats {
 		put_op2 := generate_operation('put', '${path2}_${unique_id}')
 
 		// Build document
-		mut builder := hono.OpenAPIBuilder.new()
+		mut builder := vono.OpenAPIBuilder.new()
 		builder.openapi('3.0.0')
 		builder.title('Test API')
 		builder.version('1.0.0')
@@ -283,7 +283,7 @@ fn test_multiple_paths_with_operations() PropertyTestStats {
 			path_item1 := doc.paths[path1] or {
 				all_correct = false
 				errors << 'Could not get path item for ${path1}'
-				hono.OpenAPIPathItem{}
+				vono.OpenAPIPathItem{}
 			}
 			if !is_operation_set(path_item1.get) || path_item1.get.summary != get_op1.summary {
 				all_correct = false
@@ -303,7 +303,7 @@ fn test_multiple_paths_with_operations() PropertyTestStats {
 			path_item2 := doc.paths[path2] or {
 				all_correct = false
 				errors << 'Could not get path item for ${path2}'
-				hono.OpenAPIPathItem{}
+				vono.OpenAPIPathItem{}
 			}
 			if !is_operation_set(path_item2.get) || path_item2.get.summary != get_op2.summary {
 				all_correct = false

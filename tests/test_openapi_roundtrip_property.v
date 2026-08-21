@@ -6,7 +6,7 @@
 // deserializing back SHALL produce an equivalent document.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -113,8 +113,8 @@ fn random_schema_type() string {
 }
 
 // Generate random OpenAPIContact
-fn generate_random_contact() hono.OpenAPIContact {
-	return hono.OpenAPIContact{
+fn generate_random_contact() vono.OpenAPIContact {
+	return vono.OpenAPIContact{
 		name: random_string(3, 15)
 		url: random_url()
 		email: random_email()
@@ -122,17 +122,17 @@ fn generate_random_contact() hono.OpenAPIContact {
 }
 
 // Generate random OpenAPILicense
-fn generate_random_license() hono.OpenAPILicense {
+fn generate_random_license() vono.OpenAPILicense {
 	licenses := ['MIT', 'Apache-2.0', 'GPL-3.0', 'BSD-3-Clause']
-	return hono.OpenAPILicense{
+	return vono.OpenAPILicense{
 		name: licenses[rand.int_in_range(0, licenses.len) or { 0 }]
 		url: random_url()
 	}
 }
 
 // Generate random OpenAPIInfo
-fn generate_random_info() hono.OpenAPIInfo {
-	return hono.OpenAPIInfo{
+fn generate_random_info() vono.OpenAPIInfo {
+	return vono.OpenAPIInfo{
 		title: random_string(5, 20)
 		version: '${rand.int_in_range(1, 10) or { 1 }}.${rand.int_in_range(0, 10) or { 0 }}.${rand.int_in_range(0, 10) or { 0 }}'
 		description: random_string(10, 50)
@@ -143,17 +143,17 @@ fn generate_random_info() hono.OpenAPIInfo {
 }
 
 // Generate random OpenAPIServer
-fn generate_random_server() hono.OpenAPIServer {
-	return hono.OpenAPIServer{
+fn generate_random_server() vono.OpenAPIServer {
+	return vono.OpenAPIServer{
 		url: random_url()
 		description: random_string(5, 20)
 	}
 }
 
 // Generate random OpenAPISchema (simple, non-recursive)
-fn generate_random_schema() hono.OpenAPISchema {
+fn generate_random_schema() vono.OpenAPISchema {
 	schema_type := random_schema_type()
-	return hono.OpenAPISchema{
+	return vono.OpenAPISchema{
 		schema_type: schema_type
 		format: if schema_type == 'integer' { 'int64' } else if schema_type == 'number' { 'double' } else { '' }
 		description: random_string(5, 20)
@@ -162,9 +162,9 @@ fn generate_random_schema() hono.OpenAPISchema {
 }
 
 // Generate random OpenAPIParameter
-fn generate_random_parameter() hono.OpenAPIParameter {
+fn generate_random_parameter() vono.OpenAPIParameter {
 	location := random_param_location()
-	return hono.OpenAPIParameter{
+	return vono.OpenAPIParameter{
 		name: random_string(3, 10)
 		in_location: location
 		description: random_string(5, 20)
@@ -175,11 +175,11 @@ fn generate_random_parameter() hono.OpenAPIParameter {
 }
 
 // Generate random OpenAPIResponse
-fn generate_random_response() hono.OpenAPIResponse {
-	return hono.OpenAPIResponse{
+fn generate_random_response() vono.OpenAPIResponse {
+	return vono.OpenAPIResponse{
 		description: random_string(5, 30)
 		content: {
-			'application/json': hono.OpenAPIMediaType{
+			'application/json': vono.OpenAPIMediaType{
 				schema: generate_random_schema()
 			}
 		}
@@ -187,9 +187,9 @@ fn generate_random_response() hono.OpenAPIResponse {
 }
 
 // Generate random OpenAPIOperation
-fn generate_random_operation() hono.OpenAPIOperation {
+fn generate_random_operation() vono.OpenAPIOperation {
 	num_params := rand.int_in_range(0, 3) or { 0 }
-	mut params := []hono.OpenAPIParameter{}
+	mut params := []vono.OpenAPIParameter{}
 	for _ in 0 .. num_params {
 		params << generate_random_parameter()
 	}
@@ -200,7 +200,7 @@ fn generate_random_operation() hono.OpenAPIOperation {
 		tags << random_string(3, 10)
 	}
 	
-	return hono.OpenAPIOperation{
+	return vono.OpenAPIOperation{
 		summary: random_string(5, 30)
 		description: random_string(10, 50)
 		operation_id: random_string(5, 15)
@@ -208,16 +208,16 @@ fn generate_random_operation() hono.OpenAPIOperation {
 		parameters: params
 		responses: {
 			'200': generate_random_response()
-			'400': hono.OpenAPIResponse{description: 'Bad Request'}
-			'500': hono.OpenAPIResponse{description: 'Internal Server Error'}
+			'400': vono.OpenAPIResponse{description: 'Bad Request'}
+			'500': vono.OpenAPIResponse{description: 'Internal Server Error'}
 		}
 		deprecated: rand.int_in_range(0, 10) or { 0 } == 0  // 10% chance
 	}
 }
 
 // Generate random OpenAPIPathItem
-fn generate_random_path_item() hono.OpenAPIPathItem {
-	mut path_item := hono.OpenAPIPathItem{
+fn generate_random_path_item() vono.OpenAPIPathItem {
+	mut path_item := vono.OpenAPIPathItem{
 		summary: random_string(5, 20)
 		description: random_string(10, 30)
 	}
@@ -246,37 +246,37 @@ fn generate_random_path_item() hono.OpenAPIPathItem {
 }
 
 // Generate random OpenAPITag
-fn generate_random_tag() hono.OpenAPITag {
-	return hono.OpenAPITag{
+fn generate_random_tag() vono.OpenAPITag {
+	return vono.OpenAPITag{
 		name: random_string(3, 10)
 		description: random_string(10, 30)
 	}
 }
 
 // Generate random OpenAPIDocument
-fn generate_random_document() hono.OpenAPIDocument {
+fn generate_random_document() vono.OpenAPIDocument {
 	// Generate random number of paths (1-5)
 	num_paths := rand.int_in_range(1, 6) or { 1 }
-	mut paths := map[string]hono.OpenAPIPathItem{}
+	mut paths := map[string]vono.OpenAPIPathItem{}
 	for _ in 0 .. num_paths {
 		paths[random_path()] = generate_random_path_item()
 	}
 	
 	// Generate random number of servers (0-3)
 	num_servers := rand.int_in_range(0, 4) or { 0 }
-	mut servers := []hono.OpenAPIServer{}
+	mut servers := []vono.OpenAPIServer{}
 	for _ in 0 .. num_servers {
 		servers << generate_random_server()
 	}
 	
 	// Generate random number of tags (0-5)
 	num_tags := rand.int_in_range(0, 6) or { 0 }
-	mut tags := []hono.OpenAPITag{}
+	mut tags := []vono.OpenAPITag{}
 	for _ in 0 .. num_tags {
 		tags << generate_random_tag()
 	}
 	
-	return hono.OpenAPIDocument{
+	return vono.OpenAPIDocument{
 		openapi: random_openapi_version()
 		info: generate_random_info()
 		servers: servers
@@ -286,7 +286,7 @@ fn generate_random_document() hono.OpenAPIDocument {
 }
 
 // Compare two OpenAPIInfo objects
-fn compare_info(a hono.OpenAPIInfo, b hono.OpenAPIInfo) bool {
+fn compare_info(a vono.OpenAPIInfo, b vono.OpenAPIInfo) bool {
 	return a.title == b.title &&
 		a.version == b.version &&
 		a.description == b.description &&
@@ -299,7 +299,7 @@ fn compare_info(a hono.OpenAPIInfo, b hono.OpenAPIInfo) bool {
 }
 
 // Compare two OpenAPISchema objects
-fn compare_schema(a hono.OpenAPISchema, b hono.OpenAPISchema) bool {
+fn compare_schema(a vono.OpenAPISchema, b vono.OpenAPISchema) bool {
 	return a.schema_type == b.schema_type &&
 		a.format == b.format &&
 		a.description == b.description &&
@@ -307,7 +307,7 @@ fn compare_schema(a hono.OpenAPISchema, b hono.OpenAPISchema) bool {
 }
 
 // Compare two OpenAPIParameter objects
-fn compare_parameter(a hono.OpenAPIParameter, b hono.OpenAPIParameter) bool {
+fn compare_parameter(a vono.OpenAPIParameter, b vono.OpenAPIParameter) bool {
 	return a.name == b.name &&
 		a.in_location == b.in_location &&
 		a.description == b.description &&
@@ -317,7 +317,7 @@ fn compare_parameter(a hono.OpenAPIParameter, b hono.OpenAPIParameter) bool {
 }
 
 // Compare two OpenAPIOperation objects
-fn compare_operation(a hono.OpenAPIOperation, b hono.OpenAPIOperation) bool {
+fn compare_operation(a vono.OpenAPIOperation, b vono.OpenAPIOperation) bool {
 	if a.summary != b.summary || a.description != b.description ||
 	   a.operation_id != b.operation_id || a.deprecated != b.deprecated {
 		return false
@@ -349,7 +349,7 @@ fn compare_operation(a hono.OpenAPIOperation, b hono.OpenAPIOperation) bool {
 }
 
 // Compare two OpenAPIPathItem objects
-fn compare_path_item(a hono.OpenAPIPathItem, b hono.OpenAPIPathItem) bool {
+fn compare_path_item(a vono.OpenAPIPathItem, b vono.OpenAPIPathItem) bool {
 	if a.summary != b.summary || a.description != b.description {
 		return false
 	}
@@ -380,7 +380,7 @@ fn compare_path_item(a hono.OpenAPIPathItem, b hono.OpenAPIPathItem) bool {
 }
 
 // Compare two OpenAPIDocument objects
-fn compare_documents(original hono.OpenAPIDocument, restored hono.OpenAPIDocument) bool {
+fn compare_documents(original vono.OpenAPIDocument, restored vono.OpenAPIDocument) bool {
 	// Compare basic fields
 	if original.openapi != restored.openapi {
 		return false
@@ -446,7 +446,7 @@ fn test_round_trip_property() PropertyTestStats {
 		json_str := original.to_json_str()
 		
 		// Deserialize back
-		restored := hono.OpenAPIDocument.from_json_str(json_str) or {
+		restored := vono.OpenAPIDocument.from_json_str(json_str) or {
 			stats.record_fail('Iteration ${i}: Deserialization failed - ${err}')
 			continue
 		}

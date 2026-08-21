@@ -13,7 +13,7 @@ vono项目的文件服务实现存在以下性能问题：
 
 ### 1. 扩展FileOptions配置
 
-**文件**: `hono/request.v`
+**文件**: `vono/request.v`
 
 **新增配置项**:
 ```v
@@ -220,7 +220,7 @@ fn (mut c Context) stream_large_file(file_path string, file_size u64, options Fi
 
 #### 传统方式（向后兼容）
 ```v
-app.get('/download/:filename', fn (mut c hono.Context) http.Response {
+app.get('/download/:filename', fn (mut c vono.Context) http.Response {
     filename := c.params['filename']
     return c.file(filename)  // 原有方式依然可用
 })
@@ -228,7 +228,7 @@ app.get('/download/:filename', fn (mut c hono.Context) http.Response {
 
 #### 流式传输
 ```v
-app.get('/stream/:filename', fn (mut c hono.Context) http.Response {
+app.get('/stream/:filename', fn (mut c vono.Context) http.Response {
     filename := c.params['filename']
     return c.file_stream(filename)  // 强制使用流式传输
 })
@@ -236,7 +236,7 @@ app.get('/stream/:filename', fn (mut c hono.Context) http.Response {
 
 #### 智能选择（推荐）
 ```v
-app.get('/smart/:filename', fn (mut c hono.Context) http.Response {
+app.get('/smart/:filename', fn (mut c vono.Context) http.Response {
     filename := c.params['filename']
     return c.file_smart(filename)  // 自动选择最优方式
 })
@@ -246,10 +246,10 @@ app.get('/smart/:filename', fn (mut c hono.Context) http.Response {
 
 #### 自定义流式传输选项
 ```v
-app.get('/custom/:filename', fn (mut c hono.Context) http.Response {
+app.get('/custom/:filename', fn (mut c vono.Context) http.Response {
     filename := c.params['filename']
     
-    options := hono.FileOptions{
+    options := vono.FileOptions{
         stream_threshold: 10 * 1024 * 1024  // 10MB阈值
         buffer_size: 16384                  // 16KB缓冲区
         enable_range: true                  // 启用Range请求
@@ -270,7 +270,7 @@ app.get('/custom/:filename', fn (mut c hono.Context) http.Response {
 
 **高性能服务器**：
 ```v
-options := hono.FileOptions{
+options := vono.FileOptions{
     stream_threshold: 100 * 1024 * 1024  // 100MB阈值
     buffer_size: 64 * 1024               // 64KB缓冲区
     enable_range: true
@@ -279,7 +279,7 @@ options := hono.FileOptions{
 
 **受限环境**：
 ```v
-options := hono.FileOptions{
+options := vono.FileOptions{
     stream_threshold: 5 * 1024 * 1024    // 5MB阈值
     buffer_size: 4096                    // 4KB缓冲区
     enable_range: true
@@ -290,7 +290,7 @@ options := hono.FileOptions{
 
 **媒体文件服务器**：
 ```v
-options := hono.FileOptions{
+options := vono.FileOptions{
     stream_threshold: 50 * 1024 * 1024   // 50MB阈值，适合视频文件
     buffer_size: 32 * 1024               // 32KB缓冲区
     enable_range: true                   // 支持视频播放器的Range请求
@@ -300,7 +300,7 @@ options := hono.FileOptions{
 
 **文档下载服务**：
 ```v
-options := hono.FileOptions{
+options := vono.FileOptions{
     stream_threshold: 10 * 1024 * 1024   // 10MB阈值
     buffer_size: 8192                    // 8KB缓冲区
     enable_range: true

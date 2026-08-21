@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -20,7 +20,7 @@ fn main() {
 fn test_regex_cache_performance() {
 	println('\n📊 测试正则表达式缓存性能...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add some dynamic routing
 	dynamic_routes := [
@@ -34,9 +34,9 @@ fn test_regex_cache_performance() {
 	]
 	
 	for route in dynamic_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -96,14 +96,14 @@ fn test_regex_cache_performance() {
 fn test_cache_warmup() {
 	println('\n📊 测试缓存预热效果...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add dynamic route
 	for i in 0 .. 10 {
 		route := '/api/v${i}/items/:id'
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -121,14 +121,14 @@ fn test_cache_warmup() {
 fn test_performance_analysis() {
 	println('\n📊 测试性能分析功能...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add static route
 	static_routes := ['/api/health', '/api/status', '/api/info']
 	for route in static_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('static')
 			}
 		}
@@ -138,9 +138,9 @@ fn test_performance_analysis() {
 	//Add dynamic route
 	dynamic_routes := ['/users/:id', '/posts/:id/comments', '/files/:category/:name']
 	for route in dynamic_routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('dynamic')
 			}
 		}

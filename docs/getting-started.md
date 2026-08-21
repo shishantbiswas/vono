@@ -20,9 +20,9 @@ import vono
 import net.http
 
 fn main() {
-    mut app := hono.Hono.new()
+    mut app := vono.Vono.new()
     
-    app.get('/', fn (mut c hono.Context) http.Response {
+    app.get('/', fn (mut c vono.Context) http.Response {
         return c.text('Hello, World!')
     })
     

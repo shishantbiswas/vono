@@ -6,18 +6,18 @@
 
 ### 路由分组 (Route Grouping)
 
-参考 [Hono.js 路由分组](https://hono.dev/docs/api/routing#grouping) 实现了 vono 的路由分组功能。
+参考 [Vono.js 路由分组](https://vono.dev/docs/api/routing#grouping) 实现了 vono 的路由分组功能。
 
 #### 使用方式
 
 ```v
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
-    mut app := hono.Hono.new()
+    mut app := vono.Vono.new()
     
     // 创建子应用（路由组）
-    mut books := hono.Hono.new()
+    mut books := vono.Vono.new()
     books.get('/', handler)           // -> /api/books
     books.get('/:id', handler)        // -> /api/books/:id
     books.post('/', handler)          // -> /api/books
@@ -36,10 +36,10 @@ fn main() {
 子应用的中间件会自动继承到主应用，并只对该路由前缀下的请求生效。
 
 ```v
-mut api := hono.Hono.new()
+mut api := vono.Vono.new()
 
 // 这个中间件只对 /api/* 路由生效
-api.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+api.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
     c.headers['X-API-Version'] = '1.0'
     return next(mut c)
 })
@@ -54,7 +54,7 @@ app.route('/api', mut api)
 
 ```v
 // 匹配 GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
-app.all('/echo', fn (mut c hono.Context) http.Response {
+app.all('/echo', fn (mut c vono.Context) http.Response {
     return c.json('{"method": "${c.req.method}"}')
 })
 ```
@@ -64,7 +64,7 @@ app.all('/echo', fn (mut c hono.Context) http.Response {
 自定义 404 响应。
 
 ```v
-app.not_found(fn (mut c hono.Context) http.Response {
+app.not_found(fn (mut c vono.Context) http.Response {
     c.status(404)
     return c.json('{"error": "Not Found", "path": "${c.path}"}')
 })
@@ -75,7 +75,7 @@ app.not_found(fn (mut c hono.Context) http.Response {
 自定义错误响应。
 
 ```v
-app.on_error(fn (error_msg string, status_code int, mut c hono.Context) http.Response {
+app.on_error(fn (error_msg string, status_code int, mut c vono.Context) http.Response {
     c.status(status_code)
     return c.json('{"error": "${error_msg}", "code": ${status_code}}')
 })
@@ -83,7 +83,7 @@ app.on_error(fn (error_msg string, status_code int, mut c hono.Context) http.Res
 
 ## 代码变更
 
-### hono/app.v
+### vono/app.v
 
 1. **重写 `route()` 方法**
    - 正确合并子应用路由到 `fast_router`、`context_hybrid_router` 和 `context_trie_router`
@@ -140,15 +140,15 @@ app.on_error(fn (error_msg string, status_code int, mut c hono.Context) http.Res
 ### test_router_optimization.v
 
 更新为使用新 API：
-- `hono.new_optimized_router()` → `hono.FastRouter.new()`
-- `hono.new_context_hybrid_router()` → `hono.ContextHybridRouter.new()`
+- `vono.new_optimized_router()` → `vono.FastRouter.new()`
+- `vono.new_context_hybrid_router()` → `vono.ContextHybridRouter.new()`
 - 修复路由匹配返回值处理
 - 移除不存在的 `RouteDefinition` 和 `add_routes_batch`
 
 ### test_comprehensive_suite.v
 
 更新为使用新 API：
-- `hono.new_context_lru_cache()` → `hono.ContextLRUCache.new()`
+- `vono.new_context_lru_cache()` → `vono.ContextLRUCache.new()`
 - 修复 `validate_file_path` 和 `validate_file_hash` 返回类型处理
 - 使用 `Context` 方法替代独立的错误处理函数
 - 简化文件上传测试为配置验证测试

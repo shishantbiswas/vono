@@ -1,19 +1,19 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import os
 import time
 
 fn test_logger_creation() {
 	println('=== 测试日志器创建 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.debug
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.debug
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
-	logger := hono.new_logger(config)
-	assert logger.config.level == hono.LogLevel.debug
-	assert logger.config.output == hono.LogOutput.console
+	logger := vono.new_logger(config)
+	assert logger.config.level == vono.LogLevel.debug
+	assert logger.config.output == vono.LogOutput.console
 	
 	println('✅ 日志器创建测试通过')
 }
@@ -22,17 +22,17 @@ fn test_log_levels() {
 	println('=== 测试日志级别 ===')
 	
 	// Convert test string to log level
-	assert hono.parse_log_level('debug') == hono.LogLevel.debug
-	assert hono.parse_log_level('info') == hono.LogLevel.info
-	assert hono.parse_log_level('warn') == hono.LogLevel.warn
-	assert hono.parse_log_level('error') == hono.LogLevel.error
-	assert hono.parse_log_level('invalid') == hono.LogLevel.info  // default value
+	assert vono.parse_log_level('debug') == vono.LogLevel.debug
+	assert vono.parse_log_level('info') == vono.LogLevel.info
+	assert vono.parse_log_level('warn') == vono.LogLevel.warn
+	assert vono.parse_log_level('error') == vono.LogLevel.error
+	assert vono.parse_log_level('invalid') == vono.LogLevel.info  // default value
 	
 	//Test log level to string
-	assert hono.log_level_to_string(hono.LogLevel.debug) == 'DEBUG'
-	assert hono.log_level_to_string(hono.LogLevel.info) == 'INFO'
-	assert hono.log_level_to_string(hono.LogLevel.warn) == 'WARN'
-	assert hono.log_level_to_string(hono.LogLevel.error) == 'ERROR'
+	assert vono.log_level_to_string(vono.LogLevel.debug) == 'DEBUG'
+	assert vono.log_level_to_string(vono.LogLevel.info) == 'INFO'
+	assert vono.log_level_to_string(vono.LogLevel.warn) == 'WARN'
+	assert vono.log_level_to_string(vono.LogLevel.error) == 'ERROR'
 	
 	println('✅ 日志级别测试通过')
 }
@@ -40,13 +40,13 @@ fn test_log_levels() {
 fn test_console_logging() {
 	println('=== 测试控制台日志输出 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.debug
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.debug
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Test basic logging method
 	logger.debug('这是一条调试消息')
@@ -81,14 +81,14 @@ fn test_file_logging() {
 		os.rm(log_file) or {}
 	}
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.file
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.file
 		file_path: log_file
 		enable_colors: false  //File output does not require color
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Write some logs
 	logger.info('测试文件日志 1')
@@ -128,14 +128,14 @@ fn test_json_logging() {
 		os.rm(log_file) or {}
 	}
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.file
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.file
 		file_path: log_file
 		enable_json: true
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Write log in JSON format
 	fields := {
@@ -166,14 +166,14 @@ fn test_json_logging() {
 fn test_global_logger() {
 	println('=== 测试全局日志器 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
 	//Create a logger instance
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	//Use logger method
 	logger.info('日志器信息消息')
@@ -186,15 +186,15 @@ fn test_global_logger() {
 fn test_request_logging() {
 	println('=== 测试HTTP请求日志 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
-	req_log := hono.RequestLog{
+	req_log := vono.RequestLog{
 		method: 'GET'
 		path: '/api/users'
 		status_code: 200
@@ -206,7 +206,7 @@ fn test_request_logging() {
 		request_id: 'req-789'
 	}
 	
-	hono.log_request(mut logger, req_log)
+	vono.log_request(mut logger, req_log)
 	
 	println('✅ HTTP请求日志测试通过')
 }
@@ -214,13 +214,13 @@ fn test_request_logging() {
 fn test_performance_logging() {
 	println('=== 测试性能监控日志 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.info
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.info
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
 	details := {
 		'cache_hit': 'true'
@@ -228,7 +228,7 @@ fn test_performance_logging() {
 		'memory_usage': '45MB'
 	}
 	
-	hono.log_performance(mut logger, '数据库查询', 123.45, details)
+	vono.log_performance(mut logger, '数据库查询', 123.45, details)
 	
 	println('✅ 性能监控日志测试通过')
 }
@@ -236,15 +236,15 @@ fn test_performance_logging() {
 fn test_error_logging() {
 	println('=== 测试错误日志 ===')
 	
-	config := hono.LoggerConfig{
-		level: hono.LogLevel.error
-		output: hono.LogOutput.console
+	config := vono.LoggerConfig{
+		level: vono.LogLevel.error
+		output: vono.LogOutput.console
 		enable_colors: true
 	}
 	
-	mut logger := hono.new_logger(config)
+	mut logger := vono.new_logger(config)
 	
-	hono.log_error_with_stack(mut logger, '数据库连接失败', '连接超时: 5秒', 'DATABASE')
+	vono.log_error_with_stack(mut logger, '数据库连接失败', '连接超时: 5秒', 'DATABASE')
 	
 	println('✅ 错误日志测试通过')
 }

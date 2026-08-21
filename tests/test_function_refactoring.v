@@ -123,7 +123,7 @@ fn test_functionality_completeness() {
 	
 	// Check whether key functions are retained
 	key_features := [
-		'hono.Hono.new()',           // Application creation
+		'vono.Vono.new()',           // Application creation
 		'app.get(',                   // GET route
 		'app.listen(',                // Server starts
 	]
@@ -147,7 +147,7 @@ fn test_functionality_completeness() {
 	basic_checks := [
 		'import',
 		'fn main()',
-		'hono',
+		'vono',
 	]
 	
 	mut found_basic := 0

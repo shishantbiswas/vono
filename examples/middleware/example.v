@@ -3,13 +3,13 @@ module main
 
 import net.http
 import time
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 
 	// Logger middleware
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		start := time.now()
 		response := next(mut c)
 		duration := time.since(start)
@@ -18,7 +18,7 @@ fn main() {
 	})
 
 	// CORS middleware
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		c.headers['Access-Control-Allow-Origin'] = '*'
 		c.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
 		c.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
@@ -26,11 +26,11 @@ fn main() {
 	})
 
 	// Routes
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.text('Hello with middleware!')
 	})
 
-	app.get('/api/data', fn (mut c hono.Context) http.Response {
+	app.get('/api/data', fn (mut c vono.Context) http.Response {
 		return c.json('{"data": "some data"}')
 	})
 

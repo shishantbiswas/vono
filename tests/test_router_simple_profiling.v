@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -43,11 +43,11 @@ fn test_compilation_time() {
 	for test_case in test_cases {
 		println('\n  ${test_case['name']}:')
 		
-		mut router := hono.ContextHybridRouter.new()
+		mut router := vono.ContextHybridRouter.new()
 		
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: test_case['route']
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -102,8 +102,8 @@ fn test_route_sorting_effect() {
 	println('\n📊 测试路由排序效果...')
 	
 	// Create two routers: one with sorting and one without
-	mut sorted_router := hono.ContextHybridRouter.new()
-	mut unsorted_router := hono.ContextHybridRouter.new()
+	mut sorted_router := vono.ContextHybridRouter.new()
+	mut unsorted_router := vono.ContextHybridRouter.new()
 	
 	// Define routes (in order of decreasing complexity)
 	routes := [
@@ -116,9 +116,9 @@ fn test_route_sorting_effect() {
 	
 	//Add to sorting router (will be automatically sorted)
 	for route in routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -127,9 +127,9 @@ fn test_route_sorting_effect() {
 	
 	// Manually add to unsorted router (maintain original order)
 	for route in routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}

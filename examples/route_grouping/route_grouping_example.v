@@ -1,62 +1,62 @@
 // vono routing grouping example
-// Refer to the routing grouping function of Hono.js: https://hono.dev/docs/api/routing#grouping
+// Refer to the routing grouping function of Vono.js: https://vono.dev/docs/api/routing#grouping
 //
-//Hono.js route grouping example:
+//Vono.js route grouping example:
 // ```typescript
-// const book = new Hono()
+// const book = new Vono()
 // book.get('/', (c) => c.text('List Books'))
 // book.get('/:id', (c) => c.text('Get Book: ' + c.req.param('id')))
 // 
-// const app = new Hono()
+// const app = new Vono()
 // app.route('/books', book)
 // ```
 
 import net.http
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
 	println('🚀 vono 路由分组示例启动中...')
 	
 	//Create the main application
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add global log middleware
-	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
+	app.use(fn (mut c vono.Context, next fn (mut vono.Context) http.Response) http.Response {
 		println('[LOG] ${c.req.method} ${c.path}')
 		return next(mut c)
 	})
 	
 	//Root route
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.html(generate_index_page())
 	})
 	
 	// ========================================
 	//Route grouping: Books API - /api/books
 	// ========================================
-	mut books := hono.Hono.new()
+	mut books := vono.Vono.new()
 	
 	// Define the relative path in the sub-application, and the prefix will be automatically added when mounting
-	books.get('/', fn (mut c hono.Context) http.Response {
+	books.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('[{"id": 1, "title": "V Programming"}, {"id": 2, "title": "Web Development"}]')
 	})
 	
-	books.get('/:id', fn (mut c hono.Context) http.Response {
+	books.get('/:id', fn (mut c vono.Context) http.Response {
 		book_id := c.params['id']
 		return c.json('{"id": "${book_id}", "title": "V Programming", "author": "V Team"}')
 	})
 	
-	books.post('/', fn (mut c hono.Context) http.Response {
+	books.post('/', fn (mut c vono.Context) http.Response {
 		c.status(201)
 		return c.json('{"message": "Book created", "body": "${c.body}"}')
 	})
 	
-	books.put('/:id', fn (mut c hono.Context) http.Response {
+	books.put('/:id', fn (mut c vono.Context) http.Response {
 		book_id := c.params['id']
 		return c.json('{"message": "Book updated", "id": "${book_id}"}')
 	})
 	
-	books.delete('/:id', fn (mut c hono.Context) http.Response {
+	books.delete('/:id', fn (mut c vono.Context) http.Response {
 		c.status(204)
 		return c.text('')
 	})
@@ -67,29 +67,29 @@ fn main() {
 	// ========================================
 	//Route grouping: Users API - /api/users
 	// ========================================
-	mut users := hono.Hono.new()
+	mut users := vono.Vono.new()
 	
-	users.get('/', fn (mut c hono.Context) http.Response {
+	users.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('[{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]')
 	})
 	
-	users.get('/:id', fn (mut c hono.Context) http.Response {
+	users.get('/:id', fn (mut c vono.Context) http.Response {
 		user_id := c.params['id']
 		return c.json('{"id": "${user_id}", "name": "Alice", "email": "alice@example.com"}')
 	})
 	
-	users.get('/:user_id/posts', fn (mut c hono.Context) http.Response {
+	users.get('/:user_id/posts', fn (mut c vono.Context) http.Response {
 		user_id := c.params['user_id']
 		return c.json('[{"id": 1, "user_id": "${user_id}", "title": "My First Post"}]')
 	})
 	
-	users.get('/:user_id/posts/:post_id', fn (mut c hono.Context) http.Response {
+	users.get('/:user_id/posts/:post_id', fn (mut c vono.Context) http.Response {
 		user_id := c.params['user_id']
 		post_id := c.params['post_id']
 		return c.json('{"id": "${post_id}", "user_id": "${user_id}", "title": "My Post"}')
 	})
 	
-	users.post('/', fn (mut c hono.Context) http.Response {
+	users.post('/', fn (mut c vono.Context) http.Response {
 		c.status(201)
 		return c.json('{"message": "User created", "body": "${c.body}"}')
 	})
@@ -100,17 +100,17 @@ fn main() {
 	// ========================================
 	//Route grouping: Admin API - /admin
 	// ========================================
-	mut admin := hono.Hono.new()
+	mut admin := vono.Vono.new()
 	
-	admin.get('/', fn (mut c hono.Context) http.Response {
+	admin.get('/', fn (mut c vono.Context) http.Response {
 		return c.json('{"page": "Admin Dashboard", "stats": {"users": 100, "books": 50}}')
 	})
 	
-	admin.get('/users', fn (mut c hono.Context) http.Response {
+	admin.get('/users', fn (mut c vono.Context) http.Response {
 		return c.json('[{"id": 1, "name": "Admin User", "role": "admin"}]')
 	})
 	
-	admin.get('/settings', fn (mut c hono.Context) http.Response {
+	admin.get('/settings', fn (mut c vono.Context) http.Response {
 		return c.json('{"theme": "dark", "language": "zh-CN"}')
 	})
 	
@@ -120,11 +120,11 @@ fn main() {
 	// ========================================
 	// Other routes (defined directly in the main application)
 	// ========================================
-	app.get('/health', fn (mut c hono.Context) http.Response {
+	app.get('/health', fn (mut c vono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
 	
-	app.get('/api/version', fn (mut c hono.Context) http.Response {
+	app.get('/api/version', fn (mut c vono.Context) http.Response {
 		return c.json('{"version": "1.0.0", "name": "vono API"}')
 	})
 	
@@ -158,7 +158,7 @@ fn generate_index_page() string {
 </head>
 <body>
     <h1>🚀 vono 路由分组示例</h1>
-    <p>参考 <a href="https://hono.dev/docs/api/routing#grouping">Hono.js 路由分组</a> 实现</p>
+    <p>参考 <a href="https://vono.dev/docs/api/routing#grouping">Vono.js 路由分组</a> 实现</p>
     
     <div class="group">
         <h2>📚 Books API (/api/books)</h2>
@@ -194,7 +194,7 @@ fn generate_index_page() string {
     <div class="group">
         <h2>💻 代码示例</h2>
         <pre>//Create routing group
-mut books := hono.Hono.new()
+mut books := vono.Vono.new()
 
 // Define relative paths in sub-applications
 books.get("/", handler)           // -> /api/books

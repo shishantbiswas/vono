@@ -1,6 +1,6 @@
 // openapi.v - OpenAPI 3.0/3.1 specification data structure
 // This module provides the data structure definition of OpenAPI documents and supports OpenAPI 3.0.x and 3.1.x specifications.
-module hono
+module vono
 
 import x.json2
 
@@ -1674,7 +1674,7 @@ fn extract_path_params(path string) []string {
 // Traverse all registered routes, including sub-application routes
 //Extract path parameters
 // Return RouteInfo array
-pub fn (app Hono) get_routes() []RouteInfo {
+pub fn (app Vono) get_routes() []RouteInfo {
 	mut routes := []RouteInfo{}
 	
 	// Get all routes from context_router

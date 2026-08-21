@@ -6,7 +6,7 @@
 // the validation error message SHALL identify the problematic path.
 module main
 
-import hono
+import vono
 import rand
 import time
 
@@ -71,22 +71,22 @@ fn random_openapi_version() string {
 }
 
 // Generate a valid path item
-fn generate_valid_path_item() hono.OpenAPIPathItem {
-	return hono.OpenAPIPathItem{
-		get: hono.OpenAPIOperation{
+fn generate_valid_path_item() vono.OpenAPIPathItem {
+	return vono.OpenAPIPathItem{
+		get: vono.OpenAPIOperation{
 			summary: random_string(5, 20)
 			responses: {
-				'200': hono.OpenAPIResponse{description: 'Success'}
+				'200': vono.OpenAPIResponse{description: 'Success'}
 			}
 		}
 	}
 }
 
 // Generate a document with a specific invalid path
-fn generate_doc_with_invalid_path(invalid_path string) hono.OpenAPIDocument {
-	return hono.OpenAPIDocument{
+fn generate_doc_with_invalid_path(invalid_path string) vono.OpenAPIDocument {
+	return vono.OpenAPIDocument{
 		openapi: random_openapi_version()
-		info: hono.OpenAPIInfo{
+		info: vono.OpenAPIInfo{
 			title: random_string(5, 20)
 			version: '1.0.0'
 		}
@@ -268,9 +268,9 @@ fn test_valid_paths_pass() PropertyTestStats {
 		// Pick a random valid path pattern
 		valid_path := valid_path_patterns[rand.int_in_range(0, valid_path_patterns.len) or { 0 }]
 		
-		doc := hono.OpenAPIDocument{
+		doc := vono.OpenAPIDocument{
 			openapi: random_openapi_version()
-			info: hono.OpenAPIInfo{
+			info: vono.OpenAPIInfo{
 				title: random_string(5, 20)
 				version: '1.0.0'
 			}

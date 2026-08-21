@@ -41,7 +41,7 @@ fn main() {
 	println('要测试完整的 uSockets 服务器，请使用:')
 	println('')
 	println('  1. 安装 vono 到 vpm:')
-	println('     v install meiseayoung.hono')
+	println('     v install meiseayoung.vono')
 	println('')
 	println('  2. 运行现有测试服务器:')
 	println('     v run tests/test_usockets_server.v')

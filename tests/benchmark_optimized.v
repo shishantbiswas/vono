@@ -3,7 +3,7 @@
 module main
 
 import time
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 const iterations = 100_000
@@ -20,13 +20,13 @@ fn main() {
 	test_map_with_string_concat()
 	
 	//Test 3: vono FastRouter (with cache)
-	test_hono_with_cache()
+	test_vono_with_cache()
 	
 	//Test 4: vono FastRouter (disable caching)
-	test_hono_without_cache()
+	test_vono_without_cache()
 	
 	//Test 5: Directly access the static routing map
-	test_hono_direct_static()
+	test_vono_direct_static()
 }
 
 fn test_pure_map() {
@@ -73,12 +73,12 @@ fn test_map_with_string_concat() {
 	println('  吞吐: ${1_000_000_000 / avg_ns} ops/sec')
 }
 
-fn test_hono_with_cache() {
+fn test_vono_with_cache() {
 	println('\n[测试3] vono FastRouter（带 LRU 缓存）')
 	println('----------------------------------------')
 	
-	mut app := hono.Hono.new()
-	app.get('/api/users', fn (mut c hono.Context) http.Response {
+	mut app := vono.Vono.new()
+	app.get('/api/users', fn (mut c vono.Context) http.Response {
 		return c.text('users')
 	})
 	
@@ -98,12 +98,12 @@ fn test_hono_with_cache() {
 	println('  吞吐: ${1_000_000_000 / avg_ns} ops/sec')
 }
 
-fn test_hono_without_cache() {
+fn test_vono_without_cache() {
 	println('\n[测试4] vono FastRouter（禁用缓存）')
 	println('----------------------------------------')
 	
-	mut app := hono.Hono.new()
-	app.get('/api/users', fn (mut c hono.Context) http.Response {
+	mut app := vono.Vono.new()
+	app.get('/api/users', fn (mut c vono.Context) http.Response {
 		return c.text('users')
 	})
 	
@@ -121,12 +121,12 @@ fn test_hono_without_cache() {
 	println('  吞吐: ${1_000_000_000 / avg_ns} ops/sec')
 }
 
-fn test_hono_direct_static() {
+fn test_vono_direct_static() {
 	println('\n[测试5] 直接访问 FastRouter 静态路由 map')
 	println('----------------------------------------')
 	
-	mut app := hono.Hono.new()
-	app.get('/api/users', fn (mut c hono.Context) http.Response {
+	mut app := vono.Vono.new()
+	app.get('/api/users', fn (mut c vono.Context) http.Response {
 		return c.text('users')
 	})
 	

@@ -1,6 +1,6 @@
 // websocket.v - WebSocket Helper for vono
 // Provides server-side WebSocket support with RFC 6455 compliance
-module hono
+module vono
 
 import net.http
 import crypto.sha1

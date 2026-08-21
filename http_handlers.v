@@ -1,4 +1,4 @@
-module hono
+module vono
 
 import net.http
 import x.json2
@@ -710,7 +710,7 @@ fn generate_multipart_object_key(filename string) string {
 
 //Register all file service routes
 // prefix: routing prefix, such as "/api/storage"
-pub fn (mut fs FileService) register_routes(mut app Hono, prefix string) {
+pub fn (mut fs FileService) register_routes(mut app Vono, prefix string) {
 	//File upload
 	app.post('${prefix}/upload', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_upload(mut ctx)
@@ -773,6 +773,6 @@ pub fn (mut fs FileService) register_routes(mut app Hono, prefix string) {
 }
 
 // Register simplified route (without prefix)
-pub fn (mut fs FileService) register_default_routes(mut app Hono) {
+pub fn (mut fs FileService) register_default_routes(mut app Vono) {
 	fs.register_routes(mut app, '/storage')
 }

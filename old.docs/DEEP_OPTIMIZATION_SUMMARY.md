@@ -31,7 +31,7 @@
 - 定位瓶颈在架构层面，非算法层面
 
 ### 2. FastRouter预编译系统
-创建 `hono/fast_router.v`：
+创建 `vono/fast_router.v`：
 ```v
 pub struct PrecompiledRoute {
     method      string
@@ -43,7 +43,7 @@ pub struct PrecompiledRoute {
 ```
 
 ### 3. 智能集成方案
-更新 `hono/app.v`：
+更新 `vono/app.v`：
 - 添加 `fast_router` 字段和 `use_fast_router` 开关
 - 所有路由方法支持FastRouter
 - 失败时自动回退到HybridRouter
@@ -95,7 +95,7 @@ pub struct PrecompiledRoute {
 
 ### 控制选项
 ```v
-mut app := hono.Hono.new()
+mut app := vono.Vono.new()
 app.set_fast_router_enabled(true)   // 启用FastRouter
 app.set_fast_router_enabled(false)  // 使用HybridRouter
 ```

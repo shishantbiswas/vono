@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -20,12 +20,12 @@ fn main() {
 fn test_cache_actually_works() {
 	println('\n📊 验证缓存是否真正工作...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add a dynamic route
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: '/users/:id/posts/:post_id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}
@@ -98,7 +98,7 @@ fn test_cache_actually_works() {
 fn test_cache_hit_rate() {
 	println('\n📊 测试缓存命中率...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add multiple dynamic routes
 	routes := [
@@ -108,9 +108,9 @@ fn test_cache_hit_rate() {
 	]
 	
 	for route in routes {
-		handler := hono.ContextHandler{
+		handler := vono.ContextHandler{
 			path: route
-			handler: fn (mut c hono.Context) http.Response {
+			handler: fn (mut c vono.Context) http.Response {
 				return c.text('test')
 			}
 		}
@@ -165,12 +165,12 @@ fn test_cache_hit_rate() {
 fn test_cache_performance_difference() {
 	println('\n📊 测试缓存性能差异...')
 	
-	mut router := hono.ContextHybridRouter.new()
+	mut router := vono.ContextHybridRouter.new()
 	
 	//Add complex dynamic routing
-	handler := hono.ContextHandler{
+	handler := vono.ContextHandler{
 		path: '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id'
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('test')
 		}
 	}

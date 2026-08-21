@@ -145,7 +145,7 @@ dependencies: ['vlang/sqlite']
 
 ```
 vono/
-├── hono/
+├── vono/
 │   ├── database.v          # 数据库管理模块
 │   ├── upload.v            # 上传模块（已更新）
 │   └── ...

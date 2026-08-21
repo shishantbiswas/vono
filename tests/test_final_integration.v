@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -27,34 +27,34 @@ fn main() {
 fn test_full_application_integration() {
 	println('\n📊 完整应用集成测试...')
 	
-	// Create Hono application (uses FastRouter by default)
-	mut app := hono.Hono.new()
+	// Create Vono application (uses FastRouter by default)
+	mut app := vono.Vono.new()
 	
 	println('  🔧 应用配置:')
 	println('    使用 FastRouter: ${app.use_fast_router}')
 	
 	//Add various types of routes
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.text('Home Page')
 	})
 	
-	app.get('/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('User')
 	})
 	
-	app.post('/users', fn (mut c hono.Context) http.Response {
+	app.post('/users', fn (mut c vono.Context) http.Response {
 		return c.text('Create User')
 	})
 	
-	app.put('/users/:id', fn (mut c hono.Context) http.Response {
+	app.put('/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('Update User')
 	})
 	
-	app.delete('/users/:id', fn (mut c hono.Context) http.Response {
+	app.delete('/users/:id', fn (mut c vono.Context) http.Response {
 		return c.text('Delete User')
 	})
 	
-	app.get('/api/:version/posts/:post_id/comments/:comment_id', fn (mut c hono.Context) http.Response {
+	app.get('/api/:version/posts/:post_id/comments/:comment_id', fn (mut c vono.Context) http.Response {
 		return c.text('API Comment')
 	})
 	
@@ -126,10 +126,10 @@ fn test_router_switching() {
 	println('\n📊 路由器切换测试...')
 	
 	// Test the switching between FastRouter and HybridRouter
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add test route
-	app.get('/test/:id', fn (mut c hono.Context) http.Response {
+	app.get('/test/:id', fn (mut c vono.Context) http.Response {
 		return c.text('Test')
 	})
 	
@@ -187,7 +187,7 @@ fn test_router_switching() {
 fn test_performance_benchmark() {
 	println('\n📊 性能基准测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add routes of various complexity
 	routes := [
@@ -212,7 +212,7 @@ fn test_performance_benchmark() {
 	]
 	
 	for route in routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('benchmark')
 		})
 	}
@@ -297,10 +297,10 @@ fn test_performance_benchmark() {
 fn test_concurrent_safety() {
 	println('\n📊 并发安全测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add test route
-	app.get('/concurrent/:id', fn (mut c hono.Context) http.Response {
+	app.get('/concurrent/:id', fn (mut c vono.Context) http.Response {
 		return c.text('concurrent')
 	})
 	

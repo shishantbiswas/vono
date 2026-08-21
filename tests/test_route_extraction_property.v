@@ -3,7 +3,7 @@
 // **Validates: Requirements 5.1, 5.2, 5.3**
 module main
 
-import hono
+import vono
 import net.http
 import rand
 
@@ -30,12 +30,12 @@ fn generate_random_method() string {
 }
 
 // Simple handler for testing
-fn test_handler(mut c hono.Context) http.Response {
+fn test_handler(mut c vono.Context) http.Response {
 	return c.text('OK')
 }
 
 // Property 6: Route Extraction Completeness
-// *For any* Hono application with registered routes (including sub-applications),
+// *For any* Vono application with registered routes (including sub-applications),
 // calling get_routes() SHALL return all routes with correct paths, methods, and path parameters.
 fn test_property_route_extraction_completeness() {
 	println('Property 6: Route Extraction Completeness')
@@ -43,7 +43,7 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 1: Basic routes extraction
 	{
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		// Register routes with different methods
 		app.get('/users', test_handler)
@@ -72,7 +72,7 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 2: Path parameters extraction
 	{
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		app.get('/users/:userId', test_handler)
 		app.get('/posts/:postId/comments/:commentId', test_handler)
@@ -101,7 +101,7 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 3: All HTTP methods support
 	{
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		app.get('/test', test_handler)
 		app.post('/test', test_handler)
@@ -132,8 +132,8 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 4: Sub-application routes extraction
 	{
-		mut app := hono.Hono.new()
-		mut subapp := hono.Hono.new()
+		mut app := vono.Vono.new()
+		mut subapp := vono.Vono.new()
 		
 		// Register routes in main app
 		app.get('/main', test_handler)
@@ -186,7 +186,7 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 5: Empty path parameters for static routes
 	{
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		app.get('/static/path', test_handler)
 		app.get('/another/static', test_handler)
@@ -202,7 +202,7 @@ fn test_property_route_extraction_completeness() {
 	
 	// Test 6: Route handler is preserved
 	{
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		app.get('/test', test_handler)
 		
@@ -232,7 +232,7 @@ fn test_property_route_extraction_randomized() {
 	mut passed := 0
 	
 	for i in 0 .. iterations {
-		mut app := hono.Hono.new()
+		mut app := vono.Vono.new()
 		
 		// Generate random number of routes (1-10)
 		num_routes := rand.intn(10) or { 1 } + 1

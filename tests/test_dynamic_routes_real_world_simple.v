@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 import time
 
@@ -26,7 +26,7 @@ fn main() {
 fn test_ecommerce_platform() {
 	println('\n📊 电商平台路由测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Typical routing for e-commerce platforms
 	ecommerce_routes := [
@@ -55,7 +55,7 @@ fn test_ecommerce_platform() {
 	]
 	
 	for route in ecommerce_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('ecommerce response')
 		})
 	}
@@ -87,7 +87,7 @@ fn test_ecommerce_platform() {
 fn test_social_media_platform() {
 	println('\n📊 社交媒体路由测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Typical routing for social media
 	social_routes := [
@@ -115,7 +115,7 @@ fn test_social_media_platform() {
 	]
 	
 	for route in social_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('social response')
 		})
 	}
@@ -147,7 +147,7 @@ fn test_social_media_platform() {
 fn test_enterprise_saas_platform() {
 	println('\n📊 企业SaaS路由测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	// Typical routing for enterprise SaaS
 	saas_routes := [
@@ -175,7 +175,7 @@ fn test_enterprise_saas_platform() {
 	]
 	
 	for route in saas_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('saas response')
 		})
 	}
@@ -207,7 +207,7 @@ fn test_enterprise_saas_platform() {
 fn test_cms_platform() {
 	println('\n📊 内容管理系统路由测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//CMS typical routing
 	cms_routes := [
@@ -234,7 +234,7 @@ fn test_cms_platform() {
 	]
 	
 	for route in cms_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('cms response')
 		})
 	}
@@ -266,7 +266,7 @@ fn test_cms_platform() {
 fn test_comprehensive_performance() {
 	println('\n📊 综合性能测试...')
 	
-	mut app := hono.Hono.new()
+	mut app := vono.Vono.new()
 	
 	//Add all types of real routes
 	all_real_routes := [
@@ -299,7 +299,7 @@ fn test_comprehensive_performance() {
 	println('  添加 ${all_real_routes.len} 个真实应用路由...')
 	
 	for route in all_real_routes {
-		app.get(route, fn (mut c hono.Context) http.Response {
+		app.get(route, fn (mut c vono.Context) http.Response {
 			return c.text('real world response')
 		})
 	}

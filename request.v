@@ -1,11 +1,11 @@
-module hono
+module vono
 
 import net.http
 import net.urllib
 import os
 import strings
 
-// Context structure, similar to the implementation of Hono.js
+// Context structure, similar to the implementation of Vono.js
 pub struct Context {
 pub:
 	req    http.Request

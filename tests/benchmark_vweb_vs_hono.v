@@ -4,7 +4,7 @@
 module main
 
 import time
-import meiseayoung.hono
+import meiseayoung.vono
 import net.http
 
 // ============================================
@@ -16,42 +16,42 @@ const warmup_iterations = 1000
 // ============================================
 // vono routing test
 // ============================================
-fn setup_hono_app() hono.Hono {
-	mut app := hono.Hono.new()
+fn setup_vono_app() vono.Vono {
+	mut app := vono.Vono.new()
 	
 	// static routing
-	app.get('/', fn (mut c hono.Context) http.Response {
+	app.get('/', fn (mut c vono.Context) http.Response {
 		return c.text('Hello World')
 	})
-	app.get('/api/health', fn (mut c hono.Context) http.Response {
+	app.get('/api/health', fn (mut c vono.Context) http.Response {
 		return c.text('OK')
 	})
-	app.get('/api/users', fn (mut c hono.Context) http.Response {
+	app.get('/api/users', fn (mut c vono.Context) http.Response {
 		return c.json('{"users": []}')
 	})
-	app.post('/api/users', fn (mut c hono.Context) http.Response {
+	app.post('/api/users', fn (mut c vono.Context) http.Response {
 		return c.json('{"created": true}')
 	})
 	
 	// dynamic routing
-	app.get('/api/users/:id', fn (mut c hono.Context) http.Response {
+	app.get('/api/users/:id', fn (mut c vono.Context) http.Response {
 		id := c.params['id'] or { '' }
 		return c.json('{"id": "${id}"}')
 	})
-	app.get('/api/users/:id/posts', fn (mut c hono.Context) http.Response {
+	app.get('/api/users/:id/posts', fn (mut c vono.Context) http.Response {
 		return c.json('{"posts": []}')
 	})
-	app.get('/api/users/:id/posts/:post_id', fn (mut c hono.Context) http.Response {
+	app.get('/api/users/:id/posts/:post_id', fn (mut c vono.Context) http.Response {
 		return c.json('{"post": {}}')
 	})
-	app.get('/api/categories/:cat/items/:item', fn (mut c hono.Context) http.Response {
+	app.get('/api/categories/:cat/items/:item', fn (mut c vono.Context) http.Response {
 		return c.json('{"item": {}}')
 	})
 	
 	return app
 }
 
-fn benchmark_hono_routing(mut app hono.Hono) {
+fn benchmark_vono_routing(mut app vono.Vono) {
 	println('\n========================================')
 	println('vono 路由性能测试')
 	println('========================================')
@@ -276,8 +276,8 @@ fn main() {
 	benchmark_simple_routing()
 	
 	// test vono
-	mut hono_app := setup_hono_app()
-	benchmark_hono_routing(mut hono_app)
+	mut vono_app := setup_vono_app()
+	benchmark_vono_routing(mut vono_app)
 	
 	// Output comparison summary
 	println('\n╔══════════════════════════════════════════════════════════════╗')

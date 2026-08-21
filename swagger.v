@@ -1,7 +1,7 @@
 // swagger.v - Swagger UI middleware
-// This module provides the Swagger UI document interface function, similar to the @hono/swagger-ui middleware of Hono.js
+// This module provides the Swagger UI document interface function, similar to the @vono/swagger-ui middleware of Vono.js
 // Support OpenAPI 3.0/3.1 specification
-module hono
+module vono
 
 import net.http
 
@@ -11,7 +11,7 @@ import net.http
 
 // SwaggerUIOptions - Swagger UI configuration options
 // Usage example:
-//   app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
+//   app.get('/ui', vono.swagger_ui(vono.SwaggerUIOptions{ url: '/doc' }))
 pub struct SwaggerUIOptions {
 pub mut:
 	url                         string = '/doc'  // OpenAPI documentation URL
@@ -133,8 +133,8 @@ fn generate_swagger_html(options SwaggerUIOptions) string {
 // swagger_ui - Create a Swagger UI handler
 // Return the processor function, set the correct Content-Type, and return the generated HTML
 // Usage example:
-//   app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
-// app.get('/docs', hono.swagger_ui()) // Use default options
+//   app.get('/ui', vono.swagger_ui(vono.SwaggerUIOptions{ url: '/doc' }))
+// app.get('/docs', vono.swagger_ui()) // Use default options
 pub fn swagger_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	// Get options, use default values ​​if not provided
 	opts := if options.len > 0 {
@@ -157,7 +157,7 @@ pub fn swagger_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 
 // swagger_ui_handler - alias function of swagger_ui
 // Usage example:
-//   app.get('/swagger', hono.swagger_ui_handler(hono.SwaggerUIOptions{ url: '/api/doc' }))
+//   app.get('/swagger', vono.swagger_ui_handler(vono.SwaggerUIOptions{ url: '/api/doc' }))
 pub fn swagger_ui_handler(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	return swagger_ui(...options)
 }

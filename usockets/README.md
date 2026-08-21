@@ -41,12 +41,12 @@ Based on benchmark tests (200 connections, 100K requests):
 ## Usage
 
 ```v
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
-    mut app := hono.Hono.new()
+    mut app := vono.Vono.new()
     
-    app.get('/', fn (mut c hono.Context) http.Response {
+    app.get('/', fn (mut c vono.Context) http.Response {
         return c.text('Hello from uSockets!')
     })
     
@@ -105,7 +105,7 @@ usockets/
 
 ```v
 // Custom configuration
-app.listen_usockets_with_config(meiseayoung.hono.UsocketsConfig{
+app.listen_usockets_with_config(meiseayoung.vono.UsocketsConfig{
     port: 8080
     host: '0.0.0.0'
     keepalive_timeout: 30

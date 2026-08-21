@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 
 fn main() {
 	println('=== 测试输入验证和路径安全 ===')
@@ -14,7 +14,7 @@ fn main() {
 	]
 	
 	for path in safe_paths {
-		result := hono.validate_file_path(path, hono.default_path_validation_options()) or {
+		result := vono.validate_file_path(path, vono.default_path_validation_options()) or {
 			println('   ❌ 安全路径被拒绝: $path - $err')
 			continue
 		}
@@ -34,7 +34,7 @@ fn main() {
 	]
 	
 	for path in dangerous_paths {
-		result := hono.validate_file_path(path, hono.default_path_validation_options()) or {
+		result := vono.validate_file_path(path, vono.default_path_validation_options()) or {
 			println('   ✅ 危险路径被正确拒绝: $path - $err')
 			continue
 		}
@@ -51,7 +51,7 @@ fn main() {
 	]
 	
 	for hash in valid_hashes {
-		result := hono.validate_file_hash(hash) or {
+		result := vono.validate_file_hash(hash) or {
 			println('   ❌ 有效哈希被拒绝: $hash - $err')
 			continue
 		}
@@ -68,7 +68,7 @@ fn main() {
 	]
 	
 	for hash in invalid_hashes {
-		result := hono.validate_file_hash(hash) or {
+		result := vono.validate_file_hash(hash) or {
 			println('   ✅ 无效哈希被正确拒绝: "$hash" - $err')
 			continue
 		}
@@ -86,7 +86,7 @@ fn main() {
 	]
 	
 	for filename in valid_filenames {
-		result := hono.validate_filename(filename) or {
+		result := vono.validate_filename(filename) or {
 			println('   ❌ 有效文件名被拒绝: $filename - $err')
 			continue
 		}
@@ -104,7 +104,7 @@ fn main() {
 	]
 	
 	for filename in invalid_filenames {
-		result := hono.validate_filename(filename) or {
+		result := vono.validate_filename(filename) or {
 			println('   ✅ 无效文件名被正确拒绝: "$filename" - $err')
 			continue
 		}
@@ -119,7 +119,7 @@ fn main() {
 	valid_sizes := ['1024', '5242880', '10485760'] // 1KB, 5MB, 10MB
 	
 	for size_str in valid_sizes {
-		result := hono.validate_file_size(size_str, max_size) or {
+		result := vono.validate_file_size(size_str, max_size) or {
 			println('   ❌ 有效大小被拒绝: $size_str - $err')
 			continue
 		}
@@ -130,7 +130,7 @@ fn main() {
 	invalid_sizes := ['', '0', '-1024', '20971520'] // Empty, 0, negative number, 20MB (exceeds limit)
 	
 	for size_str in invalid_sizes {
-		result := hono.validate_file_size(size_str, max_size) or {
+		result := vono.validate_file_size(size_str, max_size) or {
 			println('   ✅ 无效大小被正确拒绝: "$size_str" - $err')
 			continue
 		}
@@ -145,7 +145,7 @@ fn main() {
 	valid_indices := ['0', '50', '99']
 	
 	for index_str in valid_indices {
-		result := hono.validate_chunk_index(index_str, max_chunks) or {
+		result := vono.validate_chunk_index(index_str, max_chunks) or {
 			println('   ❌ 有效索引被拒绝: $index_str - $err')
 			continue
 		}
@@ -156,7 +156,7 @@ fn main() {
 	invalid_indices := ['', '-1', '100', 'abc']
 	
 	for index_str in invalid_indices {
-		result := hono.validate_chunk_index(index_str, max_chunks) or {
+		result := vono.validate_chunk_index(index_str, max_chunks) or {
 			println('   ✅ 无效索引被正确拒绝: "$index_str" - $err')
 			continue
 		}
@@ -175,7 +175,7 @@ fn main() {
 	]
 	
 	for file in test_files {
-		content_type := hono.get_safe_content_type(file)
+		content_type := vono.get_safe_content_type(file)
 		println('   文件: $file -> Content-Type: $content_type')
 	}
 	

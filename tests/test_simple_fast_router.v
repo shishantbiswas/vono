@@ -1,4 +1,4 @@
-import meiseayoung.hono
+import meiseayoung.vono
 import time
 import net.http
 
@@ -18,10 +18,10 @@ fn test_basic_performance() {
 	test_path := '/api/v1/users/123/posts/456'
 	
 	//Create FastRouter
-	mut fast_router := hono.FastRouter.new()
-	fast_handler := hono.ContextHandler{
+	mut fast_router := vono.FastRouter.new()
+	fast_handler := vono.ContextHandler{
 		path: route_path
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('fast response')
 		}
 	}
@@ -31,10 +31,10 @@ fn test_basic_performance() {
 	}
 	
 	//Create HybridRouter
-	mut hybrid_router := hono.ContextHybridRouter.new()
-	hybrid_handler := hono.ContextHandler{
+	mut hybrid_router := vono.ContextHybridRouter.new()
+	hybrid_handler := vono.ContextHandler{
 		path: route_path
-		handler: fn (mut c hono.Context) http.Response {
+		handler: fn (mut c vono.Context) http.Response {
 			return c.text('hybrid response')
 		}
 	}
