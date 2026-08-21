@@ -290,7 +290,7 @@ pub fn (mut manager ChunkUploadManager) handle_chunk_upload(mut ctx Context) htt
 		}
 		
 		clean_file_path := final_path.replace('\n', '').replace('\r', '').replace('\\', '\\\\').trim_space()
-		return ctx.json('{"success": true, "all_chunk_uploaded": true, "file_path": "$clean_file_path", "file_uuid": "${file_info.file_uuid}", "message": "File merged successfully"}')
+		return ctx.json('{"success": true, "all_chunk_uploaded": true, "file_path": "${clean_file_path}", "file_uuid": "${file_info.file_uuid}", "message": "File merged successfully"}')
 	}
 	// 未全部上传，正常返回
 	return ctx.json('{"success": true, "chunk_index": $chunk_index, "all_chunk_uploaded": false, "message": "Chunk uploaded successfully"}')
@@ -373,7 +373,7 @@ pub fn (mut manager ChunkUploadManager) handle_chunk_merge(mut ctx Context) http
 	
 	// 返回成功响应
 	clean_file_path2 := final_path.replace('\n', '').replace('\r', '').replace('\\', '\\\\').trim_space()
-	return ctx.json('{"success": true, "file_path": "$clean_file_path2", "file_uuid": "${file_info.file_uuid}", "message": "File merged successfully"}')
+	return ctx.json('{"success": true, "file_path": "${clean_file_path2}", "file_uuid": "${file_info.file_uuid}", "message": "File merged successfully"}')
 }
 
 // 获取上传状态

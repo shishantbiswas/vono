@@ -16,14 +16,14 @@ pub enum UserRole {
 // 用户结构
 pub struct User {
 pub:
-	id          int
-	username    string
-	email       string
+	id            int
+	username      string
+	email         string
 	password_hash string
-	role        UserRole
-	status      bool // true: active, false: inactive
-	created_at  int
-	updated_at  int
+	role          UserRole
+	status        bool // true: active, false: inactive
+	created_at    int
+	updated_at    int
 }
 
 // 菜单项结构
@@ -40,16 +40,16 @@ pub:
 	created_at  int
 	updated_at  int
 mut:
-	children    []MenuItem
+	children []MenuItem
 }
 
 // 用户会话结构
 pub struct UserSession {
 pub:
-	user_id     int
-	token       string
-	expires_at  int
-	created_at  int
+	user_id    int
+	token      string
+	expires_at int
+	created_at int
 }
 
 // 认证管理器
@@ -145,9 +145,14 @@ pub fn (mut auth AuthManager) create_user(username string, email string, passwor
 	password_hash := hash_password(password)
 	role_str := role.str()
 
-	auth.db.db.exec('INSERT INTO users (username, email, password_hash, role, status, created_at, updated_at) VALUES ("$username", "$email", "$password_hash", "$role_str", 1, $now, $now)') or {
-		return error('Failed to create user: $err')
-	}
+	auth.db.db.exec_param_many('INSERT INTO users (username, email, password_hash, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?', [
+		username,
+		email,
+		password_hash,
+		role_str,
+		now.str(),
+		now.str(),
+	]) or { return error('Failed to create user: $err') }
 
 	// 获取插入的用户ID
 	rows := auth.db.db.exec('SELECT last_insert_rowid()') or {
@@ -156,24 +161,25 @@ pub fn (mut auth AuthManager) create_user(username string, email string, passwor
 	user_id := rows[0].vals[0].int()
 
 	return User{
-		id: user_id
-		username: username
-		email: email
+		id:            user_id
+		username:      username
+		email:         email
 		password_hash: password_hash
-		role: role
-		status: true
-		created_at: now
-		updated_at: now
+		role:          role
+		status:        true
+		created_at:    now
+		updated_at:    now
 	}
 }
 
 // 用户登录
 pub fn (mut auth AuthManager) login(username string, password string) !UserSession {
 	password_hash := hash_password(password)
-	
-	rows := auth.db.db.exec('SELECT id, username, email, password_hash, role, status FROM users WHERE username = "$username" AND password_hash = "$password_hash" AND status = 1') or {
-		return error('Failed to query user: $err')
-	}
+
+	rows := auth.db.db.exec_param_many('SELECT id, username, email, password_hash, role, status FROM users WHERE username = ? AND password_hash = ? AND status = 1', [
+		username,
+		password_hash,
+	]) or { return error('Failed to query user: $err') }
 
 	if rows.len == 0 {
 		return error('Invalid username or password')
@@ -193,8 +199,8 @@ pub fn (mut auth AuthManager) login(username string, password string) !UserSessi
 	}
 
 	return UserSession{
-		user_id: user_id
-		token: token
+		user_id:    user_id
+		token:      token
 		expires_at: expires_at
 		created_at: now
 	}
@@ -221,14 +227,14 @@ pub fn (auth AuthManager) verify_token(token string) !User {
 	}
 
 	return User{
-		id: user.vals[0].int()
-		username: user.vals[1]
-		email: user.vals[2]
+		id:            user.vals[0].int()
+		username:      user.vals[1]
+		email:         user.vals[2]
 		password_hash: user.vals[3]
-		role: role
-		status: user.vals[5].int() == 1
-		created_at: 0
-		updated_at: 0
+		role:          role
+		status:        user.vals[5].int() == 1
+		created_at:    0
+		updated_at:    0
 	}
 }
 
@@ -245,8 +251,9 @@ pub fn (mut auth AuthManager) create_menu_item(name string, path string, icon st
 	permissions_json := json2.encode[[]string](permissions)
 	permissions_sql := permissions_json.replace('"', "''")
 
-	auth.db.db.exec('INSERT INTO menu_items (name, path, icon, parent_id, sort_order, permissions, status, created_at, updated_at) VALUES ("$name", "$path", "$icon", $parent_id, $sort_order, "$permissions_sql", 1, $now, $now)')
-	or {
+	auth.db.db.exec_param_many('INSERT INTO menu_items (name, path, icon, parent_id, sort_order, permissions, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)',[
+		name, path, icon, parent_id.str(), sort_order.str(), permissions_sql, now.str(), now.str()
+	]) or {
 		eprintln('菜单插入SQL错误: $err')
 		return error('Failed to create menu item: $err')
 	}
@@ -258,16 +265,16 @@ pub fn (mut auth AuthManager) create_menu_item(name string, path string, icon st
 	menu_id := rows[0].vals[0].int()
 
 	return MenuItem{
-		id: menu_id
-		name: name
-		path: path
-		icon: icon
-		parent_id: parent_id
-		sort_order: sort_order
+		id:          menu_id
+		name:        name
+		path:        path
+		icon:        icon
+		parent_id:   parent_id
+		sort_order:  sort_order
 		permissions: permissions
-		status: true
-		created_at: now
-		updated_at: now
+		status:      true
+		created_at:  now
+		updated_at:  now
 	}
 }
 
@@ -283,16 +290,16 @@ pub fn (auth AuthManager) get_all_menu_items() ![]MenuItem {
 		permissions := json2.decode[[]string](permissions_str) or { []string{} }
 
 		menus << MenuItem{
-			id: row.vals[0].int()
-			name: row.vals[1]
-			path: row.vals[2]
-			icon: row.vals[3]
-			parent_id: row.vals[4].int()
-			sort_order: row.vals[5].int()
+			id:          row.vals[0].int()
+			name:        row.vals[1]
+			path:        row.vals[2]
+			icon:        row.vals[3]
+			parent_id:   row.vals[4].int()
+			sort_order:  row.vals[5].int()
 			permissions: permissions
-			status: row.vals[7].int() == 1
-			created_at: 0
-			updated_at: 0
+			status:      row.vals[7].int() == 1
+			created_at:  0
+			updated_at:  0
 		}
 	}
 
@@ -320,7 +327,7 @@ pub fn (auth AuthManager) get_user_menus(user User) ![]MenuItem {
 	}
 	permission_where := permission_conditions.join(' OR ')
 
-	rows := auth.db.db.exec('SELECT id, name, path, icon, parent_id, sort_order, permissions, status FROM menu_items WHERE status = 1 AND ($permission_where) ORDER BY parent_id, sort_order') or {
+	rows := auth.db.db.exec_param('SELECT id, name, path, icon, parent_id, sort_order, permissions, status FROM menu_items WHERE status = 1 AND (?) ORDER BY parent_id, sort_order', permission_where) or {
 		return error('Failed to query menu items: $err')
 	}
 
@@ -330,16 +337,16 @@ pub fn (auth AuthManager) get_user_menus(user User) ![]MenuItem {
 		permissions := json2.decode[[]string](permissions_str) or { []string{} }
 
 		menus << MenuItem{
-			id: row.vals[0].int()
-			name: row.vals[1]
-			path: row.vals[2]
-			icon: row.vals[3]
-			parent_id: row.vals[4].int()
-			sort_order: row.vals[5].int()
+			id:          row.vals[0].int()
+			name:        row.vals[1]
+			path:        row.vals[2]
+			icon:        row.vals[3]
+			parent_id:   row.vals[4].int()
+			sort_order:  row.vals[5].int()
 			permissions: permissions
-			status: row.vals[7].int() == 1
-			created_at: 0
-			updated_at: 0
+			status:      row.vals[7].int() == 1
+			created_at:  0
+			updated_at:  0
 		}
 	}
 
@@ -372,7 +379,7 @@ pub fn (auth AuthManager) build_menu_tree(menus []MenuItem) []MenuItem {
 // 获取子菜单
 fn (auth AuthManager) get_children(parent_id int, menu_map map[int]MenuItem) []MenuItem {
 	mut children := []MenuItem{}
-	
+
 	for _, menu in menu_map {
 		if menu.parent_id == parent_id {
 			mut child := menu
@@ -392,7 +399,7 @@ pub fn (auth AuthManager) check_permission(user User, required_permission string
 		.user { required_permission in ['read', 'write'] }
 		.guest { required_permission == 'read' }
 	}
-} 
+}
 
 // 获取菜单id（通过path）
 pub fn (auth AuthManager) get_menu_id_by_path(path string) int {
@@ -401,4 +408,4 @@ pub fn (auth AuthManager) get_menu_id_by_path(path string) int {
 		return rows[0].vals[0].int()
 	}
 	return 0
-} 
+}
