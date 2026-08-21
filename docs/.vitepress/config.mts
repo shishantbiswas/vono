@@ -6,7 +6,7 @@ const umamiScript: HeadConfig = ["script", {
   "data-website-id": "218292fe-7665-4031-a754-5b942fa27685"
 }]
 
-const baseHeaders: HeadConfig[] = []
+const baseHeaders: HeadConfig[] = [['link', { rel: 'icon', href: '/vono.svg' }]]
 
 const headers = process.env.NODE_ENV === "production" ?
   [...baseHeaders, umamiScript] :
@@ -18,6 +18,10 @@ export default defineConfig({
   description: "Hono but in Vlang",
   head: headers,
   themeConfig: {
+  search: {
+      provider: 'local',
+    },
+
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },

@@ -4,7 +4,7 @@ Vono is a high-performance [V language](https://vlang.io) web framework inspired
 
 It uses [uSockets](https://github.com/uNetworking/uSockets), [Libuv](https://libuv.org) and [Picoev](https://github.com/kazuho/picoev) to compile your code in a high concurrency http/websocket server capable of handling millions of requests.  
 
-This is a project is forked from [meiseayoung](https://github.com/meiseayoung) at [vono](https://github.com/meiseayoung/vono)
+This project is forked from [meiseayoung](https://github.com/meiseayoung) at [vono](https://github.com/meiseayoung/vono)
 
 ## Installation
 

@@ -4,15 +4,17 @@ layout: home
 
 hero:
   name: "Vono"
-  text: "Hono but in Vlang"
-  tagline: My great project tagline
+  text: "High Performance HTTP server"
+  tagline: Hono inspired web framework written in Vlang.
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
-    - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Gettings Started
+      link: /getting-started
+  image:
+    src: /vono.png
+    alt: Vono
+
+   
 
 features:
   - title: Feature A
