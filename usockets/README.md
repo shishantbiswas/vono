@@ -1,4 +1,4 @@
-# uSockets Backend for V-Hono
+# uSockets Backend for vono
 
 High-performance server backend using [uSockets](https://github.com/uNetworking/uSockets) library.
 

@@ -1,8 +1,8 @@
-# v-hono 高并发优化指南
+# vono 高并发优化指南
 
 ## 概述
 
-v-hono 使用 uSockets 作为高性能网络后端，经过优化后可以稳定支持 **10,000+ 并发连接**。
+vono 使用 uSockets 作为高性能网络后端，经过优化后可以稳定支持 **10,000+ 并发连接**。
 
 ## 性能测试结果
 
@@ -25,7 +25,7 @@ v-hono 使用 uSockets 作为高性能网络后端，经过优化后可以稳定
 
 原始 uSockets 库的 `listen()` backlog 参数硬编码为 512，限制了高并发能力。
 
-**修复位置**：`v-hono/usockets/src/bsd.c` (第 532 行和第 578 行)
+**修复位置**：`vono/usockets/src/bsd.c` (第 532 行和第 578 行)
 
 ```c
 // 修改前
@@ -35,9 +35,9 @@ listen(listenFd, 512)
 listen(listenFd, 16384)
 ```
 
-修改后的源码保存在 `v-hono/usockets/src/bsd.c`，编译后的库文件在 `v-hono/lib/libusockets_full.a`。
+修改后的源码保存在 `vono/usockets/src/bsd.c`，编译后的库文件在 `vono/lib/libusockets_full.a`。
 
-**重新编译**：运行 `v-hono/usockets/build.sh` 脚本。
+**重新编译**：运行 `vono/usockets/build.sh` 脚本。
 
 ### 2. 系统参数配置
 
@@ -70,10 +70,10 @@ git clone https://github.com/uNetworking/uSockets.git
 # 3. 编译（macOS with libuv）
 WITH_LIBUV=1 CFLAGS="-I/opt/homebrew/include" make
 
-# 4. 复制到 v-hono
-cp uSockets.a /path/to/v-hono/lib/libusockets_full.a
+# 4. 复制到 vono
+cp uSockets.a /path/to/vono/lib/libusockets_full.a
 
-# 5. 重新编译 v-hono 应用
+# 5. 重新编译 vono 应用
 v -enable-globals -prod -o your_app your_app.v
 ```
 
@@ -93,10 +93,10 @@ v -enable-globals -prod -o your_app your_app.v
 ulimit -n 65535 && ./bench_server_usockets
 
 # 运行测试 (5000-10000 并发)
-ulimit -n 65535 && go run v-hono/tests/test_high_concurrency.go
+ulimit -n 65535 && go run vono/tests/test_high_concurrency.go
 
 # 单独测试某个级别
-ulimit -n 65535 && go run v-hono/tests/test_high_concurrency.go 8000
+ulimit -n 65535 && go run vono/tests/test_high_concurrency.go 8000
 ```
 
 ## 问题排查

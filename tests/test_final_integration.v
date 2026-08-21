@@ -3,21 +3,21 @@ import time
 import net.http
 
 fn main() {
-	println('=== V-Hono 最终集成测试 ===')
+	println('=== vono 最终集成测试 ===')
 	
-	// 测试1: 完整应用集成测试
+	//Test 1: Complete application integration test
 	test_full_application_integration()
 	
-	// 测试2: 路由器切换测试
+	//Test 2: Router switching test
 	test_router_switching()
 	
-	// 测试3: 性能基准测试
+	//Test 3: Performance benchmark
 	test_performance_benchmark()
 	
-	// 测试4: 并发安全测试
+	//Test 4: Concurrency safety test
 	test_concurrent_safety()
 	
-	println('\n🎉 V-Hono 最终集成测试完成！')
+	println('\n🎉 vono 最终集成测试完成！')
 	println('✅ FastRouter 已成功替代原始 router')
 	println('✅ 系统性能显著提升')
 	println('✅ 完全向后兼容')
@@ -27,13 +27,13 @@ fn main() {
 fn test_full_application_integration() {
 	println('\n📊 完整应用集成测试...')
 	
-	// 创建 Hono 应用（默认使用 FastRouter）
+	// Create Hono application (uses FastRouter by default)
 	mut app := hono.Hono.new()
 	
 	println('  🔧 应用配置:')
 	println('    使用 FastRouter: ${app.use_fast_router}')
 	
-	// 添加各种类型的路由
+	//Add various types of routes
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Home Page')
 	})
@@ -58,11 +58,11 @@ fn test_full_application_integration() {
 		return c.text('API Comment')
 	})
 	
-	// 验证路由统计
+	//Verify routing statistics
 	static_count, dynamic_count, cache_count := app.fast_router.get_stats()
 	println('  📈 路由统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 	
-	// 测试路由匹配
+	//Test route matching
 	test_cases := [
 		{
 			'method': 'GET'
@@ -102,7 +102,7 @@ fn test_full_application_integration() {
 	
 	for test_case in test_cases {
 		if route_match := app.fast_router.match_route(test_case['method'], test_case['path']) {
-			// 验证路由匹配成功和参数提取
+			// Verify successful route matching and parameter extraction
 			println('    ✅ ${test_case['method']} ${test_case['path']} - 匹配成功')
 			if route_match.params.len > 0 {
 				println('      📋 参数: ${route_match.params}')
@@ -125,17 +125,17 @@ fn test_full_application_integration() {
 fn test_router_switching() {
 	println('\n📊 路由器切换测试...')
 	
-	// 测试 FastRouter 和 HybridRouter 的切换
+	// Test the switching between FastRouter and HybridRouter
 	mut app := hono.Hono.new()
 	
-	// 添加测试路由
+	//Add test route
 	app.get('/test/:id', fn (mut c hono.Context) http.Response {
 		return c.text('Test')
 	})
 	
 	test_path := '/test/123'
 	
-	// 测试 FastRouter（默认）
+	// Test FastRouter (default)
 	println('  🚀 测试 FastRouter:')
 	if route_match := app.fast_router.match_route('GET', test_path) {
 		println('    ✅ FastRouter 匹配成功')
@@ -144,7 +144,7 @@ fn test_router_switching() {
 		println('    ❌ FastRouter 匹配失败')
 	}
 	
-	// 测试 HybridRouter（备用）
+	// Test HybridRouter (standby)
 	println('  🔄 测试 HybridRouter:')
 	if route_match := app.context_hybrid_router.match_route('GET', test_path) {
 		println('    ✅ HybridRouter 匹配成功')
@@ -153,7 +153,7 @@ fn test_router_switching() {
 		println('    ❌ HybridRouter 匹配失败')
 	}
 	
-	// 性能对比
+	//Performance comparison
 	iterations := 1000
 	
 	start_time1 := time.now()
@@ -189,24 +189,24 @@ fn test_performance_benchmark() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加多种复杂度的路由
+	//Add routes of various complexity
 	routes := [
-		// 静态路由
+		// static routing
 		'/',
 		'/about',
 		'/contact',
 		
-		// 简单动态路由
+		// Simple dynamic routing
 		'/users/:id',
 		'/posts/:id',
 		'/files/:name',
 		
-		// 中等复杂度路由
+		// Medium complexity routing
 		'/api/:version/users/:id',
 		'/shop/:category/products/:id',
 		'/admin/:module/:action',
 		
-		// 复杂路由
+		//Complex routing
 		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',
 		'/deep/:a/:b/:c/:d/:e'
 	]
@@ -217,7 +217,7 @@ fn test_performance_benchmark() {
 		})
 	}
 	
-	// 对应的测试路径
+	//Corresponding test path
 	test_paths := [
 		'/',
 		'/about',
@@ -232,7 +232,7 @@ fn test_performance_benchmark() {
 		'/deep/1/2/3/4/5'
 	]
 	
-	// 大规模性能测试
+	// Large-scale performance testing
 	iterations := 5000
 	
 	println('  🚀 执行大规模性能测试...')
@@ -267,7 +267,7 @@ fn test_performance_benchmark() {
 		println('    平均响应时间: ${avg_time:.3f}μs')
 		println('    吞吐量: ${throughput:.0f} 请求/秒')
 		
-		// 性能等级评估
+		//Performance level evaluation
 		if avg_time < 5.0 {
 			println('    🏆 性能等级: 优秀 (< 5μs)')
 		} else if avg_time < 10.0 {
@@ -289,7 +289,7 @@ fn test_performance_benchmark() {
 		}
 	}
 	
-	// 显示详细统计
+	// Show detailed statistics
 	println('  📋 路由器详细统计:')
 	app.fast_router.analyze_performance()
 }
@@ -299,12 +299,12 @@ fn test_concurrent_safety() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加测试路由
+	//Add test route
 	app.get('/concurrent/:id', fn (mut c hono.Context) http.Response {
 		return c.text('concurrent')
 	})
 	
-	// 模拟并发访问
+	// Simulate concurrent access
 	test_paths := [
 		'/concurrent/1',
 		'/concurrent/2',
@@ -315,7 +315,7 @@ fn test_concurrent_safety() {
 	
 	println('  🔄 模拟并发访问...')
 	
-	// 由于 V 语言的并发模型限制，这里进行快速连续访问测试
+	//Due to the limitations of the concurrency model of the V language, rapid continuous access testing is performed here.
 	iterations := 1000
 	mut success_count := 0
 	
@@ -343,7 +343,7 @@ fn test_concurrent_safety() {
 		println('    ❌ 并发安全测试失败')
 	}
 	
-	// 检查缓存健康状态
+	// Check cache health status
 	if app.fast_router.is_healthy() {
 		println('    ✅ 缓存健康状态正常')
 	} else {

@@ -1,5 +1,5 @@
-// FastCache 优化测试
-// 验证高性能缓存的正确性和性能（通过 FastRouter API）
+// FastCache optimization test
+// Verify correctness and performance of high-performance cache (via FastRouter API)
 module main
 
 import meiseayoung.hono
@@ -21,31 +21,31 @@ fn main() {
 
 	mut results := []TestResult{}
 
-	// 1. 路由匹配正确性测试
+	// 1. Route matching correctness test
 	results << test_route_matching_correctness()
 	
-	// 2. 参数提取正确性测试
+	// 2. Parameter extraction correctness test
 	results << test_param_extraction()
 	
-	// 3. 缓存命中测试
+	// 3. Cache hit test
 	results << test_cache_hit()
 	
-	// 4. 多路由并发测试
+	// 4. Multi-routing concurrent testing
 	results << test_multiple_routes()
 	
-	// 5. 性能基准测试
+	// 5. Performance benchmark test
 	results << test_performance_benchmark()
 	
-	// 6. 缓存一致性测试
+	// 6. Cache consistency test
 	results << test_cache_consistency()
 	
-	// 7. 缓存清理测试
+	// 7. Cache cleaning test
 	results << test_cache_clear()
 	
-	// 8. 缓存健康检查测试
+	// 8. Cache health check test
 	results << test_cache_health()
 
-	// 打印结果
+	// print results
 	println('')
 	println('═══════════════════════════════════════════════════════════════')
 	println('📊 测试结果汇总')
@@ -77,7 +77,7 @@ fn main() {
 	}
 }
 
-// 1. 路由匹配正确性测试
+// 1. Route matching correctness test
 fn test_route_matching_correctness() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -91,7 +91,7 @@ fn test_route_matching_correctness() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 测试单参数路由
+	//Test single parameter routing
 	if match1 := router.match_route('GET', '/users/456') {
 		if match1.params['id'] or { '' } != '456' {
 			return TestResult{name: '路由匹配正确性', passed: false, detail: '单参数提取错误'}
@@ -100,7 +100,7 @@ fn test_route_matching_correctness() TestResult {
 		return TestResult{name: '路由匹配正确性', passed: false, detail: '单参数路由匹配失败'}
 	}
 	
-	// 测试多参数路由
+	//Test multi-parameter routing
 	if match2 := router.match_route('GET', '/posts/100/comments/200') {
 		post_id := match2.params['post_id'] or { '' }
 		comment_id := match2.params['comment_id'] or { '' }
@@ -114,7 +114,7 @@ fn test_route_matching_correctness() TestResult {
 	return TestResult{name: '路由匹配正确性', passed: true, detail: '单参数和多参数路由均正确'}
 }
 
-// 2. 参数提取正确性测试
+// 2. Parameter extraction correctness test
 fn test_param_extraction() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -156,7 +156,7 @@ fn test_param_extraction() TestResult {
 	return TestResult{name: '参数提取正确性', passed: true, detail: '${test_cases.len} 个测试用例全部通过'}
 }
 
-// 3. 缓存命中测试
+// 3. Cache hit test
 fn test_cache_hit() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -166,13 +166,13 @@ fn test_cache_hit() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 第一次匹配（缓存未命中，需要正则匹配）
+	//First match (cache miss, regular matching required)
 	_ := router.match_route('GET', '/users/123')
 	
-	// 获取缓存统计
+	// Get cache statistics
 	cache_size1, _ := router.get_cache_stats()
 	
-	// 第二次匹配（应该命中缓存）
+	// Second match (should hit cache)
 	if match2 := router.match_route('GET', '/users/123') {
 		if match2.params['id'] or { '' } == '123' {
 			cache_size2, _ := router.get_cache_stats()
@@ -187,11 +187,11 @@ fn test_cache_hit() TestResult {
 	return TestResult{name: '缓存命中测试', passed: false, detail: '缓存命中后参数错误'}
 }
 
-// 4. 多路由并发测试
+// 4. Multi-routing concurrent testing
 fn test_multiple_routes() TestResult {
 	mut app := hono.Hono.new()
 	
-	// 注册多个路由
+	//Register multiple routes
 	app.get('/users/:id', fn (mut c hono.Context) http.Response { return c.text('user') })
 	app.get('/posts/:id', fn (mut c hono.Context) http.Response { return c.text('post') })
 	app.get('/comments/:id', fn (mut c hono.Context) http.Response { return c.text('comment') })
@@ -199,7 +199,7 @@ fn test_multiple_routes() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 交替匹配不同路由
+	// Alternately match different routes
 	test_paths := [
 		['/users/1', 'id', '1'],
 		['/posts/2', 'id', '2'],
@@ -231,7 +231,7 @@ fn test_multiple_routes() TestResult {
 	return TestResult{name: '多路由并发测试', passed: true, detail: '${test_paths.len} 个路径全部正确'}
 }
 
-// 5. 性能基准测试
+// 5. Performance benchmark test
 fn test_performance_benchmark() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -241,24 +241,24 @@ fn test_performance_benchmark() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 预热
+	// preheat
 	for i in 0 .. 100 {
 		_ := router.match_route('GET', '/users/${i}')
 	}
 	
-	// 测试缓存命中性能
+	//Test cache hit performance
 	iterations := 10000
 	sw := time.new_stopwatch()
 	
 	for _ in 0 .. iterations {
-		_ := router.match_route('GET', '/users/50')  // 命中缓存
+		_ := router.match_route('GET', '/users/50')  // hit cache
 	}
 	
 	elapsed := sw.elapsed()
 	avg_ns := elapsed.nanoseconds() / iterations
 	avg_us := f64(avg_ns) / 1000.0
 	
-	// 缓存命中性能评估（考虑不同平台差异）
+	// Cache hit performance evaluation (considering differences between different platforms)
 	if avg_us < 1.0 {
 		return TestResult{
 			name: '性能基准测试'
@@ -286,7 +286,7 @@ fn test_performance_benchmark() TestResult {
 	}
 }
 
-// 6. 缓存一致性测试
+// 6. Cache consistency test
 fn test_cache_consistency() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -296,7 +296,7 @@ fn test_cache_consistency() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 多次匹配相同路径，验证结果一致
+	//Match the same path multiple times, and the verification results are consistent
 	mut results := []string{}
 	
 	for _ in 0 .. 100 {
@@ -307,7 +307,7 @@ fn test_cache_consistency() TestResult {
 		}
 	}
 	
-	// 检查所有结果是否一致
+	// Check if all results are consistent
 	first := results[0]
 	for i, r in results {
 		if r != first {
@@ -326,7 +326,7 @@ fn test_cache_consistency() TestResult {
 	return TestResult{name: '缓存一致性测试', passed: false, detail: '参数值错误: ${first}'}
 }
 
-// 7. 缓存清理测试
+// 7. Cache cleaning test
 fn test_cache_clear() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -336,18 +336,18 @@ fn test_cache_clear() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 填充缓存
+	//Fill cache
 	for i in 0 .. 10 {
 		_ := router.match_route('GET', '/users/${i}')
 	}
 	
-	// 获取清理前的缓存大小
+	// Get the cache size before cleaning
 	size_before, _ := router.get_cache_stats()
 	
-	// 清理缓存
+	// clear cache
 	router.clear_cache()
 	
-	// 获取清理后的缓存大小
+	// Get the cache size after cleaning
 	size_after, _ := router.get_cache_stats()
 	
 	if size_after == 0 {
@@ -365,7 +365,7 @@ fn test_cache_clear() TestResult {
 	}
 }
 
-// 8. 缓存健康检查测试
+// 8. Cache health check test
 fn test_cache_health() TestResult {
 	mut app := hono.Hono.new()
 	
@@ -375,15 +375,15 @@ fn test_cache_health() TestResult {
 	
 	mut router := app.fast_router
 	
-	// 填充一些缓存
+	// Fill some cache
 	for i in 0 .. 50 {
 		_ := router.match_route('GET', '/users/${i}')
 	}
 	
-	// 检查健康状态
+	// Check health status
 	is_healthy := router.is_healthy()
 	
-	// 获取详细统计
+	// Get detailed statistics
 	stats := router.get_detailed_stats()
 	
 	if is_healthy {

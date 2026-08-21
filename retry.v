@@ -5,21 +5,21 @@ import rand
 import math
 
 // ============================================================================
-// 重试配置
+//Retry configuration
 // ============================================================================
 
-// 重试配置结构
+//Retry configuration structure
 pub struct RetryConfig {
 pub:
-	max_retries     int  = 3      // 最大重试次数
-	initial_delay   int  = 1000   // 初始延迟（毫秒）
-	max_delay       int  = 30000  // 最大延迟（毫秒）
-	multiplier      f64  = 2.0    // 延迟倍增因子
-	jitter          bool = true   // 是否添加随机抖动
-	jitter_factor   f64  = 0.25   // 抖动因子 (0.0 - 1.0)
+	max_retries     int  = 3      //Maximum number of retries
+	initial_delay   int  = 1000   // Initial delay (milliseconds)
+	max_delay       int  = 30000  //Maximum delay (milliseconds)
+	multiplier      f64  = 2.0    // Delay multiplication factor
+	jitter          bool = true   // Whether to add random jitter
+	jitter_factor   f64  = 0.25   // Jitter factor (0.0 - 1.0)
 }
 
-// 默认重试配置
+//Default retry configuration
 pub fn default_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 3
@@ -31,7 +31,7 @@ pub fn default_retry_config() RetryConfig {
 	}
 }
 
-// 激进重试配置（更多重试，更短延迟）
+// Aggressive retry configuration (more retries, shorter delays)
 pub fn aggressive_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 5
@@ -43,7 +43,7 @@ pub fn aggressive_retry_config() RetryConfig {
 	}
 }
 
-// 保守重试配置（更少重试，更长延迟）
+// Conservative retry configuration (fewer retries, longer delays)
 pub fn conservative_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 2
@@ -57,21 +57,21 @@ pub fn conservative_retry_config() RetryConfig {
 
 
 // ============================================================================
-// 重试结果
+//Retry result
 // ============================================================================
 
-// 重试执行结果
+//Retry execution results
 pub struct RetryResult[T] {
 pub:
 	success       bool
 	value         T
 	total_retries int
-	total_delay   int  // 总延迟时间（毫秒）
+	total_delay   int  //Total delay time (milliseconds)
 	final_error   StorageError
 	history       []RetryAttempt
 }
 
-// 创建成功的重试结果
+//Create a successful retry result
 fn new_retry_success[T](value T, total_retries int, total_delay int, history []RetryAttempt) RetryResult[T] {
 	return RetryResult[T]{
 		success: true
@@ -83,7 +83,7 @@ fn new_retry_success[T](value T, total_retries int, total_delay int, history []R
 	}
 }
 
-// 创建失败的重试结果
+//Create failed retry results
 fn new_retry_failure[T](final_error StorageError, total_retries int, total_delay int, history []RetryAttempt) RetryResult[T] {
 	return RetryResult[T]{
 		success: false
@@ -96,37 +96,37 @@ fn new_retry_failure[T](final_error StorageError, total_retries int, total_delay
 }
 
 // ============================================================================
-// 重试执行器
+//Retry the executor
 // ============================================================================
 
-// 重试执行器
+//Retry the executor
 pub struct RetryExecutor {
 	config RetryConfig
 }
 
-// 创建重试执行器
+// Create retry executor
 pub fn new_retry_executor(config RetryConfig) RetryExecutor {
 	return RetryExecutor{
 		config: config
 	}
 }
 
-// 使用默认配置创建重试执行器
+// Create a retry executor with default configuration
 pub fn new_default_retry_executor() RetryExecutor {
 	return RetryExecutor{
 		config: default_retry_config()
 	}
 }
 
-// 计算下一次重试的延迟时间
+// Calculate the delay time for the next retry
 pub fn (r RetryExecutor) calculate_delay(attempt int) int {
-	// 指数退避: delay = initial_delay * (multiplier ^ attempt)
+	// Exponential backoff: delay = initial_delay * (multiplier ^ attempt)
 	base_delay := f64(r.config.initial_delay) * math.pow(r.config.multiplier, f64(attempt))
 	
-	// 限制最大延迟
+	//Limit the maximum delay
 	mut delay := int(math.min(base_delay, f64(r.config.max_delay)))
 	
-	// 添加随机抖动
+	//Add random jitter
 	if r.config.jitter && delay > 0 {
 		jitter_range := int(f64(delay) * r.config.jitter_factor)
 		if jitter_range > 0 {
@@ -135,7 +135,7 @@ pub fn (r RetryExecutor) calculate_delay(attempt int) int {
 		}
 	}
 	
-	// 确保延迟不为负
+	// Make sure the delay is not negative
 	if delay < 0 {
 		delay = 0
 	}
@@ -144,32 +144,32 @@ pub fn (r RetryExecutor) calculate_delay(attempt int) int {
 }
 
 
-// 执行带重试的操作（返回 []u8）
+//Perform the operation with retry (return []u8)
 pub fn (r RetryExecutor) execute_bytes(operation fn () ![]u8, provider string, op_name string) RetryResult[[]u8] {
 	mut history := []RetryAttempt{}
 	mut total_delay := 0
 	mut last_error := StorageError{}
 	
 	for attempt in 0 .. r.config.max_retries + 1 {
-		// 执行操作
+		// perform operations
 		result := operation() or {
-			// 解析错误
+			// Parsing error
 			error_msg := err.msg()
 			storage_err := parse_error_message(error_msg, provider, op_name)
 			
-			// 检查是否可重试
+			// Check if retry is possible
 			if !storage_err.is_retryable() {
-				// 不可重试错误，立即返回
+				// No retry error, return immediately
 				return new_retry_failure[[]u8](storage_err, attempt, total_delay, history)
 			}
 			
 			last_error = storage_err
 			
-			// 如果还有重试机会
+			// If there is still a chance to retry
 			if attempt < r.config.max_retries {
 				delay := r.calculate_delay(attempt)
 				
-				// 记录重试尝试
+				// Log retry attempts
 				history << RetryAttempt{
 					attempt_number: attempt + 1
 					timestamp: time.now().unix()
@@ -179,7 +179,7 @@ pub fn (r RetryExecutor) execute_bytes(operation fn () ![]u8, provider string, o
 				
 				total_delay += delay
 				
-				// 等待后重试
+				// Wait and try again
 				if delay > 0 {
 					time.sleep(delay * time.millisecond)
 				}
@@ -187,42 +187,42 @@ pub fn (r RetryExecutor) execute_bytes(operation fn () ![]u8, provider string, o
 			continue
 		}
 		
-		// 操作成功
+		// Operation successful
 		return new_retry_success[[]u8](result, attempt, total_delay, history)
 	}
 	
-	// 所有重试都失败
+	// All retries failed
 	mut final_error := last_error
 	final_error.retry_history = history
 	return new_retry_failure[[]u8](final_error, r.config.max_retries, total_delay, history)
 }
 
-// 执行带重试的操作（返回 StorageResult）
+//Perform operation with retry (return StorageResult)
 pub fn (r RetryExecutor) execute_storage_result(operation fn () !StorageResult, provider string, op_name string) RetryResult[StorageResult] {
 	mut history := []RetryAttempt{}
 	mut total_delay := 0
 	mut last_error := StorageError{}
 	
 	for attempt in 0 .. r.config.max_retries + 1 {
-		// 执行操作
+		// perform operations
 		result := operation() or {
-			// 解析错误
+			// Parsing error
 			error_msg := err.msg()
 			storage_err := parse_error_message(error_msg, provider, op_name)
 			
-			// 检查是否可重试
+			// Check if retry is possible
 			if !storage_err.is_retryable() {
-				// 不可重试错误，立即返回
+				// No retry error, return immediately
 				return new_retry_failure[StorageResult](storage_err, attempt, total_delay, history)
 			}
 			
 			last_error = storage_err
 			
-			// 如果还有重试机会
+			// If there is still a chance to retry
 			if attempt < r.config.max_retries {
 				delay := r.calculate_delay(attempt)
 				
-				// 记录重试尝试
+				// Log retry attempts
 				history << RetryAttempt{
 					attempt_number: attempt + 1
 					timestamp: time.now().unix()
@@ -232,7 +232,7 @@ pub fn (r RetryExecutor) execute_storage_result(operation fn () !StorageResult, 
 				
 				total_delay += delay
 				
-				// 等待后重试
+				// Wait and try again
 				if delay > 0 {
 					time.sleep(delay * time.millisecond)
 				}
@@ -240,43 +240,43 @@ pub fn (r RetryExecutor) execute_storage_result(operation fn () !StorageResult, 
 			continue
 		}
 		
-		// 操作成功
+		// Operation successful
 		return new_retry_success[StorageResult](result, attempt, total_delay, history)
 	}
 	
-	// 所有重试都失败
+	// All retries failed
 	mut final_error := last_error
 	final_error.retry_history = history
 	return new_retry_failure[StorageResult](final_error, r.config.max_retries, total_delay, history)
 }
 
 
-// 执行带重试的操作（返回 bool）
+//Perform the operation with retry (return bool)
 pub fn (r RetryExecutor) execute_bool(operation fn () !bool, provider string, op_name string) RetryResult[bool] {
 	mut history := []RetryAttempt{}
 	mut total_delay := 0
 	mut last_error := StorageError{}
 	
 	for attempt in 0 .. r.config.max_retries + 1 {
-		// 执行操作
+		// perform operations
 		result := operation() or {
-			// 解析错误
+			// Parsing error
 			error_msg := err.msg()
 			storage_err := parse_error_message(error_msg, provider, op_name)
 			
-			// 检查是否可重试
+			// Check if retry is possible
 			if !storage_err.is_retryable() {
-				// 不可重试错误，立即返回
+				// No retry error, return immediately
 				return new_retry_failure[bool](storage_err, attempt, total_delay, history)
 			}
 			
 			last_error = storage_err
 			
-			// 如果还有重试机会
+			// If there is still a chance to retry
 			if attempt < r.config.max_retries {
 				delay := r.calculate_delay(attempt)
 				
-				// 记录重试尝试
+				// Log retry attempts
 				history << RetryAttempt{
 					attempt_number: attempt + 1
 					timestamp: time.now().unix()
@@ -286,7 +286,7 @@ pub fn (r RetryExecutor) execute_bool(operation fn () !bool, provider string, op
 				
 				total_delay += delay
 				
-				// 等待后重试
+				// Wait and try again
 				if delay > 0 {
 					time.sleep(delay * time.millisecond)
 				}
@@ -294,42 +294,42 @@ pub fn (r RetryExecutor) execute_bool(operation fn () !bool, provider string, op
 			continue
 		}
 		
-		// 操作成功
+		// Operation successful
 		return new_retry_success[bool](result, attempt, total_delay, history)
 	}
 	
-	// 所有重试都失败
+	// All retries failed
 	mut final_error := last_error
 	final_error.retry_history = history
 	return new_retry_failure[bool](final_error, r.config.max_retries, total_delay, history)
 }
 
-// 执行带重试的操作（无返回值）
+//Execute the operation with retry (no return value)
 pub fn (r RetryExecutor) execute_void(operation fn () !, provider string, op_name string) RetryResult[bool] {
 	mut history := []RetryAttempt{}
 	mut total_delay := 0
 	mut last_error := StorageError{}
 	
 	for attempt in 0 .. r.config.max_retries + 1 {
-		// 执行操作
+		// perform operations
 		operation() or {
-			// 解析错误
+			// Parsing error
 			error_msg := err.msg()
 			storage_err := parse_error_message(error_msg, provider, op_name)
 			
-			// 检查是否可重试
+			// Check if retry is possible
 			if !storage_err.is_retryable() {
-				// 不可重试错误，立即返回
+				// No retry error, return immediately
 				return new_retry_failure[bool](storage_err, attempt, total_delay, history)
 			}
 			
 			last_error = storage_err
 			
-			// 如果还有重试机会
+			// If there is still a chance to retry
 			if attempt < r.config.max_retries {
 				delay := r.calculate_delay(attempt)
 				
-				// 记录重试尝试
+				// Log retry attempts
 				history << RetryAttempt{
 					attempt_number: attempt + 1
 					timestamp: time.now().unix()
@@ -339,7 +339,7 @@ pub fn (r RetryExecutor) execute_void(operation fn () !, provider string, op_nam
 				
 				total_delay += delay
 				
-				// 等待后重试
+				// Wait and try again
 				if delay > 0 {
 					time.sleep(delay * time.millisecond)
 				}
@@ -347,43 +347,43 @@ pub fn (r RetryExecutor) execute_void(operation fn () !, provider string, op_nam
 			continue
 		}
 		
-		// 操作成功
+		// Operation successful
 		return new_retry_success[bool](true, attempt, total_delay, history)
 	}
 	
-	// 所有重试都失败
+	// All retries failed
 	mut final_error := last_error
 	final_error.retry_history = history
 	return new_retry_failure[bool](final_error, r.config.max_retries, total_delay, history)
 }
 
 
-// 执行带重试的操作（返回 string）
+//Perform operation with retry (return string)
 pub fn (r RetryExecutor) execute_string(operation fn () !string, provider string, op_name string) RetryResult[string] {
 	mut history := []RetryAttempt{}
 	mut total_delay := 0
 	mut last_error := StorageError{}
 	
 	for attempt in 0 .. r.config.max_retries + 1 {
-		// 执行操作
+		// perform operations
 		result := operation() or {
-			// 解析错误
+			// Parsing error
 			error_msg := err.msg()
 			storage_err := parse_error_message(error_msg, provider, op_name)
 			
-			// 检查是否可重试
+			// Check if retry is possible
 			if !storage_err.is_retryable() {
-				// 不可重试错误，立即返回
+				// No retry error, return immediately
 				return new_retry_failure[string](storage_err, attempt, total_delay, history)
 			}
 			
 			last_error = storage_err
 			
-			// 如果还有重试机会
+			// If there is still a chance to retry
 			if attempt < r.config.max_retries {
 				delay := r.calculate_delay(attempt)
 				
-				// 记录重试尝试
+				// Log retry attempts
 				history << RetryAttempt{
 					attempt_number: attempt + 1
 					timestamp: time.now().unix()
@@ -393,7 +393,7 @@ pub fn (r RetryExecutor) execute_string(operation fn () !string, provider string
 				
 				total_delay += delay
 				
-				// 等待后重试
+				// Wait and try again
 				if delay > 0 {
 					time.sleep(delay * time.millisecond)
 				}
@@ -401,29 +401,29 @@ pub fn (r RetryExecutor) execute_string(operation fn () !string, provider string
 			continue
 		}
 		
-		// 操作成功
+		// Operation successful
 		return new_retry_success[string](result, attempt, total_delay, history)
 	}
 	
-	// 所有重试都失败
+	// All retries failed
 	mut final_error := last_error
 	final_error.retry_history = history
 	return new_retry_failure[string](final_error, r.config.max_retries, total_delay, history)
 }
 
 // ============================================================================
-// 辅助函数
+// helper function
 // ============================================================================
 
-// 从错误消息解析 StorageError
+// Parse StorageError from error message
 fn parse_error_message(error_msg string, provider string, operation string) StorageError {
-	// 尝试从错误消息中提取信息
-	// 格式: "provider/operation: message (kind: xxx, http_status: yyy)"
+	//Try to extract information from the error message
+	// Format: "provider/operation: message (kind: xxx, http_status: yyy)"
 	
-	// 检查是否包含已知的错误类型关键字
+	// Check if a known error type keyword is included
 	kind := detect_error_kind_from_message(error_msg)
 	
-	// 尝试提取 HTTP 状态码
+	//Try to extract HTTP status code
 	http_status := extract_http_status_from_message(error_msg)
 	
 	return StorageError{
@@ -438,11 +438,11 @@ fn parse_error_message(error_msg string, provider string, operation string) Stor
 	}
 }
 
-// 从错误消息检测错误类型
+// Detect error type from error message
 fn detect_error_kind_from_message(msg string) StorageErrorKind {
 	lower_msg := msg.to_lower()
 	
-	// 可重试错误
+	//retryable error
 	if lower_msg.contains('timeout') || lower_msg.contains('timed out') {
 		return .network_timeout
 	}
@@ -459,7 +459,7 @@ fn detect_error_kind_from_message(msg string) StorageErrorKind {
 		return .temporary_failure
 	}
 	
-	// 不可重试错误
+	// No retry error
 	if lower_msg.contains('invalid credentials') || lower_msg.contains('401') || lower_msg.contains('unauthorized') {
 		return .invalid_credentials
 	}
@@ -485,9 +485,9 @@ fn detect_error_kind_from_message(msg string) StorageErrorKind {
 	return .unknown
 }
 
-// 从错误消息提取 HTTP 状态码
+//Extract HTTP status code from error message
 fn extract_http_status_from_message(msg string) int {
-	// 尝试查找 "http_status: xxx" 模式
+	// Try to find the "http_status: xxx" pattern
 	if status_idx := msg.index('http_status:') {
 		start := status_idx + 12
 		mut end := start
@@ -498,7 +498,7 @@ fn extract_http_status_from_message(msg string) int {
 		return status_str.int()
 	}
 	
-	// 尝试查找常见的 HTTP 状态码
+	//Try to find common HTTP status codes
 	status_codes := [400, 401, 403, 404, 409, 413, 429, 500, 502, 503, 504]
 	for code in status_codes {
 		if msg.contains(code.str()) {
@@ -511,46 +511,46 @@ fn extract_http_status_from_message(msg string) int {
 
 
 // ============================================================================
-// 简化的重试函数
+//Simplified retry function
 // ============================================================================
 
-// 使用默认配置执行带重试的操作（返回 []u8）
+// Use default configuration to perform operations with retries (return []u8)
 pub fn retry_bytes(operation fn () ![]u8, provider string, op_name string) RetryResult[[]u8] {
 	executor := new_default_retry_executor()
 	return executor.execute_bytes(operation, provider, op_name)
 }
 
-// 使用默认配置执行带重试的操作（返回 StorageResult）
+// Perform operation with retry using default configuration (returns StorageResult)
 pub fn retry_storage_result(operation fn () !StorageResult, provider string, op_name string) RetryResult[StorageResult] {
 	executor := new_default_retry_executor()
 	return executor.execute_storage_result(operation, provider, op_name)
 }
 
-// 使用默认配置执行带重试的操作（返回 bool）
+// Use default configuration to perform operations with retries (returns bool)
 pub fn retry_bool(operation fn () !bool, provider string, op_name string) RetryResult[bool] {
 	executor := new_default_retry_executor()
 	return executor.execute_bool(operation, provider, op_name)
 }
 
-// 使用默认配置执行带重试的操作（无返回值）
+// Use default configuration to perform operations with retries (no return value)
 pub fn retry_void(operation fn () !, provider string, op_name string) RetryResult[bool] {
 	executor := new_default_retry_executor()
 	return executor.execute_void(operation, provider, op_name)
 }
 
-// 使用默认配置执行带重试的操作（返回 string）
+// Use default configuration to perform operations with retries (returns string)
 pub fn retry_string(operation fn () !string, provider string, op_name string) RetryResult[string] {
 	executor := new_default_retry_executor()
 	return executor.execute_string(operation, provider, op_name)
 }
 
-// 使用自定义配置执行带重试的操作（返回 []u8）
+// Use custom configuration to perform operations with retries (return []u8)
 pub fn retry_bytes_with_config(operation fn () ![]u8, provider string, op_name string, config RetryConfig) RetryResult[[]u8] {
 	executor := new_retry_executor(config)
 	return executor.execute_bytes(operation, provider, op_name)
 }
 
-// 使用自定义配置执行带重试的操作（返回 StorageResult）
+// Use custom configuration to perform operations with retry (return StorageResult)
 pub fn retry_storage_result_with_config(operation fn () !StorageResult, provider string, op_name string, config RetryConfig) RetryResult[StorageResult] {
 	executor := new_retry_executor(config)
 	return executor.execute_storage_result(operation, provider, op_name)

@@ -3,25 +3,25 @@ import time
 import net.http
 
 fn main() {
-	println('=== V-Hono 最终性能展示 ===')
+	println('=== vono 最终性能展示 ===')
 	println('展示所有优化成果的综合性能测试\n')
 	
-	// 测试1: 路由匹配性能对比
+	//Test 1: Route matching performance comparison
 	test_routing_performance()
 	
-	// 测试2: 大规模路由性能
+	// Test 2: Large-scale routing performance
 	test_large_scale_routing()
 	
-	// 测试3: 真实场景性能模拟
+	//Test 3: Real scene performance simulation
 	test_real_world_scenario()
 	
-	// 测试4: 内存效率测试
+	//Test 4: Memory efficiency test
 	test_memory_efficiency()
 	
-	// 测试5: 并发性能模拟
+	//Test 5: Concurrency performance simulation
 	test_concurrent_performance()
 	
-	println('\n🎉 V-Hono 最终性能展示完成')
+	println('\n🎉 vono 最终性能展示完成')
 	print_final_summary()
 }
 
@@ -32,7 +32,7 @@ fn test_routing_performance() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// FastRouter测试
+	// FastRouter test
 	mut fast_router := hono.FastRouter.new()
 	fast_handler := hono.ContextHandler{
 		path: route_path
@@ -45,7 +45,7 @@ fn test_routing_performance() {
 		return
 	}
 	
-	// HybridRouter测试
+	//HybridRouter test
 	mut hybrid_router := hono.ContextHybridRouter.new()
 	hybrid_handler := hono.ContextHandler{
 		path: route_path
@@ -57,7 +57,7 @@ fn test_routing_performance() {
 	
 	iterations := 10000
 	
-	// FastRouter性能测试
+	// FastRouter performance test
 	fast_router.clear_cache()
 	start_time1 := time.now()
 	mut fast_matches := 0
@@ -69,7 +69,7 @@ fn test_routing_performance() {
 	}
 	fast_first_time := time.since(start_time1)
 	
-	// HybridRouter性能测试
+	//HybridRouter performance test
 	hybrid_router.clear_cache()
 	hybrid_router.clear_regex_cache()
 	start_time2 := time.now()
@@ -83,7 +83,7 @@ fn test_routing_performance() {
 	}
 	hybrid_first_time := time.since(start_time2)
 	
-	// 缓存性能测试
+	// Cache performance test
 	start_time3 := time.now()
 	mut fast_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -102,7 +102,7 @@ fn test_routing_performance() {
 	}
 	hybrid_cache_time := time.since(start_time4)
 	
-	// 结果展示
+	//Result display
 	println('第一次匹配性能 (${iterations}次):')
 	if fast_matches > 0 && hybrid_matches > 0 {
 		fast_avg := f64(fast_first_time.microseconds()) / f64(fast_matches)
@@ -138,7 +138,7 @@ fn test_large_scale_routing() {
 	route_count := 100
 	println('创建 ${route_count} 个动态路由...')
 	
-	// 添加大量路由
+	//Add a lot of routes
 	for i in 0 .. route_count {
 		route_path := '/api/v${i % 5}/category${i % 10}/resource${i % 20}/:id/item/:item_id'
 		
@@ -160,7 +160,7 @@ fn test_large_scale_routing() {
 		hybrid_router.add_route('GET', hybrid_handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/api/v1/category2/resource5/123/item/456',
 		'/api/v3/category7/resource15/789/item/101',
@@ -171,7 +171,7 @@ fn test_large_scale_routing() {
 	
 	iterations := 1000
 	
-	// FastRouter测试
+	// FastRouter test
 	start_time1 := time.now()
 	mut fast_matches := 0
 	for _ in 0 .. iterations {
@@ -183,7 +183,7 @@ fn test_large_scale_routing() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// HybridRouter测试
+	//HybridRouter test
 	start_time2 := time.now()
 	mut hybrid_matches := 0
 	for _ in 0 .. iterations {
@@ -206,7 +206,7 @@ fn test_large_scale_routing() {
 		println('  🚀 性能提升:   ${improvement:.2f}x')
 	}
 	
-	// 显示统计
+	// show statistics
 	fast_static, fast_dynamic, fast_cache := fast_router.get_stats()
 	hybrid_static, hybrid_dynamic := hybrid_router.get_all_routes()
 	
@@ -222,15 +222,15 @@ fn test_real_world_scenario() {
 	
 	mut app := hono.Hono.new()
 	
-	// 模拟真实Web应用的路由
+	// Simulate the routing of real web applications
 	real_routes := [
-		// 用户管理
+		//User management
 		'/users',
 		'/users/:id',
 		'/users/:id/profile',
 		'/users/:id/settings',
 		'/users/:id/avatar',
-		// API端点
+		// API endpoint
 		'/api/v1/auth/login',
 		'/api/v1/auth/logout',
 		'/api/v1/users',
@@ -238,17 +238,17 @@ fn test_real_world_scenario() {
 		'/api/v1/users/:id/posts',
 		'/api/v1/users/:id/posts/:post_id',
 		'/api/v1/users/:id/posts/:post_id/comments',
-		// 文件管理
+		//File management
 		'/files/upload',
 		'/files/:category/:filename',
 		'/files/:year/:month/:day/:filename',
-		// 商店功能
+		// store function
 		'/shop',
 		'/shop/categories',
 		'/shop/categories/:category',
 		'/shop/categories/:category/products',
 		'/shop/categories/:category/products/:product_id',
-		// 管理后台
+		// Management background
 		'/admin/dashboard',
 		'/admin/users',
 		'/admin/users/:id',
@@ -264,7 +264,7 @@ fn test_real_world_scenario() {
 		})
 	}
 	
-	// 模拟真实访问模式（高频、中频、低频）
+	//Simulate real access mode (high frequency, medium frequency, low frequency)
 	high_freq_paths := [
 		'/api/v1/users/123',
 		'/users/456/profile',
@@ -283,24 +283,24 @@ fn test_real_world_scenario() {
 		'/files/documents/report.pdf'
 	]
 	
-	// 构建加权测试集
+	// Build a weighted test set
 	mut test_paths := []string{}
 	
-	// 高频路径 (60%)
+	// high frequency path (60%)
 	for _ in 0 .. 60 {
 		for path in high_freq_paths {
 			test_paths << path
 		}
 	}
 	
-	// 中频路径 (30%)
+	// IF path (30%)
 	for _ in 0 .. 30 {
 		for path in medium_freq_paths {
 			test_paths << path
 		}
 	}
 	
-	// 低频路径 (10%)
+	// Low frequency path (10%)
 	for _ in 0 .. 10 {
 		for path in low_freq_paths {
 			test_paths << path
@@ -309,7 +309,7 @@ fn test_real_world_scenario() {
 	
 	iterations := 100
 	
-	// 性能测试
+	//Performance test
 	start_time := time.now()
 	mut match_count := 0
 	for _ in 0 .. iterations {
@@ -347,13 +347,13 @@ fn test_memory_efficiency() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加路由并测试内存使用
+	//Add routes and test memory usage
 	route_counts := [10, 50, 100, 500]
 	
 	for count in route_counts {
-		router = hono.FastRouter.new()  // 重新创建
+		router = hono.FastRouter.new()  // Recreate
 		
-		// 添加指定数量的路由
+		//Add the specified number of routes
 		for i in 0 .. count {
 			route_path := '/api/v${i % 3}/category${i % 5}/resource${i % 10}/:id/item/:item_id'
 			handler := hono.ContextHandler{
@@ -365,7 +365,7 @@ fn test_memory_efficiency() {
 			router.add_route('GET', handler, '') or { continue }
 		}
 		
-		// 测试匹配性能
+		//Test matching performance
 		test_path := '/api/v1/category2/resource5/123/item/456'
 		iterations := 1000
 		
@@ -393,7 +393,7 @@ fn test_concurrent_performance() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加多个路由
+	//Add multiple routes
 	routes := [
 		'/api/v1/users/:id',
 		'/api/v1/users/:id/posts',
@@ -412,7 +412,7 @@ fn test_concurrent_performance() {
 		router.add_route('GET', handler, '') or { continue }
 	}
 	
-	// 模拟并发请求
+	// Simulate concurrent requests
 	test_paths := [
 		'/api/v1/users/123',
 		'/api/v1/users/123/posts',
@@ -421,7 +421,7 @@ fn test_concurrent_performance() {
 		'/files/2023/12/26/document.pdf'
 	]
 	
-	// 模拟不同并发级别
+	// Simulate different concurrency levels
 	concurrent_levels := [1, 10, 100, 1000]
 	
 	for level in concurrent_levels {
@@ -447,7 +447,7 @@ fn test_concurrent_performance() {
 }
 
 fn print_final_summary() {
-	println('🎉 V-Hono 优化成果总结')
+	println('🎉 vono 优化成果总结')
 	println('==================================================')
 	
 	println('✅ 完成的优化项目:')
@@ -480,5 +480,5 @@ fn print_final_summary() {
 	println('  • 资源效率: 降低CPU和内存开销')
 	println('  • 开发效率: 更好的调试和监控工具')
 	
-	println('\nV-Hono 现已具备生产级性能，可安全部署到高并发环境！')
+	println('\nvono 现已具备生产级性能，可安全部署到高并发环境！')
 }

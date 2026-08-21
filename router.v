@@ -2,14 +2,14 @@ module hono
 
 import regex
 
-// 路由节点类型
+//Routing node type
 enum RouteType {
 	static
 	dynamic
 	wildcard
 }
 
-// 编译后的正则表达式缓存
+// Compiled regular expression cache
 pub struct CompiledRegex {
 pub mut:
 	regex       regex.RE
@@ -17,7 +17,7 @@ pub mut:
 	compiled    bool
 }
 
-// Context 路由节点
+// Context routing node
 struct ContextRouteNode {
 mut:
 	path      string
@@ -28,7 +28,7 @@ mut:
 	base_path string
 }
 
-// Context 路由匹配结果
+// Context route matching result
 pub struct ContextRouteMatch {
 pub:
 	handler IHandler
@@ -37,16 +37,16 @@ pub:
 	base_path string
 }
 
-// Context 混合路由器
+// Context hybrid router
 pub struct ContextHybridRouter {
 pub mut:
 	static_routes  map[string]IHandler
 	dynamic_routes []IHandler
 	cache          ContextLRUCache
-	regex_cache    map[string]CompiledRegex  // 新增：正则表达式缓存
+	regex_cache    map[string]CompiledRegex  // New: Regular expression cache
 }
 
-// ContextHybridRouter 构造函数
+//ContextHybridRouter constructor
 pub fn ContextHybridRouter.new() ContextHybridRouter {
 	return ContextHybridRouter{
 		static_routes: map[string]IHandler{}
@@ -56,33 +56,33 @@ pub fn ContextHybridRouter.new() ContextHybridRouter {
 	}
 }
 
-// 判断路径是否为静态路径
+// Determine whether the path is a static path
 fn is_static_path(path string) bool {
 	return !path.contains(':') && !path.contains('*') && !path.contains('?') && !path.contains('+')
 }
 
-// 判断路径是否为动态路径
+// Determine whether the path is a dynamic path
 fn is_dynamic_path(path string) bool {
 	return path.contains(':') || path.contains('*') || path.contains('?') || path.contains('+')
 }
 
-// Context 版本的正则匹配函数（优化版，使用缓存）
+// Context version of the regular matching function (optimized version, using cache)
 pub fn (mut router ContextHybridRouter) match_path_with_regex(real_path string, reg_path string) (bool, regex.RE, []string) {
-	// 先检查缓存
+	//Check cache first
 	if cached := router.regex_cache[reg_path] {
 		if cached.compiled {
 			return cached.regex.matches_string(real_path), cached.regex, cached.param_names
 		}
 	}
 	
-	// 如果缓存中没有，编译并缓存
+	// If not in cache, compile and cache
 	mut compiled_regex := CompiledRegex{}
 	mut replaced_path := reg_path
 	mut param_names := []string{}
 	
-	// 处理多个星号 **
+	// Handle multiple asterisks **
 	if reg_path.contains('**') {
-		// 将 ** 替换为 .*
+		// Replace ** with .*
 		replaced_path = reg_path.replace('**', '.*')
 		mut reg := regex.regex_opt(replaced_path) or { return false, regex.RE{}, []string{} }
 		compiled_regex = CompiledRegex{
@@ -94,9 +94,9 @@ pub fn (mut router ContextHybridRouter) match_path_with_regex(real_path string, 
 		return reg.matches_string(real_path), reg, []string{}
 	}
 	
-	// 处理单个星号 *
+	// handle single asterisk *
 	if reg_path.contains('*') {
-		// 将 * 替换为 [^/]*
+		// Replace * with [^/]*
 		replaced_path = reg_path.replace('*', '[^/]*')
 		mut reg := regex.regex_opt(replaced_path) or { return false, regex.RE{}, []string{} }
 		compiled_regex = CompiledRegex{
@@ -108,34 +108,34 @@ pub fn (mut router ContextHybridRouter) match_path_with_regex(real_path string, 
 		return reg.matches_string(real_path), reg, []string{}
 	}
 	
-	// 处理参数 :param
+	// Processing parameters :param
 	if reg_path.contains(':') {
-		// 预先提取参数名（避免在匹配时重复提取）
+		//Pre-extract parameter names (to avoid repeated extraction during matching)
 		mut param_reg := regex.regex_opt(r':[a-zA-Z_][a-zA-Z0-9_]*') or { return false, regex.RE{}, []string{} }
 		all_params := param_reg.find_all_str(reg_path)
 		for param in all_params {
-			param_names << param[1..]  // 去掉冒号
+			param_names << param[1..]  //remove colon
 		}
 		
-		// 批量转义特殊字符（减少多次replace调用）
+		//Escape special characters in batches (reduce multiple replace calls)
 		special_chars := ['?', '+', '.', '(', ')', '[', ']', '{', '}', '^', '$', '|']
 		for ch in special_chars {
 			replaced_path = replaced_path.replace(ch, '\\${ch}')
 		}
 		
-		// 替换参数为命名捕获组
+		//Replace parameters with named capture groups
 		replaced_path = param_reg.replace_by_fn(replaced_path, fn (re regex.RE, in_txt string, start int, end int) string {
 			param_name := in_txt[start+1..end]
 			return '(?P<${param_name}>[^/]+)'
 		})
 		
-		// 添加锚点
+		//Add anchor point
 		replaced_path = '^${replaced_path}$'
 		
-		// 编译正则表达式
+		//Compile regular expression
 		mut reg := regex.regex_opt(replaced_path) or { return false, regex.RE{}, []string{} }
 		
-		// 缓存编译结果
+		//Cache compilation results
 		compiled_regex = CompiledRegex{
 			regex: reg
 			param_names: param_names
@@ -149,22 +149,22 @@ pub fn (mut router ContextHybridRouter) match_path_with_regex(real_path string, 
 	return false, regex.RE{}, []string{}
 }
 
-// 添加 Context 路由
+//Add Context route
 pub fn (mut router ContextHybridRouter) add_route(method string, handler IHandler, base_path string) {
 	full_path := handler.path
 	if is_static_path(full_path) {
 		router.static_routes['${method}:${full_path}'] = handler
 	} else {
 		router.dynamic_routes << handler
-		// 按路由复杂度排序，简单路由优先匹配
+		// Sort by routing complexity, simple routes will be matched first
 		router.sort_dynamic_routes()
 	}
 }
 
-// 按路由复杂度排序动态路由（简单路由优先）
+// Sort dynamic routes by routing complexity (simple routes first)
 fn (mut router ContextHybridRouter) sort_dynamic_routes() {
 	router.dynamic_routes.sort_with_compare(fn (a &IHandler, b &IHandler) int {
-		// 计算路由复杂度分数（分数越低越简单，优先匹配）
+		// Calculate the routing complexity score (the lower the score, the simpler, priority is given to matching)
 		score_a := calculate_route_complexity(a.path)
 		score_b := calculate_route_complexity(b.path)
 		
@@ -177,20 +177,20 @@ fn (mut router ContextHybridRouter) sort_dynamic_routes() {
 	})
 }
 
-// 计算路由复杂度分数
+// Calculate routing complexity score
 fn calculate_route_complexity(path string) int {
 	mut score := 0
 	
-	// 参数数量（每个参数+10分）
+	// Number of parameters (+10 points for each parameter)
 	score += path.count(':') * 10
 	
-	// 通配符（每个通配符+20分）
+	// Wildcards (+20 points for each wildcard)
 	score += path.count('*') * 20
 	
-	// 路径段数量（每个段+1分）
+	//Number of path segments (+1 point for each segment)
 	score += path.split('/').len
 	
-	// 特殊字符（每个+5分）
+	// Special characters (+5 points each)
 	special_chars := ['?', '+', '.', '(', ')', '[', ']', '{', '}', '^', '$', '|']
 	for ch in special_chars {
 		score += path.count(ch) * 5
@@ -199,7 +199,7 @@ fn calculate_route_complexity(path string) int {
 	return score
 }
 
-// Context 版本的静态路径匹配
+//Context version of static path matching
 pub fn (router ContextHybridRouter) match_static_route(method string, path string) ?IHandler {
 	key := '${method}:${path}'
 	if key in router.static_routes {
@@ -208,18 +208,18 @@ pub fn (router ContextHybridRouter) match_static_route(method string, path strin
 	return none
 }
 
-// Context 版本的动态路径匹配（保留旧版本兼容）
+//Context version of dynamic path matching (retaining compatibility with old versions)
 fn (mut router ContextHybridRouter) match_dynamic_route(method string, path string) ?ContextRouteMatch {
 	cache_key := '${method}:${path}'
 	return router.match_dynamic_route_with_key(cache_key, method, path)
 }
 
-// Context 版本的主匹配函数（优化版：复用 cache key）
+// Context version of the main matching function (optimized version: reuse cache key)
 pub fn (mut router ContextHybridRouter) match_route(method string, path string) ?ContextRouteMatch {
-	// 优化：只拼接一次 cache key
+	// Optimization: only splice cache key once
 	cache_key := '${method}:${path}'
 	
-	// 1. 先尝试静态路径匹配（最快）
+	// 1. Try static path matching first (fastest)
 	if cache_key in router.static_routes {
 		return ContextRouteMatch{
 			handler: router.static_routes[cache_key]
@@ -229,13 +229,13 @@ pub fn (mut router ContextHybridRouter) match_route(method string, path string) 
 		}
 	}
 	
-	// 2. 再尝试动态路径匹配（复用 cache_key）
+	// 2. Try dynamic path matching again (reuse cache_key)
 	return router.match_dynamic_route_with_key(cache_key, method, path)
 }
 
-// Context 版本的动态路径匹配（优化版：接收预计算的 cache_key）
+//Context version of dynamic path matching (optimized version: receiving precomputed cache_key)
 fn (mut router ContextHybridRouter) match_dynamic_route_with_key(cache_key string, method string, path string) ?ContextRouteMatch {
-	// 先检查缓存
+	//Check cache first
 	if cached := router.cache.get(cache_key) {
 		return cached
 	}
@@ -245,7 +245,7 @@ fn (mut router ContextHybridRouter) match_dynamic_route_with_key(cache_key strin
 		if match_result {
 			mut param_map := map[string]string{}
 			
-			// 直接使用已编译的正则表达式和缓存的参数名
+			// Directly use compiled regular expressions and cached parameter names
 			for param_name in param_names {
 				group := replaced_path_reg.get_group_by_name(path, param_name)
 				param_map[param_name] = group
@@ -264,7 +264,7 @@ fn (mut router ContextHybridRouter) match_dynamic_route_with_key(cache_key strin
 	return none
 }
 
-// Context 版本的获取所有路由
+//Context version gets all routes
 pub fn (router ContextHybridRouter) get_all_routes() ([]string, []string) {
 	mut static_paths := []string{}
 	mut dynamic_paths := []string{}
@@ -280,17 +280,17 @@ pub fn (router ContextHybridRouter) get_all_routes() ([]string, []string) {
 	return static_paths, dynamic_paths
 }
 
-// 获取缓存统计信息
+// Get cache statistics
 pub fn (router ContextHybridRouter) get_cache_stats() (int, int) {
 	return router.cache.get_stats()
 }
 
-// 清理缓存
+// clear cache
 pub fn (mut router ContextHybridRouter) clear_cache() {
 	router.cache.clear()
 }
 
-// 获取正则表达式缓存统计信息
+// Get regular expression cache statistics
 pub fn (router ContextHybridRouter) get_regex_cache_stats() (int, int) {
 	mut compiled_count := 0
 	for _, cached_regex in router.regex_cache {
@@ -301,19 +301,19 @@ pub fn (router ContextHybridRouter) get_regex_cache_stats() (int, int) {
 	return router.regex_cache.len, compiled_count
 }
 
-// 清理正则表达式缓存
+// Clear the regular expression cache
 pub fn (mut router ContextHybridRouter) clear_regex_cache() {
 	router.regex_cache.clear()
 }
 
-// 预热正则表达式缓存
+// Warm up regular expression cache
 pub fn (mut router ContextHybridRouter) warmup_regex_cache() {
 	println('[INFO] Warming up regex cache...')
 	mut warmed_count := 0
 	
 	for handler in router.dynamic_routes {
 		if handler.path.contains(':') || handler.path.contains('*') {
-			// 预编译动态路由的正则表达式
+			// Precompile regular expressions for dynamic routing
 			router.match_path_with_regex('/dummy/path', handler.path)
 			warmed_count++
 		}
@@ -323,7 +323,7 @@ pub fn (mut router ContextHybridRouter) warmup_regex_cache() {
 	println('[INFO] Regex cache warmup completed: ${warmed_count} patterns warmed, ${compiled_cached}/${total_cached} compiled')
 }
 
-// 路由性能分析
+// Routing performance analysis
 pub fn (router ContextHybridRouter) analyze_router_performance() {
 	cache_size, cache_hits := router.get_cache_stats()
 	regex_total, regex_compiled := router.get_regex_cache_stats()

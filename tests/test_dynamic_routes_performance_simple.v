@@ -5,16 +5,16 @@ import net.http
 fn main() {
 	println('=== 动态路由性能压力测试 ===')
 	
-	// 测试1: 大规模动态路由性能
+	// Test 1: Large-scale dynamic routing performance
 	test_large_scale_performance()
 	
-	// 测试2: 高频访问路由性能
+	//Test 2: High-frequency access routing performance
 	test_high_frequency_performance()
 	
-	// 测试3: 混合路由类型性能
+	//Test 3: Mixed route type performance
 	test_mixed_route_performance()
 	
-	// 测试4: 并发性能模拟
+	//Test 4: Concurrency performance simulation
 	test_concurrent_performance()
 	
 	println('✅ 动态路由性能压力测试完成')
@@ -25,12 +25,12 @@ fn test_large_scale_performance() {
 	
 	mut app := hono.Hono.new()
 	
-	// 创建大量动态路由
+	//Create a large number of dynamic routes
 	route_count := 1000
 	println('  创建 ${route_count} 个动态路由...')
 	
 	for i in 0 .. route_count {
-		// 生成不同复杂度的路由
+		// Generate routes of different complexity
 		complexity := i % 4
 		mut route := ''
 		
@@ -49,7 +49,7 @@ fn test_large_scale_performance() {
 	
 	println('  路由创建完成，开始性能测试...')
 	
-	// 生成测试路径
+	// Generate test path
 	mut test_paths := []string{}
 	for i in 0 .. 100 {
 		complexity := i % 4
@@ -66,7 +66,7 @@ fn test_large_scale_performance() {
 		test_paths << path
 	}
 	
-	// 性能测试
+	//Performance test
 	iterations := 1000
 	
 	start_time := time.now()
@@ -111,18 +111,18 @@ fn test_high_frequency_performance() {
 	
 	mut app := hono.Hono.new()
 	
-	// 模拟真实应用的高频路由
+	// Simulate high-frequency routing of real applications
 	high_freq_routes := [
-		'/api/v1/auth/verify',           // 认证验证 (最高频)
-		'/api/v1/users/:id',             // 用户信息 (高频)
-		'/api/v1/posts/:id',             // 文章详情 (高频)
-		'/api/v1/search/:query',         // 搜索 (中高频)
-		'/api/v1/notifications/:user_id', // 通知 (中频)
-		'/health',                       // 健康检查 (高频)
-		'/metrics',                      // 监控指标 (中频)
-		'/api/v1/upload/:type',          // 文件上传 (中频)
-		'/api/v1/analytics/:event',      // 分析事件 (低频)
-		'/admin/dashboard'               // 管理后台 (低频)
+		'/api/v1/auth/verify',           // Authentication verification (highest frequency)
+		'/api/v1/users/:id',             //User information (high frequency)
+		'/api/v1/posts/:id',             // Article details (high frequency)
+		'/api/v1/search/:query',         // Search (medium and high frequency)
+		'/api/v1/notifications/:user_id', // notification (IF)
+		'/health',                       // health check (high frequency)
+		'/metrics',                      // Monitoring indicators (medium frequency)
+		'/api/v1/upload/:type',          //File upload (IF)
+		'/api/v1/analytics/:event',      // Analyze events (low frequency)
+		'/admin/dashboard'               // Management background (low frequency)
 	]
 	
 	for route in high_freq_routes {
@@ -131,28 +131,28 @@ fn test_high_frequency_performance() {
 		})
 	}
 	
-	// 模拟真实访问模式 (加权)
+	// Simulate real access pattern (weighted)
 	mut weighted_paths := []string{}
 	
-	// 最高频路由 (40%)
+	//Highest frequency route (40%)
 	for _ in 0 .. 200 {
 		weighted_paths << '/api/v1/auth/verify'
 		weighted_paths << '/health'
 	}
 	
-	// 高频路由 (30%)
+	// High frequency routing (30%)
 	for _ in 0 .. 150 {
 		weighted_paths << '/api/v1/users/123'
 		weighted_paths << '/api/v1/posts/456'
 	}
 	
-	// 中频路由 (20%)
+	// IF routing (20%)
 	for _ in 0 .. 100 {
 		weighted_paths << '/api/v1/search/keyword'
 		weighted_paths << '/api/v1/notifications/user789'
 	}
 	
-	// 低频路由 (10%)
+	// Low frequency routing (10%)
 	for _ in 0 .. 50 {
 		weighted_paths << '/api/v1/analytics/click'
 		weighted_paths << '/admin/dashboard'
@@ -182,10 +182,10 @@ fn test_high_frequency_performance() {
 	println('    平均时间: ${avg_time:.3f}μs')
 	println('    吞吐量: ${throughput:.0f} 请求/秒')
 	
-	// 测试缓存效果
+	//Test caching effect
 	println('\n  缓存效果对比:')
 	
-	// 清除缓存后的性能
+	//Performance after clearing cache
 	app.clear_cache()
 	start_time_no_cache := time.now()
 	mut no_cache_matches := 0
@@ -203,7 +203,7 @@ fn test_high_frequency_performance() {
 	no_cache_time := time.since(start_time_no_cache)
 	no_cache_avg := f64(no_cache_time.microseconds()) / f64(no_cache_matches)
 	
-	// 有缓存的性能
+	// Capable of caching
 	start_time_with_cache := time.now()
 	mut with_cache_matches := 0
 	
@@ -231,7 +231,7 @@ fn test_mixed_route_performance() {
 	
 	mut app := hono.Hono.new()
 	
-	// 混合不同类型的路由
+	// Mix different types of routes
 	static_routes := [
 		'/static/home',
 		'/static/about',
@@ -256,7 +256,7 @@ fn test_mixed_route_performance() {
 		'/projects/:id/files/:file_id'
 	]
 	
-	// 添加所有路由
+	//Add all routes
 	for route in static_routes {
 		app.get(route, fn (mut c hono.Context) http.Response {
 			return c.text('static response')
@@ -275,7 +275,7 @@ fn test_mixed_route_performance() {
 		})
 	}
 	
-	// 对应的测试路径
+	//Corresponding test path
 	static_test_paths := [
 		'/static/home',
 		'/static/about',
@@ -304,7 +304,7 @@ fn test_mixed_route_performance() {
 	
 	println('  混合路由类型性能测试:')
 	
-	// 测试静态路由
+	//Test static routing
 	start_time1 := time.now()
 	mut static_matches := 0
 	
@@ -319,7 +319,7 @@ fn test_mixed_route_performance() {
 	static_time := time.since(start_time1)
 	static_avg := f64(static_time.microseconds()) / f64(static_matches)
 	
-	// 测试简单动态路由
+	//Test simple dynamic routing
 	start_time2 := time.now()
 	mut simple_matches := 0
 	
@@ -334,7 +334,7 @@ fn test_mixed_route_performance() {
 	simple_time := time.since(start_time2)
 	simple_avg := f64(simple_time.microseconds()) / f64(simple_matches)
 	
-	// 测试复杂动态路由
+	//Test complex dynamic routing
 	start_time3 := time.now()
 	mut complex_matches := 0
 	
@@ -353,7 +353,7 @@ fn test_mixed_route_performance() {
 	println('    简单动态路由: ${simple_matches}次匹配, 平均${simple_avg:.3f}μs')
 	println('    复杂动态路由: ${complex_matches}次匹配, 平均${complex_avg:.3f}μs')
 	
-	// 整体混合测试
+	// Overall mixed test
 	println('\n  整体混合性能测试:')
 	
 	mut all_test_paths := []string{}
@@ -386,7 +386,7 @@ fn test_concurrent_performance() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加并发测试路由
+	//Add concurrent test routing
 	concurrent_routes := [
 		'/concurrent/users/:id',
 		'/concurrent/posts/:id/comments/:comment_id',
@@ -407,7 +407,7 @@ fn test_concurrent_performance() {
 		'/concurrent/complex/a/b/c/d/e'
 	]
 	
-	// 模拟不同并发级别
+	// Simulate different concurrency levels
 	concurrent_levels := [1, 10, 50, 100, 500, 1000]
 	
 	println('  并发级别性能测试:')
@@ -416,7 +416,7 @@ fn test_concurrent_performance() {
 		start_time := time.now()
 		mut total_matches := 0
 		
-		// 模拟并发请求
+		// Simulate concurrent requests
 		for _ in 0 .. level {
 			for path in test_paths {
 				if _ := app.fast_router.match_route('GET', path) {
@@ -432,7 +432,7 @@ fn test_concurrent_performance() {
 		println('    并发${level}: ${total_matches}次匹配, 平均${avg_time:.3f}μs, ${throughput:.0f}请求/秒')
 	}
 	
-	// 压力测试
+	// Stress test
 	println('\n  高压力并发测试:')
 	
 	stress_level := 5000
@@ -469,7 +469,7 @@ fn test_concurrent_performance() {
 		println('    ⚠️  高压力下性能需要优化 (>= 50μs)')
 	}
 	
-	// 显示最终统计
+	//display final statistics
 	static_count, dynamic_count, cache_count, _ := app.get_router_stats()
 	println('    最终路由统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 }

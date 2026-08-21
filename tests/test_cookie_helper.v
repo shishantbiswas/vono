@@ -1,8 +1,8 @@
 import meiseayoung.hono
 import net.http
 
-// Cookie Helper 功能测试
-// 测试 Cookie 的 get/set/delete 和签名功能
+// Cookie Helper function test
+//Test the get/set/delete and signature functions of Cookie
 
 struct TestStats {
 mut:
@@ -37,7 +37,7 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 创建带 Cookie 头的测试 Context
+//Create a test Context with Cookie header
 fn create_test_context_with_cookies(cookie_header string) hono.Context {
 	mut headers := http.new_header()
 	if cookie_header.len > 0 {
@@ -52,7 +52,7 @@ fn create_test_context_with_cookies(cookie_header string) hono.Context {
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 创建空的测试 Context
+//Create an empty test Context
 fn create_empty_context() hono.Context {
 	req := http.Request{
 		method: .get
@@ -62,7 +62,7 @@ fn create_empty_context() hono.Context {
 }
 
 
-// 测试 1: 获取单个 Cookie
+//Test 1: Get a single cookie
 fn test_get_single_cookie() bool {
 	ctx := create_test_context_with_cookies('session_id=abc123')
 	
@@ -72,17 +72,17 @@ fn test_get_single_cookie() bool {
 	return false
 }
 
-// 测试 2: 获取不存在的 Cookie 返回 none
+//Test 2: Get a cookie that does not exist and return none
 fn test_get_nonexistent_cookie() bool {
 	ctx := create_test_context_with_cookies('session_id=abc123')
 	
 	if _ := hono.get_cookie(ctx, 'nonexistent') {
-		return false // 应该返回 none
+		return false // should return none
 	}
 	return true
 }
 
-// 测试 3: 获取多个 Cookie
+//Test 3: Get multiple cookies
 fn test_get_multiple_cookies() bool {
 	ctx := create_test_context_with_cookies('session_id=abc123; user_id=456; theme=dark')
 	
@@ -93,7 +93,7 @@ fn test_get_multiple_cookies() bool {
 	return session == 'abc123' && user == '456' && theme == 'dark'
 }
 
-// 测试 4: 获取所有 Cookie
+//Test 4: Get all cookies
 fn test_get_all_cookies() bool {
 	ctx := create_test_context_with_cookies('a=1; b=2; c=3')
 	
@@ -105,7 +105,7 @@ fn test_get_all_cookies() bool {
 		cookies['c'] == '3'
 }
 
-// 测试 5: 空 Cookie 头返回空 map
+// Test 5: Empty Cookie header returns empty map
 fn test_get_all_cookies_empty() bool {
 	ctx := create_empty_context()
 	
@@ -114,20 +114,20 @@ fn test_get_all_cookies_empty() bool {
 	return cookies.len == 0
 }
 
-// 测试 6: 设置 Cookie
+//Test 6: Set Cookie
 fn test_set_cookie_basic() bool {
 	mut ctx := create_empty_context()
 	
 	hono.set_cookie(mut ctx, 'session', 'xyz789')
 	
-	// 检查 Set-Cookie 头是否被设置
+	// Check if the Set-Cookie header is set
 	if set_cookie := ctx.headers['Set-Cookie'] {
 		return set_cookie.contains('session=xyz789')
 	}
 	return false
 }
 
-// 测试 7: 设置 Cookie 带选项
+// Test 7: Set Cookie with options
 fn test_set_cookie_with_options() bool {
 	mut ctx := create_empty_context()
 	
@@ -151,21 +151,21 @@ fn test_set_cookie_with_options() bool {
 }
 
 
-// 测试 8: 删除 Cookie
+//Test 8: Delete Cookie
 fn test_delete_cookie() bool {
 	mut ctx := create_empty_context()
 	
 	hono.delete_cookie(mut ctx, 'session')
 	
 	if set_cookie := ctx.headers['Set-Cookie'] {
-		// 删除 Cookie 应该设置 Max-Age=0 或过期时间
+		// To delete cookies, Max-Age=0 or expiration time should be set
 		return set_cookie.contains('session=') &&
 			(set_cookie.contains('Max-Age=0') || set_cookie.contains('Expires='))
 	}
 	return false
 }
 
-// 测试 9: Cookie 值带空格
+//Test 9: Cookie value with spaces
 fn test_cookie_with_spaces() bool {
 	ctx := create_test_context_with_cookies('name=John Doe')
 	
@@ -175,7 +175,7 @@ fn test_cookie_with_spaces() bool {
 	return false
 }
 
-// 测试 10: Cookie 值带引号
+// Test 10: Cookie value with quotes
 fn test_cookie_with_quotes() bool {
 	ctx := create_test_context_with_cookies('data="hello world"')
 	
@@ -185,21 +185,21 @@ fn test_cookie_with_quotes() bool {
 	return false
 }
 
-// 测试 11: 签名 Cookie 设置和获取
+// Test 11: Signed Cookie setting and retrieval
 fn test_signed_cookie_roundtrip() bool {
 	mut ctx := create_empty_context()
 	secret := 'my-secret-key-12345'
 	
-	// 设置签名 Cookie
+	// Set signed cookie
 	hono.set_signed_cookie(mut ctx, 'auth', 'user123', secret) or {
 		println('Failed to set signed cookie: ${err}')
 		return false
 	}
 	
-	// 获取 Set-Cookie 头中的值
+	// Get the value in the Set-Cookie header
 	set_cookie_header := ctx.headers['Set-Cookie'] or { return false }
 	
-	// 提取 Cookie 值（格式: auth=value.signature; ...）
+	// Extract Cookie value (format: auth=value.signature; ...)
 	mut cookie_value := ''
 	parts := set_cookie_header.split(';')
 	if parts.len > 0 {
@@ -208,10 +208,10 @@ fn test_signed_cookie_roundtrip() bool {
 		cookie_value = name_value[eq_pos + 1..]
 	}
 	
-	// 创建一个带有这个 Cookie 的新 Context 来验证
+	//Create a new Context with this Cookie to verify
 	verify_ctx := create_test_context_with_cookies('auth=${cookie_value}')
 	
-	// 验证签名 Cookie
+	//Verify signature cookie
 	if value := hono.get_signed_cookie(verify_ctx, 'auth', secret) {
 		return value == 'user123'
 	} else {
@@ -220,18 +220,18 @@ fn test_signed_cookie_roundtrip() bool {
 	}
 }
 
-// 测试 12: 签名 Cookie 篡改检测
+//Test 12: Signed Cookie Tamper Detection
 fn test_signed_cookie_tamper_detection() bool {
 	mut ctx := create_empty_context()
 	secret := 'my-secret-key-12345'
 	
-	// 设置签名 Cookie
+	// Set signed cookie
 	hono.set_signed_cookie(mut ctx, 'auth', 'user123', secret) or { return false }
 	
-	// 获取 Set-Cookie 头中的值
+	// Get the value in the Set-Cookie header
 	set_cookie_header := ctx.headers['Set-Cookie'] or { return false }
 	
-	// 提取 Cookie 值
+	//Extract cookie value
 	mut cookie_value := ''
 	parts := set_cookie_header.split(';')
 	if parts.len > 0 {
@@ -240,30 +240,30 @@ fn test_signed_cookie_tamper_detection() bool {
 		cookie_value = name_value[eq_pos + 1..]
 	}
 	
-	// 篡改 Cookie 值
-	tampered_value := 'tampered' + cookie_value[8..] // 修改值部分
+	// Tamper with Cookie value
+	tampered_value := 'tampered' + cookie_value[8..] //Modify value part
 	
-	// 创建带篡改 Cookie 的 Context
+	//Create a Context with tampered cookies
 	verify_ctx := create_test_context_with_cookies('auth=${tampered_value}')
 	
-	// 验证应该失败
+	// validation should fail
 	if _ := hono.get_signed_cookie(verify_ctx, 'auth', secret) {
-		return false // 不应该成功
+		return false // should not succeed
 	}
-	return true // 验证失败是预期的
+	return true // Validation failures are expected
 }
 
-// 测试 13: 签名 Cookie 错误密钥
+// Test 13: Signing Cookie Wrong Key
 fn test_signed_cookie_wrong_secret() bool {
 	mut ctx := create_empty_context()
 	
-	// 使用一个密钥设置
+	// Set using a key
 	hono.set_signed_cookie(mut ctx, 'auth', 'user123', 'secret1') or { return false }
 	
-	// 获取 Set-Cookie 头中的值
+	// Get the value in the Set-Cookie header
 	set_cookie_header := ctx.headers['Set-Cookie'] or { return false }
 	
-	// 提取 Cookie 值
+	//Extract cookie value
 	mut cookie_value := ''
 	parts := set_cookie_header.split(';')
 	if parts.len > 0 {
@@ -272,24 +272,24 @@ fn test_signed_cookie_wrong_secret() bool {
 		cookie_value = name_value[eq_pos + 1..]
 	}
 	
-	// 创建带 Cookie 的 Context
+	//Create a Context with Cookie
 	verify_ctx := create_test_context_with_cookies('auth=${cookie_value}')
 	
-	// 使用不同的密钥验证应该失败
+	// Authentication with a different key should fail
 	if _ := hono.get_signed_cookie(verify_ctx, 'auth', 'secret2') {
-		return false // 不应该成功
+		return false // should not succeed
 	}
-	return true // 验证失败是预期的
+	return true // Validation failures are expected
 }
 
 
-// 测试 14: 空密钥应该返回错误
+// Test 14: Empty keys should return an error
 fn test_signed_cookie_empty_secret() bool {
 	mut ctx := create_empty_context()
 	
-	// 空密钥应该返回错误
+	// Empty keys should return an error
 	if _ := hono.set_signed_cookie(mut ctx, 'auth', 'value', '') {
-		return false // 不应该成功
+		return false // should not succeed
 	}
 	return true
 }
@@ -299,7 +299,7 @@ fn main() {
 
 	mut stats := TestStats{}
 
-	// 运行所有测试
+	//Run all tests
 	stats.run_test('获取单个 Cookie', test_get_single_cookie)
 	stats.run_test('获取不存在的 Cookie', test_get_nonexistent_cookie)
 	stats.run_test('获取多个 Cookie', test_get_multiple_cookies)
@@ -315,6 +315,6 @@ fn main() {
 	stats.run_test('签名 Cookie 错误密钥', test_signed_cookie_wrong_secret)
 	stats.run_test('签名 Cookie 空密钥错误', test_signed_cookie_empty_secret)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

@@ -1,4 +1,4 @@
-// Middleware example for v-hono web framework
+// Middleware example for vono web framework
 module main
 
 import net.http

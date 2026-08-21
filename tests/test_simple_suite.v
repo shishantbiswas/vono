@@ -1,7 +1,7 @@
 import meiseayoung.hono
 import os
 
-// 简化的测试统计
+// Simplified test statistics
 struct TestStats {
 mut:
 	total_tests int
@@ -35,9 +35,9 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 1. 测试配置管理
+// 1. Test configuration management
 fn test_config_management() bool {
-	// 测试默认配置
+	//Test default configuration
 	config := hono.default_config()
 	
 	if config.server.host != '127.0.0.1' {
@@ -48,7 +48,7 @@ fn test_config_management() bool {
 		return false
 	}
 	
-	// 测试配置验证
+	//Test configuration verification
 	hono.validate_config(config) or {
 		return false
 	}
@@ -56,9 +56,9 @@ fn test_config_management() bool {
 	return true
 }
 
-// 2. 测试日志系统
+// 2. Test log system
 fn test_logging_system() bool {
-	// 创建测试日志器
+	//Create test logger
 	config := hono.LoggerConfig{
 		level: hono.LogLevel.debug
 		output: hono.LogOutput.console
@@ -67,12 +67,12 @@ fn test_logging_system() bool {
 	
 	mut logger := hono.new_logger(config)
 	
-	// 测试基本日志方法
+	//Test basic logging method
 	logger.info('测试信息日志')
 	logger.warn('测试警告日志')
 	logger.error('测试错误日志')
 	
-	// 测试日志级别转换
+	//Test log level conversion
 	if hono.parse_log_level('info') != hono.LogLevel.info {
 		return false
 	}
@@ -84,9 +84,9 @@ fn test_logging_system() bool {
 	return true
 }
 
-// 3. 测试安全验证
+// 3. Test security verification
 fn test_security_validation() bool {
-	// 测试危险路径
+	// Test dangerous paths
 	dangerous_paths := [
 		'../../../etc/passwd',
 		'..\\..\\windows\\system32',
@@ -98,25 +98,25 @@ fn test_security_validation() bool {
 	
 	for path in dangerous_paths {
 		hono.validate_file_path(path, options) or {
-			// 验证失败是期望的结果
+			// Validation failure is the expected result
 			continue
 		}
-		// 如果没有返回错误，说明危险路径通过了验证，这是不对的
+		// If no error is returned, it means that the dangerous path has passed the verification, which is incorrect.
 		return false
 	}
 	
-	// 测试安全路径
+	//Test safe path
 	safe_path := 'documents/file.txt'
 	hono.validate_file_path(safe_path, options) or {
-		return false  // 安全路径应该通过验证
+		return false  // The safe path should pass verification
 	}
 	
 	return true
 }
 
-// 4. 测试错误处理结构
+// 4. Test error handling structure
 fn test_error_handling() bool {
-	// 测试错误类型
+	//Test error type
 	error_types := [
 		hono.ErrorType.bad_request,
 		hono.ErrorType.unauthorized,
@@ -125,7 +125,7 @@ fn test_error_handling() bool {
 		hono.ErrorType.internal_server_error
 	]
 	
-	// 验证错误代码
+	//Verify error code
 	expected_codes := [400, 401, 403, 404, 500]
 	
 	for i, error_type in error_types {
@@ -137,51 +137,51 @@ fn test_error_handling() bool {
 	return true
 }
 
-// 5. 测试配置文件操作
+// 5. Test configuration file operation
 fn test_config_file_operations() bool {
 	config_path := './test_config.json'
 	
-	// 清理可能存在的测试文件
+	// Clean up any test files that may exist
 	if os.exists(config_path) {
 		os.rm(config_path) or { return false }
 	}
 	
-	// 创建和保存配置
+	//Create and save configuration
 	config := hono.default_config()
 	hono.save_config(config, config_path) or {
 		return false
 	}
 	
-	// 加载配置
+	//Load configuration
 	loaded_config := hono.load_config(config_path) or {
 		return false
 	}
 	
-	// 验证配置内容
+	//Verify configuration content
 	success := loaded_config.server.host == config.server.host &&
 			   loaded_config.server.port == config.server.port
 	
-	// 清理测试文件
+	// Clean test files
 	os.rm(config_path) or {}
 	
 	return success
 }
 
-// 6. 测试环境变量配置
+// 6. Test environment variable configuration
 fn test_env_config() bool {
-	// 设置环境变量
+	//Set environment variables
 	os.setenv('HONO_HOST', '0.0.0.0', true)
 	os.setenv('HONO_PORT', '9090', true)
 	os.setenv('HONO_ENV', 'production', true)
 	
 	config := hono.load_config_from_env()
 	
-	// 验证环境变量配置
+	//Verify environment variable configuration
 	success := config.server.host == '0.0.0.0' &&
 			   config.server.port == 9090 &&
 			   config.env == 'production'
 	
-	// 清理环境变量
+	// Clean up environment variables
 	os.unsetenv('HONO_HOST')
 	os.unsetenv('HONO_PORT')
 	os.unsetenv('HONO_ENV')
@@ -189,12 +189,12 @@ fn test_env_config() bool {
 	return success
 }
 
-// 7. 测试配置摘要
+// 7. Test configuration summary
 fn test_config_summary() bool {
 	config := hono.default_config()
 	summary := hono.get_config_summary(config)
 	
-	// 验证摘要包含关键信息
+	// Verification summary contains key information
 	return summary.contains('应用配置摘要') &&
 		   summary.contains('127.0.0.1:8080') &&
 		   summary.contains('development') &&
@@ -202,7 +202,7 @@ fn test_config_summary() bool {
 		   summary.contains('文件上传')
 }
 
-// 8. 测试配置合并
+// 8. Test configuration merge
 fn test_config_merge() bool {
 	base_config := hono.default_config()
 	mut override_config := hono.AppConfig{}
@@ -212,14 +212,14 @@ fn test_config_merge() bool {
 	
 	merged_config := hono.merge_config(base_config, override_config)
 	
-	// 验证合并结果
+	//Verify merge results
 	return merged_config.server.host == '0.0.0.0' &&
 		   merged_config.server.port == 9000 &&
 		   merged_config.env == 'production' &&
-		   merged_config.static.enabled == true  // 其他值应该保持默认
+		   merged_config.static.enabled == true  // Other values ​​should remain default
 }
 
-// 9. 测试上传配置结构
+// 9. Test the upload configuration structure
 fn test_upload_config_struct() bool {
 	config := hono.ChunkUploadConfig{
 		chunk_size: 1024 * 1024
@@ -228,16 +228,16 @@ fn test_upload_config_struct() bool {
 		upload_dir: './test_uploads/files'
 	}
 	
-	// 验证配置结构
+	//Verify configuration structure
 	return config.chunk_size == 1024 * 1024 &&
 		   config.max_file_size == 100 * 1024 * 1024 &&
 		   config.temp_dir == './test_uploads/chunks' &&
 		   config.upload_dir == './test_uploads/files'
 }
 
-// 10. 测试缓存配置
+// 10. Test cache configuration
 fn test_cache_config() bool {
-	// 测试缓存配置结构
+	//Test cache configuration structure
 	cache_config := hono.CacheConfig{
 		enabled: true
 		max_size: 1000
@@ -252,11 +252,11 @@ fn test_cache_config() bool {
 }
 
 fn main() {
-	println('🚀 开始V-Hono简化测试套件...\n')
+	println('🚀 开始vono简化测试套件...\n')
 	
 	mut stats := TestStats{}
 	
-	// 运行所有测试
+	//Run all tests
 	stats.run_test('配置管理', test_config_management)
 	stats.run_test('日志系统', test_logging_system)
 	stats.run_test('安全验证', test_security_validation)
@@ -268,6 +268,6 @@ fn main() {
 	stats.run_test('上传配置结构', test_upload_config_struct)
 	stats.run_test('缓存配置', test_cache_config)
 	
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

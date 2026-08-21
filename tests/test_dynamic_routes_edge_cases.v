@@ -5,28 +5,28 @@ import net.http
 fn main() {
 	println('=== 动态路由边界情况测试 ===')
 	
-	// 测试1: 特殊字符和编码
+	//Test 1: Special characters and encodings
 	test_special_characters()
 	
-	// 测试2: 长路径和深层嵌套
+	//Test 2: Long paths and deep nesting
 	test_long_paths()
 	
-	// 测试3: 相似路由冲突
+	//Test 3: Similar route conflict
 	test_route_conflicts()
 	
-	// 测试4: 参数边界值
+	//Test 4: Parameter boundary values
 	test_parameter_boundaries()
 	
-	// 测试5: 性能退化场景
+	//Test 5: Performance degradation scenario
 	test_performance_degradation()
 	
-	// 测试6: 内存使用测试
+	//Test 6: Memory usage test
 	test_memory_usage()
 	
-	// 测试7: 并发安全测试
+	//Test 7: Concurrency safety test
 	test_concurrent_access()
 	
-	// 测试8: 错误恢复测试
+	//Test 8: Error recovery test
 	test_error_recovery()
 	
 	println('✅ 动态路由边界情况测试完成')
@@ -37,7 +37,7 @@ fn test_special_characters() {
 	
 	mut app := hono.Hono.new()
 	
-	// 包含特殊字符的路由
+	//Routes containing special characters
 	special_routes := [
 		'/users/:user_id',
 		'/files/:filename',
@@ -53,7 +53,7 @@ fn test_special_characters() {
 		})
 	}
 	
-	// 测试包含特殊字符的路径 - 使用字符串表示 expect
+	// Test paths containing special characters - use string representation expect
 	special_test_cases := [
 		{ 'path': '/users/user123', 'expect': 'true', 'desc': '数字字母组合' },
 		{ 'path': '/users/USER_123', 'expect': 'true', 'desc': '大写字母下划线' },
@@ -113,7 +113,7 @@ fn test_long_paths() {
 	
 	mut app := hono.Hono.new()
 	
-	// 创建不同深度的嵌套路由
+	//Create nested routes of different depths
 	nesting_levels := [3, 5, 7, 10, 15]
 	
 	for level in nesting_levels {
@@ -131,7 +131,7 @@ fn test_long_paths() {
 		})
 	}
 	
-	// 创建长路径测试用例
+	//Create long path test cases
 	mut long_path_tests := []map[string]string{}
 	
 	for level in nesting_levels {
@@ -151,7 +151,7 @@ fn test_long_paths() {
 		}
 	}
 	
-	// 添加一些无效的长路径
+	//Add some invalid long paths
 	long_path_tests << {
 		'path': '/level0/value0/level1/value1/level2/value2/level3/value3/extra'
 		'level': 'invalid'
@@ -199,7 +199,7 @@ fn test_route_conflicts() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加可能冲突的路由
+	//Add possible conflicting routes
 	conflicting_routes := [
 		'/users/profile',
 		'/users/:id',
@@ -221,7 +221,7 @@ fn test_route_conflicts() {
 		})
 	}
 	
-	// 测试冲突解决
+	//Test conflict resolution
 	conflict_test_cases := [
 		{ 'path': '/users/profile', 'desc': '静态路由优先' },
 		{ 'path': '/users/123', 'desc': '动态路由匹配' },
@@ -265,7 +265,7 @@ fn test_parameter_boundaries() {
 	
 	mut app := hono.Hono.new()
 	
-	// 参数边界测试路由
+	//Parameter boundary test routing
 	boundary_routes := [
 		'/short/:id',
 		'/long/:very_long_parameter_name',
@@ -280,7 +280,7 @@ fn test_parameter_boundaries() {
 		})
 	}
 	
-	// 边界值测试用例 - 使用字符串表示 expect
+	// Boundary value test cases - use string representation expect
 	boundary_test_cases := [
 		{ 'path': '/short/1', 'desc': '单字符参数', 'expect': 'true' },
 		{ 'path': '/short/a', 'desc': '单字母参数', 'expect': 'true' },
@@ -341,7 +341,7 @@ fn test_performance_degradation() {
 	
 	mut app := hono.Hono.new()
 	
-	// 创建可能导致性能退化的路由模式
+	// Create routing patterns that may cause performance degradation
 	degradation_scenarios := [
 		{ 'name': '相似路由模式', 'count': '100', 'pattern': '/api/v1/resources/:id/items/:item_id' },
 		{ 'name': '复杂嵌套路由', 'count': '50', 'pattern': '/complex/:a/:b/:c/:d/:e/:f' },
@@ -363,7 +363,7 @@ fn test_performance_degradation() {
 		}
 	}
 	
-	// 测试性能退化
+	//Test performance degradation
 	test_iterations := [10, 100, 1000, 5000]
 	
 	for iterations in test_iterations {
@@ -393,7 +393,7 @@ fn test_performance_degradation() {
 		println('    ${iterations}次: ${match_count}/${total_requests} 匹配, 平均 ${avg_time:.3f}μs')
 	}
 	
-	// 显示最终统计
+	//display final statistics
 	static_count, dynamic_count, cache_count := app.fast_router.get_stats()
 	println('  📊 最终统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 }
@@ -403,16 +403,16 @@ fn test_memory_usage() {
 	
 	mut app := hono.Hono.new()
 	
-	// 测试不同规模的路由对内存的影响
+	//Test the impact of routing of different sizes on memory
 	memory_test_scales := [10, 50, 100, 500, 1000]
 	
 	for scale in memory_test_scales {
 		println('  测试 ${scale} 个路由的内存使用...')
 		
-		// 清理之前的路由
+		// Clean up previous routes
 		app = hono.Hono.new()
 		
-		// 添加指定数量的路由
+		//Add the specified number of routes
 		for i in 0 .. scale {
 			route_pattern := '/test${i}/:param1/:param2/:param3'
 			app.get(route_pattern, fn [i] (mut c hono.Context) http.Response {
@@ -420,18 +420,18 @@ fn test_memory_usage() {
 			})
 		}
 		
-		// 执行一些匹配操作来填充缓存
+		//Perform some matching operations to populate the cache
 		for i in 0 .. 10 {
 			test_path := '/test${i % scale}/value1/value2/value3'
 			app.fast_router.match_route('GET', test_path)
 		}
 		
-		// 获取统计信息
+		// Get statistics
 		_, dynamic_count, cache_count := app.fast_router.get_stats()
 		
 		println('    ${scale}个路由: 动态=${dynamic_count}, 缓存=${cache_count}')
 		
-		// 简单的内存使用估算
+		// Simple memory usage estimate
 		estimated_memory := dynamic_count * 200 + cache_count * 150
 		println('    估算内存使用: ~${estimated_memory} 字节')
 	}
@@ -442,7 +442,7 @@ fn test_concurrent_access() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加一些测试路由
+	//Add some test routes
 	concurrent_routes := [
 		'/concurrent/:id',
 		'/parallel/:type/:value',
@@ -455,7 +455,7 @@ fn test_concurrent_access() {
 		})
 	}
 	
-	// 模拟并发访问
+	// Simulate concurrent access
 	test_paths := [
 		'/concurrent/123',
 		'/parallel/user/create',
@@ -467,7 +467,7 @@ fn test_concurrent_access() {
 	
 	println('  模拟并发路由匹配...')
 	
-	// 连续快速执行多次匹配
+	// Perform multiple matches quickly and continuously
 	iterations := 1000
 	start_time := time.now()
 	mut success_count := 0
@@ -484,7 +484,7 @@ fn test_concurrent_access() {
 	
 	println('  📈 并发测试: ${success_count}/${iterations} 成功, 平均 ${avg_time:.3f}μs')
 	
-	// 检查缓存一致性
+	// Check cache consistency
 	_, dynamic_count, cache_count := app.fast_router.get_stats()
 	println('  📊 缓存状态: 动态=${dynamic_count}, 缓存=${cache_count}')
 }
@@ -494,12 +494,12 @@ fn test_error_recovery() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加正常路由
+	//Add normal route
 	app.get('/normal/:id', fn (mut c hono.Context) http.Response {
 		return c.text('normal response')
 	})
 	
-	// 测试各种错误情况的恢复 - 使用字符串表示 expect
+	// Test recovery from various error conditions - use string representation expect
 	error_test_cases := [
 		{ 'path': '/normal/123', 'desc': '正常路径', 'expect': 'true' },
 		{ 'path': '/nonexistent', 'desc': '不存在的路径', 'expect': 'false' },
@@ -517,7 +517,7 @@ fn test_error_recovery() {
 		start_time := time.now()
 		expect_match := test_case['expect'] == 'true'
 		
-		// 测试错误恢复
+		//Test error recovery
 		if _ := app.fast_router.match_route('GET', test_case['path']) {
 			match_time := time.since(start_time)
 			total_time += match_time
@@ -540,7 +540,7 @@ fn test_error_recovery() {
 			}
 		}
 		
-		// 验证系统仍然正常工作
+		// Verify that the system is still working properly
 		if _ := app.fast_router.match_route('GET', '/normal/recovery-test') {
 			println('    ↳ 系统恢复正常')
 		}

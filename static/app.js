@@ -1,12 +1,12 @@
-// V-Hono Static File Server - JavaScript Example
+// vono Static File Server - JavaScript Example
 
-console.log('🚀 V-Hono Static File Server loaded!');
+console.log('🚀 vono Static File Server loaded!');
 
-// 演示动态内容加载
+// Demonstrate dynamic content loading
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 DOM loaded successfully');
     
-    // 添加一些交互功能
+    //Add some interactive functions
     const features = document.querySelectorAll('.feature-list li');
     
     features.forEach((feature, index) => {
@@ -22,11 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // 添加时间戳
+    //Add timestamp
     const timestamp = new Date().toLocaleString('zh-CN');
     console.log(`⏰ Page loaded at: ${timestamp}`);
     
-    // 检查静态文件服务状态
+    // Check static file service status
     fetch('/api/status')
         .then(response => response.json())
         .then(data => {
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// 工具函数
+// Utility function
 function showMessage(message, type = 'info') {
     const colors = {
         info: '#4CAF50',
@@ -48,7 +48,7 @@ function showMessage(message, type = 'info') {
     console.log(`%c${message}`, `color: ${colors[type]}; font-weight: bold;`);
 }
 
-// 导出一些工具函数供其他脚本使用
+// Export some tool functions for use by other scripts
 window.VHonoUtils = {
     showMessage,
     getTimestamp: () => new Date().toISOString(),

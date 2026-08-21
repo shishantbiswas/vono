@@ -1,4 +1,4 @@
-// SSE Streaming Demo - Server-Sent Events Example for v-hono
+// SSE Streaming Demo - Server-Sent Events Example for vono
 // This example demonstrates all SSE streaming helper functions:
 // - stream() - Basic binary streaming
 // - stream_text() - Text streaming
@@ -151,7 +151,7 @@ fn main() {
 			stream.sleep(1000)
 			
 			// Send JSON data (multi-line formatted)
-			json_data := '{\n  "name": "v-hono",\n  "version": "1.0.0",\n  "features": ["SSE", "WebSocket", "Streaming"]\n}'
+			json_data := '{\n  "name": "vono",\n  "version": "1.0.0",\n  "features": ["SSE", "WebSocket", "Streaming"]\n}'
 			stream.write_sse(hono.SSEEvent{
 				data: json_data
 				event: 'json'
@@ -344,7 +344,7 @@ fn get_sse_test_page() string {
 	return '<!DOCTYPE html>
 <html>
 <head>
-<title>v-hono SSE Streaming Demo</title>
+<title>vono SSE Streaming Demo</title>
 <style>
 * { box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
@@ -380,7 +380,7 @@ button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; f
 </style>
 </head>
 <body>
-<h1>v-hono SSE Streaming Demo</h1>
+<h1>vono SSE Streaming Demo</h1>
 <p class="subtitle">Test Server-Sent Events and streaming responses</p>
 
 <div class="grid">

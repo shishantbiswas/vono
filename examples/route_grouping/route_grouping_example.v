@@ -1,7 +1,7 @@
-// V-Hono 路由分组示例
-// 参考 Hono.js 的路由分组功能: https://hono.dev/docs/api/routing#grouping
+// vono routing grouping example
+// Refer to the routing grouping function of Hono.js: https://hono.dev/docs/api/routing#grouping
 //
-// Hono.js 路由分组示例:
+//Hono.js route grouping example:
 // ```typescript
 // const book = new Hono()
 // book.get('/', (c) => c.text('List Books'))
@@ -15,28 +15,28 @@ import net.http
 import meiseayoung.hono
 
 fn main() {
-	println('🚀 V-Hono 路由分组示例启动中...')
+	println('🚀 vono 路由分组示例启动中...')
 	
-	// 创建主应用
+	//Create the main application
 	mut app := hono.Hono.new()
 	
-	// 添加全局日志中间件
+	//Add global log middleware
 	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		println('[LOG] ${c.req.method} ${c.path}')
 		return next(mut c)
 	})
 	
-	// 根路由
+	//Root route
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.html(generate_index_page())
 	})
 	
 	// ========================================
-	// 路由分组: Books API - /api/books
+	//Route grouping: Books API - /api/books
 	// ========================================
 	mut books := hono.Hono.new()
 	
-	// 在子应用中定义相对路径，挂载时会自动添加前缀
+	// Define the relative path in the sub-application, and the prefix will be automatically added when mounting
 	books.get('/', fn (mut c hono.Context) http.Response {
 		return c.json('[{"id": 1, "title": "V Programming"}, {"id": 2, "title": "Web Development"}]')
 	})
@@ -61,11 +61,11 @@ fn main() {
 		return c.text('')
 	})
 	
-	// 挂载 books 路由组到 /api/books
+	//Mount books routing group to /api/books
 	app.route('/api/books', mut books)
 	
 	// ========================================
-	// 路由分组: Users API - /api/users
+	//Route grouping: Users API - /api/users
 	// ========================================
 	mut users := hono.Hono.new()
 	
@@ -94,11 +94,11 @@ fn main() {
 		return c.json('{"message": "User created", "body": "${c.body}"}')
 	})
 	
-	// 挂载 users 路由组到 /api/users
+	//Mount the users routing group to /api/users
 	app.route('/api/users', mut users)
 	
 	// ========================================
-	// 路由分组: Admin API - /admin
+	//Route grouping: Admin API - /admin
 	// ========================================
 	mut admin := hono.Hono.new()
 	
@@ -114,35 +114,35 @@ fn main() {
 		return c.json('{"theme": "dark", "language": "zh-CN"}')
 	})
 	
-	// 挂载 admin 路由组到 /admin
+	//Mount the admin routing group to /admin
 	app.route('/admin', mut admin)
 	
 	// ========================================
-	// 其他路由（直接在主应用定义）
+	// Other routes (defined directly in the main application)
 	// ========================================
 	app.get('/health', fn (mut c hono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
 	
 	app.get('/api/version', fn (mut c hono.Context) http.Response {
-		return c.json('{"version": "1.0.0", "name": "V-Hono API"}')
+		return c.json('{"version": "1.0.0", "name": "vono API"}')
 	})
 	
-	// 打印路由信息
+	//Print routing information
 	print_routes_info()
 	
-	// 启动服务器
+	// Start the server
 	app.listen(':8080')
 }
 
-// 生成首页 HTML
+// Generate homepage HTML
 fn generate_index_page() string {
 	return '<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Hono 路由分组示例</title>
+    <title>vono 路由分组示例</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
         .group { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
@@ -157,7 +157,7 @@ fn generate_index_page() string {
     </style>
 </head>
 <body>
-    <h1>🚀 V-Hono 路由分组示例</h1>
+    <h1>🚀 vono 路由分组示例</h1>
     <p>参考 <a href="https://hono.dev/docs/api/routing#grouping">Hono.js 路由分组</a> 实现</p>
     
     <div class="group">
@@ -193,22 +193,22 @@ fn generate_index_page() string {
     
     <div class="group">
         <h2>💻 代码示例</h2>
-        <pre>// 创建路由组
+        <pre>//Create routing group
 mut books := hono.Hono.new()
 
-// 在子应用中定义相对路径
+// Define relative paths in sub-applications
 books.get("/", handler)           // -> /api/books
 books.get("/:id", handler)        // -> /api/books/:id
 books.post("/", handler)          // -> /api/books
 
-// 挂载到主应用
+//Mount to main application
 app.route("/api/books", mut books)</pre>
     </div>
 </body>
 </html>'
 }
 
-// 打印路由信息
+//Print routing information
 fn print_routes_info() {
 	println('')
 	println('📍 服务器地址: http://127.0.0.1:8080')

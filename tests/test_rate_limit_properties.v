@@ -2,7 +2,7 @@ import rand
 import time
 import sync
 
-// Rate Limit Middleware 属性测试
+// Rate Limit Middleware property test
 // Property-Based Testing for Rate Limiting functionality
 // 
 // Feature: builtin-middleware, Property 12: Rate Limit Counter Accuracy
@@ -116,7 +116,7 @@ fn (s TestMemoryStore) get_entry(key string) ?TestRateLimitEntry {
 // Helper Functions
 // ============================================================================
 
-// 生成随机 IP 地址
+// Generate a random IP address
 fn generate_random_ip() string {
 	a := rand.int_in_range(1, 255) or { 192 }
 	b := rand.int_in_range(0, 255) or { 168 }
@@ -125,7 +125,7 @@ fn generate_random_ip() string {
 	return '${a}.${b}.${c}.${d}'
 }
 
-// 生成随机 key
+// Generate random key
 fn generate_random_key() string {
 	chars := 'abcdefghijklmnopqrstuvwxyz0123456789'
 	len := rand.int_in_range(5, 20) or { 10 }

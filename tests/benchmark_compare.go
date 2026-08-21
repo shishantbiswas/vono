@@ -1,9 +1,9 @@
-// 高并发基准测试 - 用于对比 v-hono 内外性能
-// 参数与外层 benchmark.go 保持一致: 500 并发, 100万请求
+// High concurrency benchmark - used to compare vono internal and external performance
+// Parameters are consistent with the outer benchmark.go: 500 concurrency, 1 million requests
 //
-// 使用方法:
-// 1. 启动服务器: v -enable-globals run v-hono/tests/test_picoev_server.v
-// 2. 运行测试: go run v-hono/tests/benchmark_compare.go
+// How to use:
+// 1. Start the server: v -enable-globals run vono/tests/test_picoev_server.v
+// 2. Run the test: go run vono/tests/benchmark_compare.go
 
 package main
 
@@ -37,7 +37,7 @@ type Metrics struct {
 }
 
 func main() {
-	fmt.Println("🔥 V-Hono 高并发基准测试")
+	fmt.Println("🔥 vono 高并发基准测试")
 	fmt.Println(strings.Repeat("=", 50))
 	fmt.Printf("服务器: %s\n", baseURL)
 	fmt.Printf("并发数: %d\n", connections)
@@ -45,20 +45,20 @@ func main() {
 	fmt.Printf("超时:   %v\n", timeout)
 	fmt.Println()
 
-	// 检查服务器
+	// Check the server
 	if !checkServer() {
 		fmt.Println("❌ 服务器未运行")
-		fmt.Println("   请先启动: v -enable-globals run v-hono/tests/test_picoev_server.v")
+		fmt.Println("   请先启动: v -enable-globals run vono/tests/test_picoev_server.v")
 		return
 	}
 	fmt.Println("✅ 服务器已就绪")
 
-	// 预热
+	// preheat
 	fmt.Println("\n🔥 预热服务器...")
 	warmup()
 	fmt.Println("✅ 预热完成")
 
-	// 运行测试
+	// run test
 	testCases := []struct {
 		name string
 		path string
@@ -82,7 +82,7 @@ func main() {
 		time.Sleep(2 * time.Second)
 	}
 
-	// 汇总
+	// Summary
 	printSummary(allResults)
 }
 
@@ -130,11 +130,11 @@ func runBenchmark(endpoint string) *Metrics {
 	var wg sync.WaitGroup
 	var latencyMutex sync.Mutex
 
-	// 进度显示
+	// progress display
 	done := make(chan bool)
 	go showProgress(metrics, done)
 
-	// 启动工作协程
+	//Start the work coroutine
 	for i := 0; i < connections; i++ {
 		wg.Add(1)
 		go func() {

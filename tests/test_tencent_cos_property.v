@@ -9,7 +9,7 @@ import net.urllib
 // ============================================================================
 // Property 1: Upload-Download Round Trip (COS)
 // Property 4: Presigned URL Validity (COS)
-// Feature: v-hono-upload-integration, Property 1 & 4
+// Feature: vono-upload-integration, Property 1 & 4
 // Validates: Requirements 5.3, 5.4
 //
 // Since we cannot test against a real Tencent COS server without credentials,
@@ -157,7 +157,7 @@ fn (c TencentCOS) provider_name() string {
 }
 
 fn (c TencentCOS) get_host(bucket string) string {
-	// COS 域名格式: <BucketName-APPID>.cos.<Region>.myqcloud.com
+	// COS domain name format: <BucketName-APPID>.cos.<Region>.myqcloud.com
 	if bucket != '' {
 		return '${bucket}.cos.${c.config.region}.myqcloud.com'
 	}
@@ -214,33 +214,33 @@ fn (c TencentCOS) presign_url(bucket string, key string, options PresignOptions)
 	now := time.utc()
 	timestamp := now.unix()
 
-	// 计算签名有效期
+	// Calculate signature validity period
 	start_time := timestamp - 60
 	end_time := timestamp + i64(options.expires_in)
 	key_time := '${start_time};${end_time}'
 
-	// 构建 URI
+	// Build URI
 	uri := c.get_uri_path(key)
 
-	// 构建待签名字符串
+	//Construct the string to be signed
 	// HttpString = [HttpMethod]\n[HttpURI]\n[HttpParameters]\n[HttpHeaders]\n
 	http_string := '${options.method.to_lower()}\n${uri}\n\n\n'
 
-	// 计算 SHA1 哈希
+	// Calculate SHA1 hash
 	request_hash := sha1.sum(http_string.bytes())
 	hashed_request := hex.encode(request_hash).to_lower()
 
 	// StringToSign = q-sign-algorithm\nq-sign-time\nSha1Digest\n
 	string_to_sign := 'sha1\n${key_time}\n${hashed_request}\n'
 
-	// 计算签名密钥
+	// Calculate signature key
 	signing_key := cos_test_hmac_sha1(c.config.secret_key.bytes(), key_time.bytes())
 
-	// 计算签名
+	// Calculate signature
 	signature := cos_test_hmac_sha1(signing_key, string_to_sign.bytes())
 	signature_hex := hex.encode(signature).to_lower()
 
-	// 构建 URL
+	// Build URL
 	host := c.get_host(bucket)
 	encoded_key := c.encode_key(key)
 
@@ -894,7 +894,7 @@ fn test_property_10_special_character_encoding() bool {
 
 fn main() {
 	println('🚀 开始 Tencent COS Storage 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 1 & 4: Upload-Download Round Trip (COS) & Presigned URL Validity')
+	println('Feature: vono-upload-integration, Property 1 & 4: Upload-Download Round Trip (COS) & Presigned URL Validity')
 	println('Validates: Requirements 5.3, 5.4')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

@@ -3,7 +3,7 @@ module hono
 import net.http
 import x.json2
 
-// 错误类型枚举
+// Error type enumeration
 pub enum ErrorType {
 	bad_request = 400
 	unauthorized = 401
@@ -20,7 +20,7 @@ pub enum ErrorType {
 	service_unavailable = 503
 }
 
-// 标准化错误响应结构
+// Standardized error response structure
 pub struct ErrorResponse {
 pub:
 	error       string
@@ -31,15 +31,15 @@ pub:
 	details     map[string]string
 }
 
-// 错误处理器接口
+// Error handler interface
 pub interface IErrorHandler {
 	handle_error(mut c Context, error_type ErrorType, message string, details map[string]string) http.Response
 }
 
-// 默认错误处理器
+//Default error handler
 pub struct DefaultErrorHandler {}
 
-// 实现错误处理器接口
+// Implement the error handler interface
 pub fn (eh DefaultErrorHandler) handle_error(mut c Context, error_type ErrorType, message string, details map[string]string) http.Response {
 	error_response := ErrorResponse{
 		error: get_error_name(error_type)
@@ -54,7 +54,7 @@ pub fn (eh DefaultErrorHandler) handle_error(mut c Context, error_type ErrorType
 	return c.json(json2.encode[ErrorResponse](error_response))
 }
 
-// 获取错误名称
+// Get the error name
 fn get_error_name(error_type ErrorType) string {
 	return match error_type {
 		.bad_request { 'Bad Request' }
@@ -73,13 +73,13 @@ fn get_error_name(error_type ErrorType) string {
 	}
 }
 
-// 获取当前时间戳
+// Get the current timestamp
 fn get_current_timestamp() string {
-	// 简化的时间戳实现
+	// Simplified timestamp implementation
 	return '2025-12-26T00:00:00Z'
 }
 
-// Context 扩展方法 - 便捷的错误处理
+// Context extension method - convenient error handling
 pub fn (mut c Context) error_response(error_type ErrorType, message string) http.Response {
 	return c.error_response_with_details(error_type, message, map[string]string{})
 }
@@ -89,7 +89,7 @@ pub fn (mut c Context) error_response_with_details(error_type ErrorType, message
 	return handler.handle_error(mut c, error_type, message, details)
 }
 
-// 常用错误处理快捷方法
+//Common error handling shortcuts
 pub fn (mut c Context) bad_request(message string) http.Response {
 	return c.error_response(.bad_request, message)
 }
@@ -114,7 +114,7 @@ pub fn (mut c Context) validation_error(message string, field_errors map[string]
 	return c.error_response_with_details(.unprocessable_entity, message, field_errors)
 }
 
-// 参数验证错误处理
+//Parameter validation error handling
 pub fn (mut c Context) missing_parameter(param_name string) http.Response {
 	return c.bad_request('Missing required parameter: ${param_name}')
 }
@@ -127,7 +127,7 @@ pub fn (mut c Context) invalid_parameter(param_name string, reason string) http.
 	return c.error_response_with_details(.bad_request, 'Invalid parameter: ${param_name}', details)
 }
 
-// 资源相关错误处理
+// Resource related error handling
 pub fn (mut c Context) resource_not_found(resource_type string, resource_id string) http.Response {
 	details := {
 		'resource_type': resource_type
@@ -144,7 +144,7 @@ pub fn (mut c Context) resource_conflict(resource_type string, reason string) ht
 	return c.error_response_with_details(.conflict, 'Resource conflict: ${reason}', details)
 }
 
-// 文件操作错误处理
+//File operation error handling
 pub fn (mut c Context) file_operation_error(operation string, filename string, reason string) http.Response {
 	details := {
 		'operation': operation
@@ -154,7 +154,7 @@ pub fn (mut c Context) file_operation_error(operation string, filename string, r
 	return c.error_response_with_details(.internal_server_error, 'File operation failed: ${operation}', details)
 }
 
-// 数据库操作错误处理
+//Database operation error handling
 pub fn (mut c Context) database_error(operation string, reason string) http.Response {
 	details := {
 		'operation': operation
@@ -163,24 +163,24 @@ pub fn (mut c Context) database_error(operation string, reason string) http.Resp
 	return c.error_response_with_details(.internal_server_error, 'Database operation failed', details)
 }
 
-// 验证结果处理
+//Verification result processing
 pub fn handle_validation_result[T](mut c Context, result !T, param_name string) !T {
 	return result or {
-		// 这里不能直接返回 http.Response，需要在调用处处理
+		// http.Response cannot be returned directly here, it needs to be processed at the calling site
 		return error('Validation failed for ${param_name}: ${err}')
 	}
 }
 
-// 全局错误处理中间件
+//Global error handling middleware
 pub fn error_handling_middleware() fn (mut Context, fn (mut Context) http.Response) http.Response {
 	return fn (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 捕获 panic 并转换为错误响应
-		// V语言目前不支持 try-catch，这里提供结构化的错误处理框架
+		//Catch panic and convert into error response
+		//V language currently does not support try-catch. A structured error handling framework is provided here.
 		response := next(mut c)
 		
-		// 如果响应状态码是错误状态，确保响应格式一致
+		// If the response status code is an error status, ensure that the response format is consistent
 		if c.status_code >= 400 {
-			// 如果响应体不是标准错误格式，转换为标准格式
+			// If the response body is not in standard error format, convert it to standard error format
 			if !response.body.contains('"error"') {
 				error_type := match c.status_code {
 					400 { ErrorType.bad_request }
@@ -200,7 +200,7 @@ pub fn error_handling_middleware() fn (mut Context, fn (mut Context) http.Respon
 	}
 }
 
-// 错误日志记录
+// Error logging
 pub struct ErrorLogger {
 mut:
 	enabled bool = true
@@ -220,7 +220,7 @@ pub fn (mut logger ErrorLogger) log_error(error_response ErrorResponse, request_
 	println('  Request: ${request_info}')
 }
 
-// 创建错误日志实例
+//Create error log instance
 pub fn new_error_logger() ErrorLogger {
 	return ErrorLogger{
 		enabled: true

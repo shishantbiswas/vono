@@ -5,19 +5,19 @@ import net.http
 fn main() {
 	println('=== 最终优化性能基准测试 ===')
 	
-	// 测试1: 单路由性能对比（FastRouter vs HybridRouter）
+	//Test 1: Single route performance comparison (FastRouter vs HybridRouter)
 	test_single_route_comparison()
 	
-	// 测试2: 多路由性能对比
+	//Test 2: Multi-routing performance comparison
 	test_multiple_routes_comparison()
 	
-	// 测试3: 大规模路由性能对比
+	//Test 3: Large-scale routing performance comparison
 	test_large_scale_comparison()
 	
-	// 测试4: 实际应用场景性能测试
+	//Test 4: Actual application scenario performance test
 	test_real_world_scenario()
 	
-	// 测试5: 内存使用对比
+	//Test 5: Memory usage comparison
 	test_memory_usage_comparison()
 	
 	println('✅ 最终优化性能基准测试完成')
@@ -29,14 +29,14 @@ fn test_single_route_comparison() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// 创建使用FastRouter的应用
+	//Create an application using FastRouter
 	mut app_fast := hono.Hono.new()
 	app_fast.set_fast_router_enabled(true)
 	app_fast.get(route_path, fn (mut c hono.Context) http.Response {
 		return c.text('fast router response')
 	})
 	
-	// 创建使用HybridRouter的应用
+	//Create an application using HybridRouter
 	mut app_hybrid := hono.Hono.new()
 	app_hybrid.set_fast_router_enabled(false)
 	app_hybrid.get(route_path, fn (mut c hono.Context) http.Response {
@@ -45,7 +45,7 @@ fn test_single_route_comparison() {
 	
 	iterations := 10000
 	
-	// 测试FastRouter（第一次匹配）
+	//Test FastRouter (first match)
 	app_fast.clear_cache()
 	
 	start_time1 := time.now()
@@ -58,7 +58,7 @@ fn test_single_route_comparison() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter（第一次匹配）
+	//Test HybridRouter (first match)
 	app_hybrid.clear_cache()
 	
 	start_time2 := time.now()
@@ -90,7 +90,7 @@ fn test_single_route_comparison() {
 		}
 	}
 	
-	// 测试缓存匹配性能
+	//Test cache matching performance
 	start_time3 := time.now()
 	mut fast_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -132,7 +132,7 @@ fn test_single_route_comparison() {
 fn test_multiple_routes_comparison() {
 	println('\n📊 多路由性能对比...')
 	
-	// 定义测试路由
+	//Define test route
 	test_routes := [
 		{
 			'route': '/users/:id'
@@ -156,7 +156,7 @@ fn test_multiple_routes_comparison() {
 		}
 	]
 	
-	// 创建FastRouter应用
+	// Create FastRouter application
 	mut app_fast := hono.Hono.new()
 	app_fast.set_fast_router_enabled(true)
 	for route_info in test_routes {
@@ -165,7 +165,7 @@ fn test_multiple_routes_comparison() {
 		})
 	}
 	
-	// 创建HybridRouter应用
+	// Create HybridRouter application
 	mut app_hybrid := hono.Hono.new()
 	app_hybrid.set_fast_router_enabled(false)
 	for route_info in test_routes {
@@ -176,7 +176,7 @@ fn test_multiple_routes_comparison() {
 	
 	iterations := 5000
 	
-	// 测试FastRouter
+	//Test FastRouter
 	app_fast.clear_cache()
 	
 	start_time1 := time.now()
@@ -190,7 +190,7 @@ fn test_multiple_routes_comparison() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter
+	//Test HybridRouter
 	app_hybrid.clear_cache()
 	
 	start_time2 := time.now()
@@ -223,7 +223,7 @@ fn test_multiple_routes_comparison() {
 		}
 	}
 	
-	// 显示统计信息
+	// Display statistics
 	println('\n  路由统计:')
 	fast_static, fast_dynamic, fast_cache, _ := app_fast.get_router_stats()
 	hybrid_static, hybrid_dynamic, hybrid_cache, _ := app_hybrid.get_router_stats()
@@ -235,7 +235,7 @@ fn test_multiple_routes_comparison() {
 fn test_large_scale_comparison() {
 	println('\n📊 大规模路由性能对比...')
 	
-	// 创建大量路由
+	//Create a large number of routes
 	mut app_fast := hono.Hono.new()
 	app_fast.set_fast_router_enabled(true)
 	
@@ -256,7 +256,7 @@ fn test_large_scale_comparison() {
 		})
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/api/v1/resources/123/items/456',
 		'/api/v25/resources/789/items/101',
@@ -267,7 +267,7 @@ fn test_large_scale_comparison() {
 	
 	iterations := 2000
 	
-	// 测试FastRouter
+	//Test FastRouter
 	start_time1 := time.now()
 	mut fast_matches := 0
 	for _ in 0 .. iterations {
@@ -279,7 +279,7 @@ fn test_large_scale_comparison() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter
+	//Test HybridRouter
 	start_time2 := time.now()
 	mut hybrid_matches := 0
 	for _ in 0 .. iterations {
@@ -314,33 +314,33 @@ fn test_large_scale_comparison() {
 fn test_real_world_scenario() {
 	println('\n📊 实际应用场景性能测试...')
 	
-	// 模拟真实的Web应用路由
+	// Simulate real web application routing
 	mut app_fast := hono.Hono.new()
 	app_fast.set_fast_router_enabled(true)
 	
 	mut app_hybrid := hono.Hono.new()
 	app_hybrid.set_fast_router_enabled(false)
 	
-	// 添加常见的Web应用路由
+	//Add common web application routes
 	real_routes := [
-		// 用户管理
+		//User management
 		'/users',
 		'/users/:id',
 		'/users/:id/profile',
 		'/users/:id/settings',
-		// API路由
+		//API routing
 		'/api/v1/users',
 		'/api/v1/users/:id',
 		'/api/v1/users/:id/posts',
 		'/api/v1/users/:id/posts/:post_id',
-		// 文件管理
+		//File management
 		'/files/:category/:filename',
 		'/files/:year/:month/:day/:filename',
-		// 商店功能
+		// store function
 		'/shop/categories/:category',
 		'/shop/categories/:category/products',
 		'/shop/categories/:category/products/:product_id',
-		// 管理后台
+		// Management background
 		'/admin/dashboard',
 		'/admin/users/:id',
 		'/admin/reports/:type/:date'
@@ -356,9 +356,9 @@ fn test_real_world_scenario() {
 		})
 	}
 	
-	// 模拟真实的访问模式（某些路由访问频率更高）
+	//Simulate real access patterns (some routes are accessed more frequently)
 	test_scenarios := [
-		// 高频访问
+		//High frequency access
 		{
 			'path': '/api/v1/users/123'
 			'weight': '30'
@@ -367,7 +367,7 @@ fn test_real_world_scenario() {
 			'path': '/users/456/profile'
 			'weight': '25'
 		},
-		// 中频访问
+		//Intermediate frequency access
 		{
 			'path': '/shop/categories/electronics/products/999'
 			'weight': '15'
@@ -376,7 +376,7 @@ fn test_real_world_scenario() {
 			'path': '/files/2023/12/26/document.pdf'
 			'weight': '10'
 		},
-		// 低频访问
+		// low frequency access
 		{
 			'path': '/admin/users/789'
 			'weight': '5'
@@ -387,7 +387,7 @@ fn test_real_world_scenario() {
 		}
 	]
 	
-	// 构建加权测试路径
+	//Construct a weighted test path
 	mut weighted_paths := []string{}
 	for scenario in test_scenarios {
 		weight := scenario['weight'].int()
@@ -398,7 +398,7 @@ fn test_real_world_scenario() {
 	
 	iterations := 1000
 	
-	// 测试FastRouter
+	//Test FastRouter
 	start_time1 := time.now()
 	mut fast_matches := 0
 	for _ in 0 .. iterations {
@@ -410,7 +410,7 @@ fn test_real_world_scenario() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter
+	//Test HybridRouter
 	start_time2 := time.now()
 	mut hybrid_matches := 0
 	for _ in 0 .. iterations {
@@ -445,7 +445,7 @@ fn test_real_world_scenario() {
 fn test_memory_usage_comparison() {
 	println('\n📊 内存使用对比...')
 	
-	// 创建大量路由来测试内存使用
+	//Create a large number of routes to test memory usage
 	mut app_fast := hono.Hono.new()
 	app_fast.set_fast_router_enabled(true)
 	
@@ -468,7 +468,7 @@ fn test_memory_usage_comparison() {
 		})
 	}
 	
-	// 显示路由统计
+	//Display routing statistics
 	fast_static, fast_dynamic, fast_cache, _ := app_fast.get_router_stats()
 	hybrid_static, hybrid_dynamic, hybrid_cache, _ := app_hybrid.get_router_stats()
 	
@@ -476,7 +476,7 @@ fn test_memory_usage_comparison() {
 	println('    FastRouter - 静态: ${fast_static}, 动态: ${fast_dynamic}, 缓存: ${fast_cache}')
 	println('    HybridRouter - 静态: ${hybrid_static}, 动态: ${hybrid_dynamic}, 缓存: ${hybrid_cache}')
 	
-	// 测试缓存增长
+	//Test cache growth
 	test_paths := [
 		'/api/v1/category5/resource10/123/item/456',
 		'/api/v2/category8/resource25/789/item/101',

@@ -5,40 +5,40 @@ import net.http
 fn main() {
 	println('=== 动态路由综合测试用例 ===')
 	
-	// 测试1: RESTful API 路由模式
+	//Test 1: RESTful API routing pattern
 	test_restful_api_routes()
 	
-	// 测试2: 嵌套资源路由
+	//Test 2: Nested resource routing
 	test_nested_resource_routes()
 	
-	// 测试3: 文件系统路由
+	//Test 3: File system routing
 	test_filesystem_routes()
 	
-	// 测试4: 多版本API路由
+	//Test 4: Multi-version API routing
 	test_versioned_api_routes()
 	
-	// 测试5: 电商平台路由
+	// Test 5: E-commerce platform routing
 	test_ecommerce_routes()
 	
-	// 测试6: 内容管理系统路由
+	//Test 6: Content Management System Routing
 	test_cms_routes()
 	
-	// 测试7: 社交媒体路由
+	// Test 7: Social media routing
 	test_social_media_routes()
 	
-	// 测试8: 复杂参数路由
+	//Test 8: Complex parameter routing
 	test_complex_parameter_routes()
 	
-	// 测试9: 通配符路由
+	//Test 9: Wildcard routing
 	test_wildcard_routes()
 	
-	// 测试10: 性能压力测试
+	//Test 10: Performance stress test
 	test_performance_stress()
 	
 	println('✅ 动态路由综合测试完成')
 }
 
-// 测试用例结构
+//Test case structure
 struct TestCase {
 	method string
 	path   string
@@ -50,7 +50,7 @@ fn test_restful_api_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 用户资源路由
+	// User resource routing
 	app.get('/users', fn (mut c hono.Context) http.Response { return c.text('GET response') })
 	app.post('/users', fn (mut c hono.Context) http.Response { return c.text('POST response') })
 	app.get('/users/:id', fn (mut c hono.Context) http.Response { return c.text('GET response') })

@@ -1,6 +1,6 @@
 // test_picoev_stream_writer_properties.v
 // Property-Based Testing for PicoevStreamWriter chunked encoding
-// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 // Validates: Requirements 6.2
 module main
 
@@ -166,8 +166,8 @@ fn parse_hex(hex_str string) !int {
 }
 
 // ============================================================================
-// Property 10: Chunked 编码格式正确性
-// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+// Property 10: Chunked encoding format correctness
+// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 // Validates: Requirements 6.2
 //
 // *For any* data written to the stream, the output SHALL follow HTTP chunked 
@@ -420,7 +420,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 10 tests
-	// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+	// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 	// Validates: Requirements 6.2
 	stats.run_property_test('Property 10a: format_chunk bytes encoding', test_property_10a_format_chunk_bytes)
 	stats.run_property_test('Property 10b: format_chunk_string encoding', test_property_10b_format_chunk_string)

@@ -1,8 +1,8 @@
-// uSockets 集成测试 (Go 版本)
+// uSockets integration tests (Go version)
 //
-// 使用方法:
-// 1. 先启动测试服务器: v run v-hono/tests/test_usockets_server.v
-// 2. 运行测试: go run v-hono/tests/test_usockets_integration.go
+// How to use:
+// 1. Start the test server first: v run vono/tests/test_usockets_server.v
+// 2. Run the test: go run vono/tests/test_usockets_integration.go
 
 package main
 
@@ -60,11 +60,11 @@ func main() {
 	fmt.Println("╚═══════════════════════════════════════════════════════════════╝")
 	fmt.Println()
 
-	// 验证服务器是否运行
+	// Verify that the server is running
 	fmt.Println("🔍 检查 uSockets 测试服务器...")
 	if !checkServerReady() {
 		fmt.Println("❌ 服务器未运行")
-		fmt.Println("   请先启动: v run v-hono/tests/test_usockets_server.v")
+		fmt.Println("   请先启动: v run vono/tests/test_usockets_server.v")
 		return
 	}
 	fmt.Println("✅ 服务器已就绪")
@@ -72,49 +72,49 @@ func main() {
 
 	stats := &TestStats{}
 
-	// 1. 基本路由测试
+	// 1. Basic routing test
 	fmt.Println("📦 1. 基本路由测试")
 	stats.run("GET /", testGetRoot)
 	stats.run("GET /health", testGetHealth)
 	fmt.Println()
 
-	// 2. JSON 响应测试
+	// 2. JSON response test
 	fmt.Println("📦 2. JSON 响应测试")
 	stats.run("GET /api/json", testJSONResponse)
 	fmt.Println()
 
-	// 3. 动态路由测试
+	// 3. Dynamic routing test
 	fmt.Println("📦 3. 动态路由测试")
 	stats.run("GET /api/users/:id", testSingleParam)
 	stats.run("GET /api/users/:user_id/posts/:post_id", testMultiParams)
 	fmt.Println()
 
-	// 4. 查询参数测试
+	// 4. Query parameter test
 	fmt.Println("📦 4. 查询参数测试")
 	stats.run("GET /api/search?q=hello", testQueryParam)
 	fmt.Println()
 
-	// 5. 404 测试
+	// 5. 404 test
 	fmt.Println("📦 5. 404 测试")
 	stats.run("404 Not Found", testNotFound)
 	fmt.Println()
 
-	// 6. Keep-Alive 测试
+	// 6. Keep-Alive test
 	fmt.Println("📦 6. Keep-Alive 连接测试")
 	stats.run("Keep-Alive 连接复用", testKeepAlive)
 	fmt.Println()
 
-	// 7. 性能测试
+	// 7. Performance testing
 	fmt.Println("📦 7. 性能测试")
 	stats.run("吞吐量测试", testThroughput)
 	fmt.Println()
 
-	// 8. 高并发基准测试
+	// 8. High concurrency benchmark test
 	fmt.Println("📦 8. Keep-Alive 基准测试")
 	testBenchmark()
 	fmt.Println()
 
-	// 输出总结
+	// Output summary
 	stats.summary()
 }
 
@@ -221,14 +221,14 @@ func testBenchmark() {
 	}
 	defer conn.Close()
 
-	// 预热
+	// preheat
 	for i := 0; i < 100; i++ {
 		fmt.Fprintf(conn, "GET /health HTTP/1.1\r\nHost: 127.0.0.1:9998\r\nConnection: keep-alive\r\n\r\n")
 		buf := make([]byte, 256)
 		conn.Read(buf)
 	}
 
-	// 正式测试
+	//Formal testing
 	start := time.Now()
 	success := 0
 

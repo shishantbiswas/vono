@@ -4,8 +4,8 @@ import os
 import time
 import crypto.md5
 
-// FileService 统一文件服务层
-// 提供高级文件操作 API，管理存储提供者和元数据
+// FileService unified file service layer
+// Provide high-level file operation API, manage storage providers and metadata
 @[heap]
 pub struct FileService {
 mut:
@@ -13,11 +13,11 @@ mut:
 	db            DatabaseManager
 	config        FileServiceConfig
 	chunk_manager ChunkManager
-	// 用于热加载的配置
+	// Configuration for hot reloading
 	current_config StorageConfig
 }
 
-// FileService 配置
+//FileService configuration
 pub struct FileServiceConfig {
 pub:
 	storage        StorageConfig
@@ -27,16 +27,16 @@ pub:
 	max_file_size  i64    = 5 * 1024 * 1024 * 1024 // 5GB
 }
 
-// 文件上传参数
+//File upload parameters
 pub struct UploadParams {
 pub:
 	bucket       string
 	filename     string
 	content_type string
-	metadata     string // JSON 格式的额外元数据
+	metadata     string // Additional metadata in JSON format
 }
 
-// 文件上传结果
+//File upload results
 pub struct UploadResult {
 pub:
 	file_uuid    string
@@ -51,7 +51,7 @@ pub:
 	created_at   i64
 }
 
-// 预签名 URL 结果
+// Pre-signed URL result
 pub struct PresignResult {
 pub:
 	url        string
@@ -60,10 +60,10 @@ pub:
 }
 
 // ============================================================================
-// 存储提供者工厂方法
+// Storage provider factory method
 // ============================================================================
 
-// 根据配置创建存储提供者
+//Create a storage provider based on configuration
 pub fn create_storage_provider(config StorageConfig) !&StorageProvider {
 	match config.storage_type {
 		.local {
@@ -85,7 +85,7 @@ pub fn create_storage_provider(config StorageConfig) !&StorageProvider {
 	}
 }
 
-// 根据存储类型字符串创建存储提供者
+// Create a storage provider based on the storage type string
 pub fn create_storage_provider_by_type(storage_type string, config StorageConfig) !&StorageProvider {
 	match storage_type.to_lower() {
 		'local' {
@@ -111,18 +111,18 @@ pub fn create_storage_provider_by_type(storage_type string, config StorageConfig
 }
 
 // ============================================================================
-// FileService 创建和初始化
+//FileService creation and initialization
 // ============================================================================
 
-// 创建 FileService
+//Create FileService
 pub fn new_file_service(config FileServiceConfig) !FileService {
-	// 验证存储配置
+	//Verify storage configuration
 	validation := validate_storage_config(config.storage)
 	if !validation.valid {
 		return error(validation.error_message)
 	}
 
-	// 确保数据库目录存在
+	// Make sure the database directory exists
 	db_dir := os.dir(config.db_path)
 	if db_dir != '' && db_dir != '.' {
 		os.mkdir_all(db_dir) or {
@@ -130,13 +130,13 @@ pub fn new_file_service(config FileServiceConfig) !FileService {
 		}
 	}
 
-	// 创建数据库管理器
+	//Create database manager
 	mut db := new_database_manager(config.db_path)!
 
-	// 创建存储提供者
+	//Create storage provider
 	provider := create_storage_provider(config.storage)!
 
-	// 创建分片管理器
+	//Create shard manager
 	chunk_manager := new_chunk_manager_default(mut db, provider)
 
 	return FileService{
@@ -148,7 +148,7 @@ pub fn new_file_service(config FileServiceConfig) !FileService {
 	}
 }
 
-// 使用默认配置创建本地存储的 FileService
+//Create a locally stored FileService using default configuration
 pub fn new_local_file_service(base_path string, db_path string) !FileService {
 	config := FileServiceConfig{
 		storage: new_local_storage_config(base_path)
@@ -158,7 +158,7 @@ pub fn new_local_file_service(base_path string, db_path string) !FileService {
 	return new_file_service(config)
 }
 
-// 从 JSON 配置文件创建 FileService
+//Create FileService from JSON configuration file
 pub fn new_file_service_from_config_file(config_path string, db_path string) !FileService {
 	storage_config := load_storage_config_from_file(config_path)!
 	config := FileServiceConfig{
@@ -169,7 +169,7 @@ pub fn new_file_service_from_config_file(config_path string, db_path string) !Fi
 	return new_file_service(config)
 }
 
-// 从环境变量创建 FileService
+//Create FileService from environment variables
 pub fn new_file_service_from_env(db_path string) !FileService {
 	storage_config := load_storage_config_from_env()!
 	config := FileServiceConfig{
@@ -180,7 +180,7 @@ pub fn new_file_service_from_env(db_path string) !FileService {
 	return new_file_service(config)
 }
 
-// 获取默认 bucket
+// Get the default bucket
 fn get_default_bucket(config StorageConfig) string {
 	match config.storage_type {
 		.local { return 'default' }
@@ -192,35 +192,35 @@ fn get_default_bucket(config StorageConfig) string {
 
 
 // ============================================================================
-// 高级文件操作 API
+// Advanced file operation API
 // ============================================================================
 
-// 上传文件
+//Upload file
 pub fn (mut fs FileService) upload_file(params UploadParams, data []u8) !UploadResult {
 	bucket := if params.bucket != '' { params.bucket } else { fs.config.default_bucket }
 	
-	// 检查文件大小
+	// Check file size
 	if i64(data.len) > fs.config.max_file_size {
 		return error('File size exceeds maximum allowed size: ${data.len} > ${fs.config.max_file_size}')
 	}
 
-	// 计算文件哈希
+	// Calculate file hash
 	file_hash := calculate_md5_hash(data)
 
-	// 生成对象键
+	// Generate object key
 	object_key := generate_object_key(params.filename, file_hash)
 
-	// 确定 content_type
+	// Determine content_type
 	content_type := if params.content_type != '' {
 		params.content_type
 	} else {
 		infer_content_type(params.filename)
 	}
 
-	// 上传到存储提供者
+	// Upload to storage provider
 	result := fs.provider.upload(bucket, object_key, data, content_type)!
 
-	// 保存文件元数据到数据库
+	//Save file metadata to database
 	file_info := fs.db.insert_file(FileInfo{
 		file_hash: file_hash
 		file_name: params.filename
@@ -246,58 +246,58 @@ pub fn (mut fs FileService) upload_file(params UploadParams, data []u8) !UploadR
 	}
 }
 
-// 下载文件（通过 UUID）
+// Download file (via UUID)
 pub fn (mut fs FileService) download_file(file_uuid string) ![]u8 {
-	// 获取文件元数据
+	// Get file metadata
 	file_info := fs.db.get_file_by_uuid(file_uuid)!
 
-	// 从存储提供者下载
+	// Download from storage provider
 	return fs.provider.download(file_info.bucket, file_info.object_key)
 }
 
-// 下载文件（通过 bucket 和 key）
+// Download file (via bucket and key)
 pub fn (mut fs FileService) download_file_by_key(bucket string, object_key string) ![]u8 {
 	return fs.provider.download(bucket, object_key)
 }
 
-// 删除文件（通过 UUID）
+// Delete file (via UUID)
 pub fn (mut fs FileService) delete_file(file_uuid string) ! {
-	// 获取文件元数据
+	// Get file metadata
 	file_info := fs.db.get_file_by_uuid(file_uuid)!
 
-	// 从存储提供者删除
+	// Remove from storage provider
 	fs.provider.delete(file_info.bucket, file_info.object_key)!
 
-	// 从数据库删除元数据
+	//Remove metadata from database
 	fs.db.delete_file(file_uuid)!
 }
 
-// 获取文件信息（通过 UUID）
+// Get file information (via UUID)
 pub fn (fs FileService) get_file_info(file_uuid string) !FileInfo {
 	return fs.db.get_file_by_uuid(file_uuid)
 }
 
-// 获取文件信息（通过哈希）
+// Get file information (via hash)
 pub fn (fs FileService) get_file_by_hash(file_hash string) !FileInfo {
 	return fs.db.get_file_by_hash(file_hash)
 }
 
-// 检查文件是否存在（通过 UUID）
+// Check if the file exists (via UUID)
 pub fn (fs FileService) file_exists(file_uuid string) bool {
 	return fs.db.file_exists(file_uuid)
 }
 
-// 检查文件是否存在（通过 bucket 和 key）
+// Check if the file exists (via bucket and key)
 pub fn (mut fs FileService) file_exists_by_key(bucket string, object_key string) !bool {
 	return fs.provider.exists(bucket, object_key)
 }
 
-// 获取预签名 URL
+// Get pre-signed URL
 pub fn (mut fs FileService) get_presigned_url(file_uuid string, expires_in int) !PresignResult {
-	// 获取文件元数据
+	// Get file metadata
 	file_info := fs.db.get_file_by_uuid(file_uuid)!
 
-	// 生成预签名 URL
+	// Generate pre-signed URL
 	url := fs.provider.presign_url(file_info.bucket, file_info.object_key, PresignOptions{
 		expires_in: expires_in
 		method: 'GET'
@@ -310,7 +310,7 @@ pub fn (mut fs FileService) get_presigned_url(file_uuid string, expires_in int) 
 	}
 }
 
-// 获取预签名上传 URL
+// Get the pre-signed upload URL
 pub fn (mut fs FileService) get_presigned_upload_url(bucket string, object_key string, expires_in int, content_type string) !PresignResult {
 	url := fs.provider.presign_url(bucket, object_key, PresignOptions{
 		expires_in: expires_in
@@ -325,25 +325,25 @@ pub fn (mut fs FileService) get_presigned_upload_url(bucket string, object_key s
 	}
 }
 
-// 列出文件
+// List files
 pub fn (fs FileService) list_files(options FileListOptions) !FileListResult {
 	return fs.db.list_files(options)
 }
 
-// 更新文件元数据
+//Update file metadata
 pub fn (mut fs FileService) update_file_metadata(file_uuid string, file_name string, file_type string, metadata string) !FileInfo {
 	return fs.db.update_file(file_uuid, file_name, file_type, metadata)
 }
 
-// 复制文件
+// copy file
 pub fn (mut fs FileService) copy_file(file_uuid string, dst_bucket string, dst_key string) !UploadResult {
-	// 获取源文件信息
+	// Get source file information
 	src_info := fs.db.get_file_by_uuid(file_uuid)!
 
-	// 复制文件
+	// copy file
 	result := fs.provider.copy(src_info.bucket, src_info.object_key, dst_bucket, dst_key)!
 
-	// 保存新文件元数据
+	//Save new file metadata
 	new_info := fs.db.insert_file(FileInfo{
 		file_hash: src_info.file_hash
 		file_name: src_info.file_name
@@ -371,10 +371,10 @@ pub fn (mut fs FileService) copy_file(file_uuid string, dst_bucket string, dst_k
 
 
 // ============================================================================
-// 分片上传操作
+//Multiple upload operation
 // ============================================================================
 
-// 初始化分片上传
+//Initialize multipart upload
 pub fn (mut fs FileService) init_multipart_upload(params InitMultipartParams) !MultipartUpload {
 	mut p := params
 	if p.bucket == '' {
@@ -392,91 +392,91 @@ pub fn (mut fs FileService) init_multipart_upload(params InitMultipartParams) !M
 	return fs.chunk_manager.init_multipart(p)
 }
 
-// 上传分片
+//Upload fragments
 pub fn (mut fs FileService) upload_part(upload_id string, part_number int, data []u8) !ChunkUploadResult {
 	return fs.chunk_manager.upload_part(upload_id, part_number, data)
 }
 
-// 完成分片上传
+//Complete multipart upload
 pub fn (mut fs FileService) complete_multipart_upload(upload_id string) !StorageResult {
 	return fs.chunk_manager.complete_multipart(upload_id)
 }
 
-// 取消分片上传
+//Cancel multipart upload
 pub fn (mut fs FileService) abort_multipart_upload(upload_id string) ! {
 	return fs.chunk_manager.abort_multipart(upload_id)
 }
 
-// 获取上传进度
+// Get upload progress
 pub fn (fs FileService) get_upload_progress(upload_id string) !UploadProgress {
 	return fs.chunk_manager.get_upload_progress(upload_id)
 }
 
-// 获取待上传的分片列表
+// Get the list of shards to be uploaded
 pub fn (fs FileService) get_pending_parts(upload_id string) ![]int {
 	return fs.chunk_manager.get_pending_parts(upload_id)
 }
 
 // ============================================================================
-// 提供者切换
+// Provider switching
 // ============================================================================
 
-// 切换存储提供者
+//Switch storage provider
 pub fn (mut fs FileService) switch_provider(config StorageConfig) ! {
-	// 验证新配置
+	//Verify new configuration
 	validation := validate_storage_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
 	}
 
-	// 创建新的存储提供者
+	//Create a new storage provider
 	new_provider := create_storage_provider(config)!
 
-	// 更新提供者
+	// update provider
 	fs.provider = new_provider
 	fs.current_config = config
 
-	// 更新分片管理器的提供者
+	// Update the provider of the shard manager
 	fs.chunk_manager = new_chunk_manager_default(mut fs.db, new_provider)
 }
 
-// 切换到本地存储
+//Switch to local storage
 pub fn (mut fs FileService) switch_to_local(base_path string) ! {
 	config := new_local_storage_config(base_path)
 	fs.switch_provider(config)!
 }
 
-// 切换到 S3 存储
+// Switch to S3 storage
 pub fn (mut fs FileService) switch_to_s3(endpoint string, access_key string, secret_key string, bucket string) ! {
 	config := new_s3_storage_config(endpoint, access_key, secret_key, bucket)
 	fs.switch_provider(config)!
 }
 
-// 切换到 MinIO 存储
+//Switch to MinIO storage
 pub fn (mut fs FileService) switch_to_minio(endpoint string, access_key string, secret_key string, bucket string) ! {
 	config := new_minio_storage_config(endpoint, access_key, secret_key, bucket)
 	fs.switch_provider(config)!
 }
 
-// 切换到阿里云 OSS
+//Switch to Alibaba Cloud OSS
 pub fn (mut fs FileService) switch_to_aliyun_oss(endpoint string, access_key_id string, access_key_secret string, bucket string) ! {
 	config := new_aliyun_oss_storage_config(endpoint, access_key_id, access_key_secret, bucket)
 	fs.switch_provider(config)!
 }
 
-// 切换到腾讯云 COS
+//Switch to Tencent Cloud COS
 pub fn (mut fs FileService) switch_to_tencent_cos(secret_id string, secret_key string, region string, bucket string) ! {
 	config := new_tencent_cos_storage_config(secret_id, secret_key, region, bucket)
 	fs.switch_provider(config)!
 }
 
-// 从配置文件热加载配置
+// Hot load configuration from configuration file
 pub fn (mut fs FileService) reload_config_from_file(config_path string) ! {
 	config := load_storage_config_from_file(config_path)!
 	fs.switch_provider(config)!
 }
 
-// 从环境变量热加载配置
+// Hot load configuration from environment variables
 pub fn (mut fs FileService) reload_config_from_env() ! {
 	config := load_storage_config_from_env()!
 	fs.switch_provider(config)!
@@ -484,64 +484,64 @@ pub fn (mut fs FileService) reload_config_from_env() ! {
 
 
 // ============================================================================
-// 状态和信息查询
+//Status and information query
 // ============================================================================
 
-// 获取当前存储提供者名称
+// Get the current storage provider name
 pub fn (mut fs FileService) get_current_provider_name() string {
 	return fs.provider.provider_name()
 }
 
-// 获取当前存储类型
+// Get the current storage type
 pub fn (fs FileService) get_current_storage_type() StorageType {
 	return fs.current_config.storage_type
 }
 
-// 获取当前配置
+// Get the current configuration
 pub fn (fs FileService) get_current_config() StorageConfig {
 	return fs.current_config
 }
 
-// 获取默认 bucket
+// Get the default bucket
 pub fn (fs FileService) get_default_bucket() string {
 	return fs.config.default_bucket
 }
 
-// 获取分片大小
+// Get the fragment size
 pub fn (fs FileService) get_chunk_size() int {
 	return fs.config.chunk_size
 }
 
-// 获取最大文件大小
+// Get the maximum file size
 pub fn (fs FileService) get_max_file_size() i64 {
 	return fs.config.max_file_size
 }
 
-// 检查 bucket 是否存在
+// Check if bucket exists
 pub fn (mut fs FileService) bucket_exists(bucket string) !bool {
 	return fs.provider.bucket_exists(bucket)
 }
 
-// 创建 bucket
+//Create bucket
 pub fn (mut fs FileService) create_bucket(bucket string) ! {
 	return fs.provider.create_bucket(bucket)
 }
 
-// 删除 bucket
+// delete bucket
 pub fn (mut fs FileService) delete_bucket(bucket string) ! {
 	return fs.provider.delete_bucket(bucket)
 }
 
-// 关闭 FileService
+// Close FileService
 pub fn (mut fs FileService) close() {
 	fs.db.close()
 }
 
 // ============================================================================
-// 辅助函数
+// helper function
 // ============================================================================
 
-// 计算 MD5 哈希
+// Calculate MD5 hash
 fn calculate_md5_hash(data []u8) string {
 	hash := md5.sum(data)
 	mut result := ''
@@ -551,14 +551,14 @@ fn calculate_md5_hash(data []u8) string {
 	return result
 }
 
-// 生成对象键
+// Generate object key
 fn generate_object_key(filename string, file_hash string) string {
-	// 使用日期和哈希前缀组织文件
+	// Organize files using date and hash prefixes
 	now := time.now()
 	date_prefix := now.custom_format('YYYY/MM/DD')
 	hash_prefix := file_hash[..8]
 	
-	// 获取文件扩展名
+	// Get file extension
 	ext := os.file_ext(filename)
 	
 	return '${date_prefix}/${hash_prefix}/${file_hash}${ext}'

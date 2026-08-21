@@ -1,4 +1,4 @@
-# veb vs v-hono 性能对比测试
+# veb vs vono 性能对比测试
 
 ## 测试文件说明
 
@@ -7,7 +7,7 @@
 | `benchmark_veb_vs_hono.v` | 路由匹配性能测试（纯路由，不启动服务器） |
 | `server_veb.v` | veb HTTP 服务器示例（端口 8080）- V 语言官方新版 web 框架 |
 | `server_vweb.v` | vweb HTTP 服务器示例（端口 8080）- 旧版兼容 |
-| `server_hono.v` | v-hono HTTP 服务器示例（端口 8081） |
+| `server_hono.v` | vono HTTP 服务器示例（端口 8081） |
 | `http_benchmark.v` | HTTP 压测工具（自动对比两个服务器） |
 | `run_benchmark.ps1` | Windows PowerShell 一键测试脚本 |
 
@@ -36,7 +36,7 @@ v run benchmark_veb_vs_hono.v
 v run server_veb.v
 ```
 
-终端 2 - 启动 v-hono 服务器：
+终端 2 - 启动 vono 服务器：
 ```bash
 v run server_hono.v
 ```
@@ -53,7 +53,7 @@ v run http_benchmark.v
 wrk -t4 -c100 -d10s http://localhost:8080/
 wrk -t4 -c100 -d10s http://localhost:8080/api/users/123
 
-# 测试 v-hono
+# 测试 vono
 wrk -t4 -c100 -d10s http://localhost:8081/
 wrk -t4 -c100 -d10s http://localhost:8081/api/users/123
 ```
@@ -77,15 +77,15 @@ v -prod http_benchmark.v -o http_benchmark.exe
 
 ### 路由匹配性能
 
-| 路由类型 | 简单路由器 (模拟 vweb) | v-hono FastRouter |
+| 路由类型 | 简单路由器 (模拟 vweb) | vono FastRouter |
 |----------|------------------------|-------------------|
 | 静态路由 | ~1000 ns/op | ~9500 ns/op |
 | 动态路由 | ~15000-25000 ns/op | ~9500 ns/op |
 
 **结论：**
 - 静态路由：简单路由器更快（直接 map 查找）
-- 动态路由：v-hono 更快且更稳定（使用缓存和优化的正则匹配）
-- v-hono 的优势在于动态路由性能一致，不随路由复杂度增加而显著下降
+- 动态路由：vono 更快且更稳定（使用缓存和优化的正则匹配）
+- vono 的优势在于动态路由性能一致，不随路由复杂度增加而显著下降
 
 ## 测试端点
 
@@ -105,25 +105,25 @@ v -prod http_benchmark.v -o http_benchmark.exe
 
 ### 路由匹配性能
 
-| 路由类型 | SimpleRouter (模拟 veb) | v-hono FastRouter |
+| 路由类型 | SimpleRouter (模拟 veb) | vono FastRouter |
 |----------|-------------------------|-------------------|
 | 静态路由 | ~1000 ns/op | ~9500 ns/op |
 | 动态路由 | ~15000-25000 ns/op | ~9500 ns/op |
 
 ### HTTP 吞吐量（参考值）
 
-| 端点类型 | veb | v-hono | 说明 |
+| 端点类型 | veb | vono | 说明 |
 |----------|-----|--------|------|
 | 静态路由 | ~15000 req/s | ~12000 req/s | veb 略快 |
-| 动态路由 | ~8000 req/s | ~10000 req/s | v-hono 更稳定 |
+| 动态路由 | ~8000 req/s | ~10000 req/s | vono 更稳定 |
 
 > 注：实际性能取决于硬件配置和系统负载
 
 ## 结论
 
 - **静态路由**：veb/SimpleRouter 使用 map 直接查找，通常更快
-- **动态路由**：v-hono 使用 Trie + 缓存，性能更稳定
-- **v-hono 优势**：动态路由性能一致，不随路由复杂度增加而显著下降
+- **动态路由**：vono 使用 Trie + 缓存，性能更稳定
+- **vono 优势**：动态路由性能一致，不随路由复杂度增加而显著下降
 - **veb 优势**：官方支持，与 V 语言生态集成更好
 
 ## 测试端点

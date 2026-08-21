@@ -1,4 +1,4 @@
-// WebSocket Demo - Chat Room Example for v-hono
+// WebSocket Demo - Chat Room Example for vono
 // This example demonstrates all WebSocket event handlers and configuration options.
 //
 // Run with: v run examples/websocket_demo.v
@@ -291,7 +291,7 @@ fn get_simple_test_page() string {
 	return '<!DOCTYPE html>
 <html>
 <head>
-<title>v-hono WebSocket Demo</title>
+<title>vono WebSocket Demo</title>
 <style>
 body{font-family:sans-serif;max-width:800px;margin:50px auto;padding:20px}
 h1{color:#667eea}
@@ -307,7 +307,7 @@ button:hover{background:#5a6fd6}
 </style>
 </head>
 <body>
-<h1>v-hono WebSocket Demo</h1>
+<h1>vono WebSocket Demo</h1>
 <div class="card">
 <h3>Connection</h3>
 <input type="text" id="url" value="ws://127.0.0.1:3000/ws/echo" style="width:300px">

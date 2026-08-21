@@ -1,14 +1,14 @@
-// openapi.v - OpenAPI 3.0/3.1 规范数据结构
-// 本模块提供 OpenAPI 文档的数据结构定义，支持 OpenAPI 3.0.x 和 3.1.x 规范
+// openapi.v - OpenAPI 3.0/3.1 specification data structure
+// This module provides the data structure definition of OpenAPI documents and supports OpenAPI 3.0.x and 3.1.x specifications.
 module hono
 
 import x.json2
 
 // ============================================================================
-// OpenAPI 基础结构体 (Task 1.1)
+// OpenAPI basic structure (Task 1.1)
 // ============================================================================
 
-// OpenAPIContact - 联系信息
+// OpenAPIContact - contact information
 pub struct OpenAPIContact {
 pub mut:
 	name  string
@@ -16,59 +16,59 @@ pub mut:
 	email string
 }
 
-// OpenAPILicense - 许可证信息
+// OpenAPILicense - License information
 pub struct OpenAPILicense {
 pub mut:
-	name string  // 必需
+	name string  // required
 	url  string
 }
 
-// OpenAPIInfo - API 基本信息
+// OpenAPIInfo - API basic information
 pub struct OpenAPIInfo {
 pub mut:
-	title            string  // 必需
-	version          string  // 必需
+	title            string  // required
+	version          string  // required
 	description      string
 	terms_of_service string
 	contact          OpenAPIContact
 	license          OpenAPILicense
 }
 
-// OpenAPIServer - 服务器信息
+// OpenAPIServer - server information
 pub struct OpenAPIServer {
 pub mut:
-	url         string  // 必需
+	url         string  // required
 	description string
 }
 
-// OpenAPIExternalDocs - 外部文档
+// OpenAPIExternalDocs - external documentation
 pub struct OpenAPIExternalDocs {
 pub mut:
-	url         string  // 必需
+	url         string  // required
 	description string
 }
 
-// OpenAPITag - 标签定义
+// OpenAPITag - tag definition
 pub struct OpenAPITag {
 pub mut:
-	name          string  // 必需
+	name          string  // required
 	description   string
 	external_docs OpenAPIExternalDocs
 }
 
 
 // ============================================================================
-// OpenAPI 路径和操作结构体 (Task 1.2)
+// OpenAPI path and operation structure (Task 1.2)
 // ============================================================================
 
-// OpenAPIMediaType - 媒体类型
+// OpenAPIMediaType - media type
 pub struct OpenAPIMediaType {
 pub mut:
 	schema  OpenAPISchema
 	example string
 }
 
-// OpenAPIHeader - 响应头
+// OpenAPIHeader - response header
 pub struct OpenAPIHeader {
 pub mut:
 	description string
@@ -76,27 +76,27 @@ pub mut:
 	schema      OpenAPISchema
 }
 
-// OpenAPIResponse - 响应定义
+// OpenAPIResponse - response definition
 pub struct OpenAPIResponse {
 pub mut:
-	description string  // 必需
+	description string  // required
 	headers     map[string]OpenAPIHeader
 	content     map[string]OpenAPIMediaType
 }
 
-// OpenAPIRequestBody - 请求体定义
+// OpenAPIRequestBody - request body definition
 pub struct OpenAPIRequestBody {
 pub mut:
 	description string
-	content     map[string]OpenAPIMediaType  // 必需
+	content     map[string]OpenAPIMediaType  // required
 	required    bool
 }
 
-// OpenAPIParameter - 参数定义
+// OpenAPIParameter - parameter definition
 pub struct OpenAPIParameter {
 pub mut:
-	name        string  // 必需
-	in_location string  // 必需: "path", "query", "header", "cookie"
+	name        string  // required
+	in_location string  // Required: "path", "query", "header", "cookie"
 	description string
 	required    bool
 	deprecated  bool
@@ -104,7 +104,7 @@ pub mut:
 	example     string
 }
 
-// OpenAPIOperation - 操作定义
+// OpenAPIOperation - operation definition
 pub struct OpenAPIOperation {
 pub mut:
 	summary      string
@@ -113,12 +113,12 @@ pub mut:
 	tags         []string
 	parameters   []OpenAPIParameter
 	request_body OpenAPIRequestBody
-	responses    map[string]OpenAPIResponse  // 必需
+	responses    map[string]OpenAPIResponse  // required
 	deprecated   bool
 	security     []map[string][]string
 }
 
-// OpenAPIPathItem - 路径项
+// OpenAPIPathItem - path item
 pub struct OpenAPIPathItem {
 pub mut:
 	get         OpenAPIOperation
@@ -135,10 +135,10 @@ pub mut:
 
 
 // ============================================================================
-// OpenAPI Schema 和 Components 结构体 (Task 1.3)
+// OpenAPI Schema and Components structure (Task 1.3)
 // ============================================================================
 
-// OpenAPISchema - JSON Schema 定义
+// OpenAPISchema - JSON Schema definition
 pub struct OpenAPISchema {
 pub mut:
 	schema_type  string  // "string", "integer", "number", "boolean", "array", "object"
@@ -159,10 +159,10 @@ pub mut:
 	nullable     bool
 	read_only    bool
 	write_only   bool
-	ref          string  // $ref 引用
+	ref          string  // $ref reference
 }
 
-// OpenAPISecurityScheme - 安全方案
+// OpenAPISecurityScheme - security scheme
 pub struct OpenAPISecurityScheme {
 pub mut:
 	scheme_type   string  // "apiKey", "http", "oauth2", "openIdConnect"
@@ -173,7 +173,7 @@ pub mut:
 	bearer_format string  // for http bearer
 }
 
-// OpenAPIComponents - 可重用组件
+// OpenAPIComponents - reusable components
 pub struct OpenAPIComponents {
 pub mut:
 	schemas          map[string]OpenAPISchema
@@ -184,13 +184,13 @@ pub mut:
 	security_schemes map[string]OpenAPISecurityScheme
 }
 
-// OpenAPIDocument - OpenAPI 文档主结构
+// OpenAPIDocument - OpenAPI document main structure
 pub struct OpenAPIDocument {
 pub mut:
-	openapi       string                       // 必需: "3.0.0" 或 "3.1.0"
-	info          OpenAPIInfo                  // 必需
+	openapi       string                       // Required: "3.0.0" or "3.1.0"
+	info          OpenAPIInfo                  // required
 	servers       []OpenAPIServer
-	paths         map[string]OpenAPIPathItem   // 必需
+	paths         map[string]OpenAPIPathItem   // required
 	components    OpenAPIComponents
 	security      []map[string][]string
 	tags          []OpenAPITag
@@ -199,7 +199,7 @@ pub mut:
 
 
 // ============================================================================
-// OpenAPI 文档序列化 (Task 2.1)
+// OpenAPI document serialization (Task 2.1)
 // ============================================================================
 
 // Helper function to check if a string is empty
@@ -217,7 +217,7 @@ fn is_array_empty[T](arr []T) bool {
 	return arr.len == 0
 }
 
-// to_json - 将 OpenAPIContact 序列化为 JSON
+// to_json - Serialize OpenAPIContact to JSON
 pub fn (c OpenAPIContact) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_empty(c.name) {
@@ -232,7 +232,7 @@ pub fn (c OpenAPIContact) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPILicense 序列化为 JSON
+// to_json - Serialize OpenAPILicense to JSON
 pub fn (l OpenAPILicense) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// name is required
@@ -243,7 +243,7 @@ pub fn (l OpenAPILicense) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIInfo 序列化为 JSON
+// to_json - Serialize OpenAPIInfo to JSON
 pub fn (i OpenAPIInfo) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// title and version are required
@@ -266,7 +266,7 @@ pub fn (i OpenAPIInfo) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIServer 序列化为 JSON
+// to_json - Serialize OpenAPIServer to JSON
 pub fn (s OpenAPIServer) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// url is required
@@ -277,7 +277,7 @@ pub fn (s OpenAPIServer) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIExternalDocs 序列化为 JSON
+// to_json - Serialize OpenAPIExternalDocs to JSON
 pub fn (e OpenAPIExternalDocs) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// url is required
@@ -288,7 +288,7 @@ pub fn (e OpenAPIExternalDocs) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPITag 序列化为 JSON
+// to_json - Serialize OpenAPITag to JSON
 pub fn (t OpenAPITag) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// name is required
@@ -302,7 +302,7 @@ pub fn (t OpenAPITag) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPISchema 序列化为 JSON
+// to_json - Serialize OpenAPISchema to JSON
 pub fn (s OpenAPISchema) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	
@@ -384,7 +384,7 @@ pub fn (s OpenAPISchema) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIHeader 序列化为 JSON
+// to_json - Serialize OpenAPIHeader to JSON
 pub fn (h OpenAPIHeader) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_empty(h.description) {
@@ -400,7 +400,7 @@ pub fn (h OpenAPIHeader) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIMediaType 序列化为 JSON
+// to_json - Serialize OpenAPIMediaType to JSON
 pub fn (m OpenAPIMediaType) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// Only include schema if it has content
@@ -413,7 +413,7 @@ pub fn (m OpenAPIMediaType) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIResponse 序列化为 JSON
+// to_json - Serialize OpenAPIResponse to JSON
 pub fn (r OpenAPIResponse) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// description is required
@@ -435,7 +435,7 @@ pub fn (r OpenAPIResponse) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIRequestBody 序列化为 JSON
+// to_json - Serialize OpenAPIRequestBody to JSON
 pub fn (rb OpenAPIRequestBody) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_empty(rb.description) {
@@ -455,7 +455,7 @@ pub fn (rb OpenAPIRequestBody) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIParameter 序列化为 JSON
+// to_json - Serialize OpenAPIParameter to JSON
 pub fn (p OpenAPIParameter) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// name is required
@@ -481,7 +481,7 @@ pub fn (p OpenAPIParameter) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIOperation 序列化为 JSON
+// to_json - Serialize OpenAPIOperation to JSON
 pub fn (op OpenAPIOperation) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_empty(op.summary) {
@@ -545,7 +545,7 @@ fn is_operation_empty(op OpenAPIOperation) bool {
 	return is_map_empty(op.responses)
 }
 
-// to_json - 将 OpenAPIPathItem 序列化为 JSON
+// to_json - Serialize OpenAPIPathItem to JSON
 pub fn (pi OpenAPIPathItem) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_empty(pi.summary) {
@@ -586,7 +586,7 @@ pub fn (pi OpenAPIPathItem) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPISecurityScheme 序列化为 JSON
+// to_json - Serialize OpenAPISecurityScheme to JSON
 pub fn (ss OpenAPISecurityScheme) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// scheme_type -> type
@@ -619,7 +619,7 @@ fn is_components_empty(c OpenAPIComponents) bool {
 		is_map_empty(c.headers) && is_map_empty(c.security_schemes)
 }
 
-// to_json - 将 OpenAPIComponents 序列化为 JSON
+// to_json - Serialize OpenAPIComponents to JSON
 pub fn (c OpenAPIComponents) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	if !is_map_empty(c.schemas) {
@@ -667,7 +667,7 @@ pub fn (c OpenAPIComponents) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json - 将 OpenAPIDocument 序列化为 JSON Any 对象
+// to_json - Serialize an OpenAPIDocument to a JSON Any object
 pub fn (doc OpenAPIDocument) to_json() json2.Any {
 	mut obj := map[string]json2.Any{}
 	// openapi is required
@@ -723,22 +723,22 @@ pub fn (doc OpenAPIDocument) to_json() json2.Any {
 	return json2.Any(obj)
 }
 
-// to_json_str - 将 OpenAPIDocument 序列化为 JSON 字符串
+// to_json_str - Serialize an OpenAPIDocument to a JSON string
 pub fn (doc OpenAPIDocument) to_json_str() string {
 	return doc.to_json().str()
 }
 
-// to_json_pretty - 将 OpenAPIDocument 序列化为格式化的 JSON 字符串
+// to_json_pretty - Serializes an OpenAPIDocument into a formatted JSON string
 pub fn (doc OpenAPIDocument) to_json_pretty() string {
 	return json2.encode(doc.to_json(), prettify: true)
 }
 
 
 // ============================================================================
-// OpenAPI 文档反序列化 (Task 2.3)
+// OpenAPI document deserialization (Task 2.3)
 // ============================================================================
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIContact
+// from_json - Deserialize OpenAPIContact from a JSON Any object
 pub fn OpenAPIContact.from_json(j json2.Any) OpenAPIContact {
 	obj := j.as_map()
 	return OpenAPIContact{
@@ -748,7 +748,7 @@ pub fn OpenAPIContact.from_json(j json2.Any) OpenAPIContact {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPILicense
+// from_json - Deserialize OpenAPILicense from a JSON Any object
 pub fn OpenAPILicense.from_json(j json2.Any) OpenAPILicense {
 	obj := j.as_map()
 	return OpenAPILicense{
@@ -757,7 +757,7 @@ pub fn OpenAPILicense.from_json(j json2.Any) OpenAPILicense {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIInfo
+// from_json - Deserialize OpenAPIInfo from a JSON Any object
 pub fn OpenAPIInfo.from_json(j json2.Any) OpenAPIInfo {
 	obj := j.as_map()
 	return OpenAPIInfo{
@@ -770,7 +770,7 @@ pub fn OpenAPIInfo.from_json(j json2.Any) OpenAPIInfo {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIServer
+// from_json - Deserialize OpenAPIServer from JSON Any object
 pub fn OpenAPIServer.from_json(j json2.Any) OpenAPIServer {
 	obj := j.as_map()
 	return OpenAPIServer{
@@ -779,7 +779,7 @@ pub fn OpenAPIServer.from_json(j json2.Any) OpenAPIServer {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIExternalDocs
+// from_json - Deserialize OpenAPIExternalDocs from a JSON Any object
 pub fn OpenAPIExternalDocs.from_json(j json2.Any) OpenAPIExternalDocs {
 	obj := j.as_map()
 	return OpenAPIExternalDocs{
@@ -788,7 +788,7 @@ pub fn OpenAPIExternalDocs.from_json(j json2.Any) OpenAPIExternalDocs {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPITag
+// from_json - Deserialize OpenAPITag from JSON Any object
 pub fn OpenAPITag.from_json(j json2.Any) OpenAPITag {
 	obj := j.as_map()
 	return OpenAPITag{
@@ -798,7 +798,7 @@ pub fn OpenAPITag.from_json(j json2.Any) OpenAPITag {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPISchema
+// from_json - Deserialize OpenAPISchema from a JSON Any object
 pub fn OpenAPISchema.from_json(j json2.Any) OpenAPISchema {
 	return openapi_schema_from_json_impl(j)
 }
@@ -862,7 +862,7 @@ fn openapi_schema_from_json_impl(j json2.Any) OpenAPISchema {
 	return schema
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIHeader
+// from_json - Deserialize OpenAPIHeader from JSON Any object
 pub fn OpenAPIHeader.from_json(j json2.Any) OpenAPIHeader {
 	obj := j.as_map()
 	return OpenAPIHeader{
@@ -872,7 +872,7 @@ pub fn OpenAPIHeader.from_json(j json2.Any) OpenAPIHeader {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIMediaType
+// from_json - Deserialize OpenAPIMediaType from JSON Any object
 pub fn OpenAPIMediaType.from_json(j json2.Any) OpenAPIMediaType {
 	obj := j.as_map()
 	return OpenAPIMediaType{
@@ -881,7 +881,7 @@ pub fn OpenAPIMediaType.from_json(j json2.Any) OpenAPIMediaType {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIResponse
+// from_json - Deserialize OpenAPIResponse from a JSON Any object
 pub fn OpenAPIResponse.from_json(j json2.Any) OpenAPIResponse {
 	obj := j.as_map()
 	
@@ -910,7 +910,7 @@ pub fn OpenAPIResponse.from_json(j json2.Any) OpenAPIResponse {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIRequestBody
+// from_json - Deserialize OpenAPIRequestBody from JSON Any object
 pub fn OpenAPIRequestBody.from_json(j json2.Any) OpenAPIRequestBody {
 	obj := j.as_map()
 	
@@ -930,7 +930,7 @@ pub fn OpenAPIRequestBody.from_json(j json2.Any) OpenAPIRequestBody {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIParameter
+// from_json - Deserialize OpenAPIParameter from JSON Any object
 pub fn OpenAPIParameter.from_json(j json2.Any) OpenAPIParameter {
 	obj := j.as_map()
 	return OpenAPIParameter{
@@ -944,7 +944,7 @@ pub fn OpenAPIParameter.from_json(j json2.Any) OpenAPIParameter {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIOperation
+// from_json - Deserialize OpenAPIOperation from JSON Any object
 pub fn OpenAPIOperation.from_json(j json2.Any) OpenAPIOperation {
 	obj := j.as_map()
 	
@@ -1003,7 +1003,7 @@ pub fn OpenAPIOperation.from_json(j json2.Any) OpenAPIOperation {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIPathItem
+// from_json - Deserializes an OpenAPIPathItem from a JSON Any object
 pub fn OpenAPIPathItem.from_json(j json2.Any) OpenAPIPathItem {
 	obj := j.as_map()
 	
@@ -1029,7 +1029,7 @@ pub fn OpenAPIPathItem.from_json(j json2.Any) OpenAPIPathItem {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPISecurityScheme
+// from_json - Deserialize OpenAPISecurityScheme from JSON Any object
 pub fn OpenAPISecurityScheme.from_json(j json2.Any) OpenAPISecurityScheme {
 	obj := j.as_map()
 	return OpenAPISecurityScheme{
@@ -1042,7 +1042,7 @@ pub fn OpenAPISecurityScheme.from_json(j json2.Any) OpenAPISecurityScheme {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIComponents
+// from_json - Deserializes OpenAPIComponents from JSON Any objects
 pub fn OpenAPIComponents.from_json(j json2.Any) OpenAPIComponents {
 	obj := j.as_map()
 	
@@ -1110,7 +1110,7 @@ pub fn OpenAPIComponents.from_json(j json2.Any) OpenAPIComponents {
 	}
 }
 
-// from_json - 从 JSON Any 对象反序列化 OpenAPIDocument
+// from_json - Deserializes an OpenAPIDocument from a JSON Any object
 pub fn OpenAPIDocument.from_json(j json2.Any) OpenAPIDocument {
 	obj := j.as_map()
 	
@@ -1168,7 +1168,7 @@ pub fn OpenAPIDocument.from_json(j json2.Any) OpenAPIDocument {
 	}
 }
 
-// from_json_str - 从 JSON 字符串反序列化 OpenAPIDocument
+// from_json_str - Deserialize an OpenAPIDocument from a JSON string
 pub fn OpenAPIDocument.from_json_str(json_str string) !OpenAPIDocument {
 	parsed := json2.decode[json2.Any](json_str)!
 	return OpenAPIDocument.from_json(parsed)
@@ -1176,10 +1176,10 @@ pub fn OpenAPIDocument.from_json_str(json_str string) !OpenAPIDocument {
 
 
 // ============================================================================
-// OpenAPI 文档验证 (Task 4.1)
+// OpenAPI document validation (Task 4.1)
 // ============================================================================
 
-// OpenAPIErrorKind - OpenAPI 错误类型
+// OpenAPIErrorKind - OpenAPI error type
 pub enum OpenAPIErrorKind {
 	missing_required_field
 	invalid_version
@@ -1190,39 +1190,39 @@ pub enum OpenAPIErrorKind {
 	deserialization_error
 }
 
-// OpenAPIError - OpenAPI 相关错误
+// OpenAPIError - OpenAPI related error
 pub struct OpenAPIError {
 	Error
 pub:
 	kind       OpenAPIErrorKind
 	error_msg  string
-	path       string  // 可选：问题路径
-	field      string  // 可选：问题字段
+	path       string  // Optional: problem path
+	field      string  // Optional: question field
 }
 
-// msg - 实现 IError 接口
+// msg - implements the IError interface
 pub fn (e OpenAPIError) msg() string {
 	return e.error_msg
 }
 
-// 支持的 OpenAPI 版本
+//Supported OpenAPI versions
 const supported_openapi_versions = ['3.0.0', '3.0.1', '3.0.2', '3.0.3', '3.1.0']
 
-// validate - 验证 OpenAPIDocument 的有效性
-// 验证必需字段、OpenAPI 版本和路径格式
-// 返回描述性错误信息
+// validate - verify the validity of OpenAPIDocument
+// Validate required fields, OpenAPI version and path format
+//Return descriptive error message
 pub fn (doc OpenAPIDocument) validate() ! {
-	// 1. 验证必需字段: openapi
+	// 1. Verify required fields: openapi
 	if is_empty(doc.openapi) {
 		return error("Missing required field 'openapi' in OpenAPI document")
 	}
 	
-	// 2. 验证 OpenAPI 版本 (3.0.x, 3.1.x)
+	// 2. Verify OpenAPI version (3.0.x, 3.1.x)
 	if doc.openapi !in supported_openapi_versions {
 		return error("Unsupported OpenAPI version '${doc.openapi}'. Supported versions: ${supported_openapi_versions.join(', ')}")
 	}
 	
-	// 3. 验证必需字段: info
+	// 3. Verify required fields: info
 	if is_empty(doc.info.title) {
 		return error("Missing required field 'info.title' in OpenAPI document")
 	}
@@ -1231,15 +1231,15 @@ pub fn (doc OpenAPIDocument) validate() ! {
 		return error("Missing required field 'info.version' in OpenAPI document")
 	}
 	
-	// 4. 验证路径格式
+	// 4. Verify path format
 	for path, _ in doc.paths {
-		// 路径必须以 '/' 开头
+		// The path must start with '/'
 		if !path.starts_with('/') {
 			return error("Invalid path '${path}': paths must start with '/'")
 		}
 		
-		// 检查路径参数格式 - 支持 {param} 和 :param 两种格式
-		// 验证 {param} 格式的括号匹配
+		// Check the path parameter format - supports {param} and :param formats
+		// Verify bracket matching in {param} format
 		mut open_braces := 0
 		mut last_open_idx := -1
 		for i, c in path {
@@ -1257,26 +1257,26 @@ pub fn (doc OpenAPIDocument) validate() ! {
 			return error("Invalid path '${path}': unmatched '{' at position ${last_open_idx}")
 		}
 		
-		// 检查空路径参数 {} 或 :
+		// Check for empty path parameters {} or :
 		if path.contains('{}') {
 			return error("Invalid path '${path}': empty path parameter '{}'")
 		}
 		
-		// 检查连续斜杠
+		// Check for consecutive slashes
 		if path.contains('//') {
 			return error("Invalid path '${path}': contains consecutive slashes '//'")
 		}
 	}
 	
-	// 验证通过
+	//Verification passed
 	return
 }
 
-// validate_with_details - 验证并返回所有错误（不仅仅是第一个）
+// validate_with_details - validate and return all errors (not just the first one)
 pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 	mut errors := []OpenAPIError{}
 	
-	// 1. 验证必需字段: openapi
+	// 1. Verify required fields: openapi
 	if is_empty(doc.openapi) {
 		errors << OpenAPIError{
 			kind: .missing_required_field
@@ -1284,7 +1284,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 			field: 'openapi'
 		}
 	} else if doc.openapi !in supported_openapi_versions {
-		// 2. 验证 OpenAPI 版本
+		// 2. Verify OpenAPI version
 		errors << OpenAPIError{
 			kind: .invalid_version
 			error_msg: "Unsupported OpenAPI version '${doc.openapi}'. Supported versions: ${supported_openapi_versions.join(', ')}"
@@ -1292,7 +1292,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 		}
 	}
 	
-	// 3. 验证必需字段: info
+	// 3. Verify required fields: info
 	if is_empty(doc.info.title) {
 		errors << OpenAPIError{
 			kind: .missing_required_field
@@ -1309,9 +1309,9 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 		}
 	}
 	
-	// 4. 验证路径格式
+	// 4. Verify path format
 	for path, _ in doc.paths {
-		// 路径必须以 '/' 开头
+		// The path must start with '/'
 		if !path.starts_with('/') {
 			errors << OpenAPIError{
 				kind: .invalid_path
@@ -1321,7 +1321,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 			continue
 		}
 		
-		// 检查路径参数格式
+		// Check path parameter format
 		mut open_braces := 0
 		mut last_open_idx := -1
 		mut has_brace_error := false
@@ -1350,7 +1350,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 			}
 		}
 		
-		// 检查空路径参数
+		// Check for empty path parameters
 		if path.contains('{}') {
 			errors << OpenAPIError{
 				kind: .invalid_path
@@ -1359,7 +1359,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 			}
 		}
 		
-		// 检查连续斜杠
+		// Check for consecutive slashes
 		if path.contains('//') {
 			errors << OpenAPIError{
 				kind: .invalid_path
@@ -1372,7 +1372,7 @@ pub fn (doc OpenAPIDocument) validate_with_details() []OpenAPIError {
 	return errors
 }
 
-// is_valid - 检查文档是否有效
+// is_valid - Check if the document is valid
 pub fn (doc OpenAPIDocument) is_valid() bool {
 	doc.validate() or { return false }
 	return true
@@ -1380,11 +1380,11 @@ pub fn (doc OpenAPIDocument) is_valid() bool {
 
 
 // ============================================================================
-// OpenAPI 文档构建器 (Task 5)
+// OpenAPI Document Builder (Task 5)
 // ============================================================================
 
-// OpenAPIBuilder - 流式 API 构建器
-// 使用示例:
+// OpenAPIBuilder - Streaming API builder
+// Usage example:
 //   doc := OpenAPIBuilder.new()
 //       .openapi('3.0.0')
 //       .title('My API')
@@ -1402,7 +1402,7 @@ mut:
 	doc OpenAPIDocument
 }
 
-// new - 创建新的 OpenAPIBuilder 实例
+// new - Create a new OpenAPIBuilder instance
 pub fn OpenAPIBuilder.new() OpenAPIBuilder {
 	return OpenAPIBuilder{
 		doc: OpenAPIDocument{
@@ -1411,55 +1411,55 @@ pub fn OpenAPIBuilder.new() OpenAPIBuilder {
 	}
 }
 
-// openapi - 设置 OpenAPI 版本
+// openapi - Set OpenAPI version
 pub fn (mut b OpenAPIBuilder) openapi(version string) &OpenAPIBuilder {
 	b.doc.openapi = version
 	return unsafe { b }
 }
 
-// info - 设置完整的 API 信息
+// info - Set complete API information
 pub fn (mut b OpenAPIBuilder) info(info OpenAPIInfo) &OpenAPIBuilder {
 	b.doc.info = info
 	return unsafe { b }
 }
 
-// title - 设置 API 标题
+// title - Set the API title
 pub fn (mut b OpenAPIBuilder) title(title string) &OpenAPIBuilder {
 	b.doc.info.title = title
 	return unsafe { b }
 }
 
-// version - 设置 API 版本
+// version - set API version
 pub fn (mut b OpenAPIBuilder) version(version string) &OpenAPIBuilder {
 	b.doc.info.version = version
 	return unsafe { b }
 }
 
-// description - 设置 API 描述
+// description - Set API description
 pub fn (mut b OpenAPIBuilder) description(desc string) &OpenAPIBuilder {
 	b.doc.info.description = desc
 	return unsafe { b }
 }
 
-// terms_of_service - 设置服务条款 URL
+// terms_of_service - Set the terms of service URL
 pub fn (mut b OpenAPIBuilder) terms_of_service(url string) &OpenAPIBuilder {
 	b.doc.info.terms_of_service = url
 	return unsafe { b }
 }
 
-// contact - 设置联系信息
+// contact - set contact information
 pub fn (mut b OpenAPIBuilder) contact(contact OpenAPIContact) &OpenAPIBuilder {
 	b.doc.info.contact = contact
 	return unsafe { b }
 }
 
-// license - 设置许可证信息
+// license - set license information
 pub fn (mut b OpenAPIBuilder) license(license OpenAPILicense) &OpenAPIBuilder {
 	b.doc.info.license = license
 	return unsafe { b }
 }
 
-// server - 添加服务器信息
+// server - add server information
 pub fn (mut b OpenAPIBuilder) server(url string, description string) &OpenAPIBuilder {
 	b.doc.servers << OpenAPIServer{
 		url: url
@@ -1468,7 +1468,7 @@ pub fn (mut b OpenAPIBuilder) server(url string, description string) &OpenAPIBui
 	return unsafe { b }
 }
 
-// tag - 添加标签
+// tag - add tag
 pub fn (mut b OpenAPIBuilder) tag(name string, description string) &OpenAPIBuilder {
 	b.doc.tags << OpenAPITag{
 		name: name
@@ -1477,7 +1477,7 @@ pub fn (mut b OpenAPIBuilder) tag(name string, description string) &OpenAPIBuild
 	return unsafe { b }
 }
 
-// external_docs - 设置外部文档
+// external_docs - Set external documentation
 pub fn (mut b OpenAPIBuilder) external_docs(url string, description string) &OpenAPIBuilder {
 	b.doc.external_docs = OpenAPIExternalDocs{
 		url: url
@@ -1486,31 +1486,31 @@ pub fn (mut b OpenAPIBuilder) external_docs(url string, description string) &Ope
 	return unsafe { b }
 }
 
-// add_schema - 添加可重用的 Schema 到 components
+// add_schema - Add a reusable Schema to components
 pub fn (mut b OpenAPIBuilder) add_schema(name string, schema OpenAPISchema) &OpenAPIBuilder {
 	b.doc.components.schemas[name] = schema
 	return unsafe { b }
 }
 
-// add_response - 添加可重用的 Response 到 components
+// add_response - Add a reusable Response to components
 pub fn (mut b OpenAPIBuilder) add_response(name string, response OpenAPIResponse) &OpenAPIBuilder {
 	b.doc.components.responses[name] = response
 	return unsafe { b }
 }
 
-// add_parameter - 添加可重用的 Parameter 到 components
+// add_parameter - Add a reusable Parameter to components
 pub fn (mut b OpenAPIBuilder) add_parameter(name string, param OpenAPIParameter) &OpenAPIBuilder {
 	b.doc.components.parameters[name] = param
 	return unsafe { b }
 }
 
-// add_security_scheme - 添加安全方案到 components
+// add_security_scheme - Add security scheme to components
 pub fn (mut b OpenAPIBuilder) add_security_scheme(name string, scheme OpenAPISecurityScheme) &OpenAPIBuilder {
 	b.doc.components.security_schemes[name] = scheme
 	return unsafe { b }
 }
 
-// security - 添加全局安全要求
+// security - add global security requirements
 pub fn (mut b OpenAPIBuilder) security(requirements map[string][]string) &OpenAPIBuilder {
 	b.doc.security << requirements
 	return unsafe { b }
@@ -1518,11 +1518,11 @@ pub fn (mut b OpenAPIBuilder) security(requirements map[string][]string) &OpenAP
 
 
 // ============================================================================
-// OpenAPIPathBuilder - 路径构建器 (Task 5.2)
+// OpenAPIPathBuilder - Path builder (Task 5.2)
 // ============================================================================
 
-// OpenAPIPathBuilder - 路径构建器
-// 用于为特定路径添加 HTTP 方法操作
+// OpenAPIPathBuilder - path builder
+// Used to add HTTP method operations for specific paths
 pub struct OpenAPIPathBuilder {
 mut:
 	parent    &OpenAPIBuilder = unsafe { nil }
@@ -1530,9 +1530,9 @@ mut:
 	path_item OpenAPIPathItem
 }
 
-// path - 开始构建路径，返回 OpenAPIPathBuilder
+// path - start building path, return OpenAPIPathBuilder
 pub fn (mut b OpenAPIBuilder) path(path string) OpenAPIPathBuilder {
-	// 如果路径已存在，获取现有的 path_item
+	// If the path already exists, get the existing path_item
 	existing := b.doc.paths[path] or { OpenAPIPathItem{} }
 	return OpenAPIPathBuilder{
 		parent: unsafe { b }
@@ -1541,67 +1541,67 @@ pub fn (mut b OpenAPIBuilder) path(path string) OpenAPIPathBuilder {
 	}
 }
 
-// summary - 设置路径摘要
+// summary - Set path summary
 pub fn (mut pb OpenAPIPathBuilder) summary(summary string) &OpenAPIPathBuilder {
 	pb.path_item.summary = summary
 	return unsafe { pb }
 }
 
-// path_description - 设置路径描述
+// path_description - Set path description
 pub fn (mut pb OpenAPIPathBuilder) path_description(description string) &OpenAPIPathBuilder {
 	pb.path_item.description = description
 	return unsafe { pb }
 }
 
-// parameters - 设置路径级别的参数
+// parameters - set path level parameters
 pub fn (mut pb OpenAPIPathBuilder) parameters(params []OpenAPIParameter) &OpenAPIPathBuilder {
 	pb.path_item.parameters = params
 	return unsafe { pb }
 }
 
-// get - 添加 GET 操作
+// get - add GET operation
 pub fn (mut pb OpenAPIPathBuilder) get(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.get = op
 	return unsafe { pb }
 }
 
-// post - 添加 POST 操作
+// post - add POST operation
 pub fn (mut pb OpenAPIPathBuilder) post(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.post = op
 	return unsafe { pb }
 }
 
-// put - 添加 PUT 操作
+// put - add PUT operation
 pub fn (mut pb OpenAPIPathBuilder) put(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.put = op
 	return unsafe { pb }
 }
 
-// delete - 添加 DELETE 操作
+// delete - add DELETE operation
 pub fn (mut pb OpenAPIPathBuilder) delete(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.delete = op
 	return unsafe { pb }
 }
 
-// patch - 添加 PATCH 操作
+// patch - add PATCH operation
 pub fn (mut pb OpenAPIPathBuilder) patch(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.patch = op
 	return unsafe { pb }
 }
 
-// head - 添加 HEAD 操作
+// head - add HEAD operation
 pub fn (mut pb OpenAPIPathBuilder) head(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.head = op
 	return unsafe { pb }
 }
 
-// options - 添加 OPTIONS 操作
+// options - add OPTIONS operation
 pub fn (mut pb OpenAPIPathBuilder) options(op OpenAPIOperation) &OpenAPIPathBuilder {
 	pb.path_item.options = op
 	return unsafe { pb }
 }
 
-// done - 完成路径构建，返回父构建器
+// done - Complete path construction and return to parent builder
 pub fn (mut pb OpenAPIPathBuilder) done() &OpenAPIBuilder {
 	if pb.parent != unsafe { nil } {
 		pb.parent.doc.paths[pb.path] = pb.path_item
@@ -1611,58 +1611,58 @@ pub fn (mut pb OpenAPIPathBuilder) done() &OpenAPIBuilder {
 
 
 // ============================================================================
-// OpenAPIBuilder build 方法 (Task 5.3)
+// OpenAPIBuilder build method (Task 5.3)
 // ============================================================================
 
-// build - 构建并验证 OpenAPI 文档
-// 调用 validate() 验证文档，如果验证失败则返回错误
+// build - Build and verify OpenAPI documentation
+// Call validate() to validate the document and return an error if validation fails.
 pub fn (b OpenAPIBuilder) build() !OpenAPIDocument {
-	// 验证文档
+	// Validate document
 	b.doc.validate()!
 	return b.doc
 }
 
-// build_unchecked - 构建 OpenAPI 文档（不验证）
-// 用于需要跳过验证的场景
+// build_unchecked - build OpenAPI documentation (without validation)
+// Used for scenarios where verification needs to be skipped
 pub fn (b OpenAPIBuilder) build_unchecked() OpenAPIDocument {
 	return b.doc
 }
 
-// validate - 验证当前构建的文档
+// validate - validate the currently built document
 pub fn (b OpenAPIBuilder) validate() ! {
 	return b.doc.validate()
 }
 
-// get_document - 获取当前构建的文档（不验证）
+// get_document - Get the currently built document (does not validate)
 pub fn (b OpenAPIBuilder) get_document() OpenAPIDocument {
 	return b.doc
 }
 
 
 // ============================================================================
-// 路由信息提取 (Task 8)
+// Routing information extraction (Task 8)
 // ============================================================================
 
-// RouteInfo - 路由信息结构体
-// 包含路由的路径、HTTP 方法、路径参数和处理器信息
-// 用于自动生成 OpenAPI 文档
+// RouteInfo - routing information structure
+// Contains the route's path, HTTP method, path parameters and processor information
+// Used to automatically generate OpenAPI documentation
 pub struct RouteInfo {
 pub:
-	path        string    // 路由路径，如 "/users/:id"
-	method      string    // HTTP 方法，如 "GET", "POST"
-	path_params []string  // 路径参数列表，如 ["id"]
-	handler     IHandler  // 路由处理器
+	path        string    // Routing path, such as "/users/:id"
+	method      string    // HTTP methods, such as "GET", "POST"
+	path_params []string  //Path parameter list, such as ["id"]
+	handler     IHandler  // route processor
 }
 
-// extract_path_params - 从路径中提取路径参数
-// 支持 :param 格式的路径参数
-// 例如: "/users/:id/posts/:postId" -> ["id", "postId"]
+// extract_path_params - extract path parameters from a path
+// Support path parameters in :param format
+// For example: "/users/:id/posts/:postId" -> ["id", "postId"]
 fn extract_path_params(path string) []string {
 	mut params := []string{}
 	segments := path.split('/')
 	for segment in segments {
 		if segment.starts_with(':') && segment.len > 1 {
-			// 提取参数名（去掉冒号）
+			//Extract parameter name (remove colon)
 			param_name := segment[1..]
 			params << param_name
 		}
@@ -1670,15 +1670,15 @@ fn extract_path_params(path string) []string {
 	return params
 }
 
-// get_routes - 获取应用的所有路由信息
-// 遍历所有注册的路由，包含子应用的路由
-// 提取路径参数
-// 返回 RouteInfo 数组
+// get_routes - Get all routing information of the application
+// Traverse all registered routes, including sub-application routes
+//Extract path parameters
+// Return RouteInfo array
 pub fn (app Hono) get_routes() []RouteInfo {
 	mut routes := []RouteInfo{}
 	
-	// 从 context_router 获取所有路由
-	// GET 路由
+	// Get all routes from context_router
+	// GET route
 	for handler in app.context_router.handlers.get {
 		routes << RouteInfo{
 			path: handler.path
@@ -1688,7 +1688,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// POST 路由
+	// POST routing
 	for handler in app.context_router.handlers.post {
 		routes << RouteInfo{
 			path: handler.path
@@ -1698,7 +1698,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// PUT 路由
+	//PUT routing
 	for handler in app.context_router.handlers.put {
 		routes << RouteInfo{
 			path: handler.path
@@ -1708,7 +1708,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// DELETE 路由
+	// DELETE route
 	for handler in app.context_router.handlers.delete {
 		routes << RouteInfo{
 			path: handler.path
@@ -1718,7 +1718,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// PATCH 路由
+	// PATCH route
 	for handler in app.context_router.handlers.patch {
 		routes << RouteInfo{
 			path: handler.path
@@ -1728,7 +1728,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// HEAD 路由
+	// HEAD route
 	for handler in app.context_router.handlers.head {
 		routes << RouteInfo{
 			path: handler.path
@@ -1738,7 +1738,7 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// OPTIONS 路由
+	//OPTIONS routing
 	for handler in app.context_router.handlers.options {
 		routes << RouteInfo{
 			path: handler.path
@@ -1748,26 +1748,26 @@ pub fn (app Hono) get_routes() []RouteInfo {
 		}
 	}
 	
-	// 从子应用获取路由（已经在 route() 方法中合并到主应用）
-	// 子应用的路由已经通过 merge_routes_for_method 添加到 context_router 中
-	// 所以上面的遍历已经包含了子应用的路由
+	// Get the route from the sub-application (already merged into the main application in the route() method)
+	// The routes of the sub-application have been added to context_router through merge_routes_for_method
+	// So the above traversal already contains the routes of the sub-application
 	
 	return routes
 }
 
-// generate_openapi_paths - 从路由信息生成 OpenAPI paths
-// 将 RouteInfo 数组转换为 OpenAPI PathItem 映射
+// generate_openapi_paths - Generate OpenAPI paths from routing information
+// Convert RouteInfo array to OpenAPI PathItem map
 pub fn generate_openapi_paths(routes []RouteInfo) map[string]OpenAPIPathItem {
 	mut paths := map[string]OpenAPIPathItem{}
 	
 	for route in routes {
-		// 将 :param 格式转换为 {param} 格式（OpenAPI 标准）
+		// Convert :param format to {param} format (OpenAPI standard)
 		openapi_path := convert_path_to_openapi_format(route.path)
 		
-		// 获取或创建 PathItem
+		// Get or create PathItem
 		mut path_item := paths[openapi_path] or { OpenAPIPathItem{} }
 		
-		// 创建基本的 Operation
+		//Create a basic Operation
 		mut operation := OpenAPIOperation{
 			responses: {
 				'200': OpenAPIResponse{
@@ -1776,7 +1776,7 @@ pub fn generate_openapi_paths(routes []RouteInfo) map[string]OpenAPIPathItem {
 			}
 		}
 		
-		// 添加路径参数
+		//Add path parameters
 		for param_name in route.path_params {
 			operation.parameters << OpenAPIParameter{
 				name: param_name
@@ -1788,7 +1788,7 @@ pub fn generate_openapi_paths(routes []RouteInfo) map[string]OpenAPIPathItem {
 			}
 		}
 		
-		// 根据 HTTP 方法设置操作
+		//Set the action based on the HTTP method
 		match route.method {
 			'GET' { path_item.get = operation }
 			'POST' { path_item.post = operation }
@@ -1806,9 +1806,9 @@ pub fn generate_openapi_paths(routes []RouteInfo) map[string]OpenAPIPathItem {
 	return paths
 }
 
-// convert_path_to_openapi_format - 将 v-hono 路径格式转换为 OpenAPI 格式
-// 将 :param 转换为 {param}
-// 例如: "/users/:id" -> "/users/{id}"
+// convert_path_to_openapi_format - Convert vono path format to OpenAPI format
+//Convert :param to {param}
+// For example: "/users/:id" -> "/users/{id}"
 fn convert_path_to_openapi_format(path string) string {
 	mut result := path
 	segments := path.split('/')

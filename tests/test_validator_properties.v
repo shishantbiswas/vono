@@ -3,7 +3,7 @@ import rand
 import time
 import x.json2
 
-// 验证系统属性测试
+// Verify system property test
 // Property-Based Testing for Validator functionality
 
 const test_iterations = 100
@@ -41,7 +41,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机字符串
+// Generate random string
 fn generate_random_string(min_len int, max_len int) string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	len := rand.int_in_range(min_len, max_len + 1) or { min_len }
@@ -54,17 +54,17 @@ fn generate_random_string(min_len int, max_len int) string {
 }
 
 
-// 生成随机整数
+// Generate random integers
 fn generate_random_int(min int, max int) int {
 	return rand.int_in_range(min, max + 1) or { min }
 }
 
-// 生成随机浮点数
+// Generate random floating point numbers
 fn generate_random_float(min f64, max f64) f64 {
 	return min + rand.f64() * (max - min)
 }
 
-// 生成随机布尔值
+// Generate random boolean values
 fn generate_random_bool() bool {
 	return rand.int_in_range(0, 2) or { 0 } == 1
 }
@@ -81,13 +81,13 @@ fn test_property_14_required_field_enforcement() bool {
 	rand.seed([u32(time.now().unix()), u32(14141)])
 	
 	for i in 0 .. test_iterations {
-		// 创建一个带有必需字段的 schema
+		// Create a schema with required fields
 		field_name := 'required_field_${i}'
 		schema := hono.v_object({
 			field_name: hono.v_string().required()
 		})
 		
-		// 测试 1: 缺少必需字段应该失败
+		// Test 1: Missing required fields should fail
 		empty_data := map[string]json2.Any{}
 		result1 := hono.validate_schema(empty_data, schema)
 		
@@ -96,7 +96,7 @@ fn test_property_14_required_field_enforcement() bool {
 			return false
 		}
 		
-		// 验证错误信息包含正确的字段名
+		// Verify that the error message contains the correct field name
 		mut found_error := false
 		for err in result1.errors {
 			if err.field == field_name && err.code == 'required' {
@@ -110,7 +110,7 @@ fn test_property_14_required_field_enforcement() bool {
 			return false
 		}
 		
-		// 测试 2: 提供必需字段应该成功
+		// Test 2: Providing required fields should succeed
 		mut data_with_field := map[string]json2.Any{}
 		data_with_field[field_name] = json2.Any(generate_random_string(1, 20))
 		result2 := hono.validate_schema(data_with_field, schema)
@@ -137,7 +137,7 @@ fn test_property_15_type_coercion_consistency() bool {
 	rand.seed([u32(time.now().unix()), u32(15151)])
 	
 	for i in 0 .. test_iterations {
-		// 测试字符串类型
+		//Test string type
 		str_schema := hono.v_object({
 			'str_field': hono.v_string()
 		})
@@ -152,7 +152,7 @@ fn test_property_15_type_coercion_consistency() bool {
 			return false
 		}
 		
-		// 测试整数类型
+		//Test integer type
 		int_schema := hono.v_object({
 			'int_field': hono.v_int()
 		})
@@ -167,7 +167,7 @@ fn test_property_15_type_coercion_consistency() bool {
 			return false
 		}
 		
-		// 测试浮点数类型
+		//Test floating point type
 		float_schema := hono.v_object({
 			'float_field': hono.v_float()
 		})
@@ -182,7 +182,7 @@ fn test_property_15_type_coercion_consistency() bool {
 			return false
 		}
 		
-		// 测试布尔类型
+		//Test boolean type
 		bool_schema := hono.v_object({
 			'bool_field': hono.v_bool()
 		})
@@ -214,13 +214,13 @@ fn test_property_16_constraint_enforcement() bool {
 	rand.seed([u32(time.now().unix()), u32(16161)])
 	
 	for i in 0 .. test_iterations {
-		// 测试字符串最小长度约束
+		//Test string minimum length constraint
 		min_len := rand.int_in_range(5, 20) or { 10 }
 		str_min_schema := hono.v_object({
 			'str_field': hono.v_string().min(min_len)
 		})
 		
-		// 生成一个太短的字符串
+		// Generate a string that is too short
 		short_str := generate_random_string(1, min_len - 1)
 		mut short_data := map[string]json2.Any{}
 		short_data['str_field'] = json2.Any(short_str)
@@ -231,7 +231,7 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 生成一个足够长的字符串
+		// Generate a string long enough
 		long_str := generate_random_string(min_len, min_len + 10)
 		mut long_data := map[string]json2.Any{}
 		long_data['str_field'] = json2.Any(long_str)
@@ -242,13 +242,13 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 测试字符串最大长度约束
+		//Test the maximum string length constraint
 		max_len := rand.int_in_range(5, 20) or { 10 }
 		str_max_schema := hono.v_object({
 			'str_field': hono.v_string().max(max_len)
 		})
 		
-		// 生成一个太长的字符串
+		// Generate a string that is too long
 		too_long_str := generate_random_string(max_len + 1, max_len + 10)
 		mut too_long_data := map[string]json2.Any{}
 		too_long_data['str_field'] = json2.Any(too_long_str)
@@ -259,13 +259,13 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 测试整数最小值约束
+		// Test the integer minimum constraint
 		min_val := rand.int_in_range(-100, 100) or { 0 }
 		int_min_schema := hono.v_object({
 			'int_field': hono.v_int().min(min_val)
 		})
 		
-		// 生成一个小于最小值的整数
+		// Generate an integer less than the minimum value
 		too_small := min_val - rand.int_in_range(1, 50) or { 1 }
 		mut too_small_data := map[string]json2.Any{}
 		too_small_data['int_field'] = json2.Any(too_small)
@@ -276,13 +276,13 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 测试整数最大值约束
+		// Test the integer maximum constraint
 		max_val := rand.int_in_range(-100, 100) or { 0 }
 		int_max_schema := hono.v_object({
 			'int_field': hono.v_int().max(max_val)
 		})
 		
-		// 生成一个大于最大值的整数
+		// Generate an integer greater than the maximum value
 		too_large := max_val + rand.int_in_range(1, 50) or { 1 }
 		mut too_large_data := map[string]json2.Any{}
 		too_large_data['int_field'] = json2.Any(too_large)
@@ -293,13 +293,13 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 测试枚举约束
+		//Test enumeration constraints
 		enum_values := ['apple', 'banana', 'cherry']
 		enum_schema := hono.v_object({
 			'enum_field': hono.v_string().enum_of(enum_values)
 		})
 		
-		// 测试有效的枚举值
+		// Test for valid enumeration values
 		valid_enum_idx := rand.int_in_range(0, enum_values.len) or { 0 }
 		mut valid_enum_data := map[string]json2.Any{}
 		valid_enum_data['enum_field'] = json2.Any(enum_values[valid_enum_idx])
@@ -310,7 +310,7 @@ fn test_property_16_constraint_enforcement() bool {
 			return false
 		}
 		
-		// 测试无效的枚举值
+		// Test for invalid enumeration values
 		mut invalid_enum_data := map[string]json2.Any{}
 		invalid_enum_data['enum_field'] = json2.Any('invalid_value')
 		
@@ -337,7 +337,7 @@ fn test_property_17_nested_object_recursion() bool {
 	rand.seed([u32(time.now().unix()), u32(17171)])
 	
 	for i in 0 .. test_iterations {
-		// 创建嵌套对象 schema
+		//Create nested object schema
 		nested_schema := hono.v_object({
 			'outer': hono.v_object({
 				'inner': hono.v_object({
@@ -346,7 +346,7 @@ fn test_property_17_nested_object_recursion() bool {
 			}).required()
 		})
 		
-		// 测试 1: 完整的嵌套对象应该通过验证
+		// Test 1: The complete nested object should pass validation
 		inner_value := generate_random_string(1, 20)
 		
 		mut inner_obj := map[string]json2.Any{}
@@ -365,9 +365,9 @@ fn test_property_17_nested_object_recursion() bool {
 			return false
 		}
 		
-		// 测试 2: 缺少最内层必需字段应该失败
+		// Test 2: Should fail if innermost required field is missing
 		mut inner_obj_missing := map[string]json2.Any{}
-		// 不添加 'value' 字段
+		// Do not add 'value' field
 		
 		mut middle_obj_missing := map[string]json2.Any{}
 		middle_obj_missing['inner'] = json2.Any(inner_obj_missing)
@@ -381,7 +381,7 @@ fn test_property_17_nested_object_recursion() bool {
 			return false
 		}
 		
-		// 验证错误路径包含嵌套字段名
+		// Validate error path contains nested field names
 		mut found_nested_error := false
 		for err in missing_result.errors {
 			if err.field.contains('outer') && err.field.contains('inner') && err.field.contains('value') {
@@ -395,7 +395,7 @@ fn test_property_17_nested_object_recursion() bool {
 			return false
 		}
 		
-		// 测试 3: 缺少中间层对象应该失败
+		// Test 3: Missing middle-tier object should fail
 		mut outer_obj_no_middle := map[string]json2.Any{}
 		outer_obj_no_middle['outer'] = json2.Any(map[string]json2.Any{})
 		
@@ -415,7 +415,7 @@ fn main() {
 
 	mut stats := PropertyTestStats{}
 
-	// 运行属性测试
+	//Run property tests
 	// Feature: builtin-middleware, Property 14: Validator Required Field Enforcement
 	// Validates: Requirements 7.5, 7.7
 	stats.run_property_test('Property 14: Validator Required Field Enforcement', test_property_14_required_field_enforcement)
@@ -432,6 +432,6 @@ fn main() {
 	// Validates: Requirements 7.12, 7.13
 	stats.run_property_test('Property 17: Validator Nested Object Recursion', test_property_17_nested_object_recursion)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

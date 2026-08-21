@@ -1,4 +1,4 @@
-// websocket.v - WebSocket Helper for v-hono
+// websocket.v - WebSocket Helper for vono
 // Provides server-side WebSocket support with RFC 6455 compliance
 module hono
 
@@ -850,7 +850,7 @@ pub fn negotiate_subprotocol(c Context, supported_protocols []string) string {
 //   options: Optional WebSocket configuration (ping_interval, max_message_size, timeout, protocols)
 //
 // Returns:
-//   A handler function compatible with v-hono's routing system
+//   A handler function compatible with vono's routing system
 //
 // Example:
 //   app.get('/ws', upgrade_websocket(fn (c Context) WSEvents {

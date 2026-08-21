@@ -1,4 +1,4 @@
-// 简单 HTTP 压测 - veb vs v-hono
+// Simple HTTP stress test - veb vs vono
 // v run simple_benchmark.v
 
 module main
@@ -10,28 +10,28 @@ const requests = 50
 
 fn main() {
 	println('╔═══════════════════════════════════════════════════════════════╗')
-	println('║           简单 HTTP 压测 - veb vs v-hono                      ║')
+	println('║           简单 HTTP 压测 - veb vs vono                      ║')
 	println('╚═══════════════════════════════════════════════════════════════╝')
 	println('')
 	
-	// 测试 veb
+	// test veb
 	println('测试 veb (http://127.0.0.1:8080/)...')
 	veb_result := benchmark_server('http://127.0.0.1:8080/')
 	println('  结果: ${veb_result.rps:.0} req/s | avg: ${veb_result.avg_ms:.2}ms | 成功: ${veb_result.success}/${veb_result.total}')
 	
-	// 测试 v-hono
+	// test vono
 	println('')
-	println('测试 v-hono (http://127.0.0.1:8081/)...')
+	println('测试 vono (http://127.0.0.1:8081/)...')
 	hono_result := benchmark_server('http://127.0.0.1:8081/')
 	println('  结果: ${hono_result.rps:.0} req/s | avg: ${hono_result.avg_ms:.2}ms | 成功: ${hono_result.success}/${hono_result.total}')
 	
-	// 对比
+	// Compare
 	println('')
 	println('═══════════════════════════════════════════════════════════════')
 	if veb_result.rps > 0 && hono_result.rps > 0 {
 		if hono_result.rps > veb_result.rps {
 			ratio := hono_result.rps / veb_result.rps
-			println('v-hono 快 ${ratio:.2}x')
+			println('vono 快 ${ratio:.2}x')
 		} else {
 			ratio := veb_result.rps / hono_result.rps
 			println('veb 快 ${ratio:.2}x')
@@ -48,7 +48,7 @@ struct Result {
 }
 
 fn benchmark_server(url string) Result {
-	// 先检查服务器
+	// Check the server first
 	http.get(url) or {
 		println('  ⚠️ 服务器不可用')
 		return Result{}
@@ -71,7 +71,7 @@ fn benchmark_server(url string) Result {
 		}
 		total_ms += req_ms
 		
-		// 进度
+		// progress
 		if (i + 1) % 10 == 0 {
 			print('.')
 		}

@@ -1,5 +1,5 @@
-// picoev 测试服务器
-// 用于 test_picoev_integration.v 的测试
+// picoev test server
+// Test for test_picoev_integration.v
 
 module main
 
@@ -9,21 +9,21 @@ import net.http
 fn main() {
 	mut app := hono.Hono.new()
 	
-	// 全局中间件 - 添加自定义响应头
+	// Global middleware - add custom response headers
 	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		mut resp := next(mut c)
 		c.headers['X-Middleware'] = 'applied'
 		return resp
 	})
 	
-	// ==================== 基本路由 ====================
+	// ==================== Basic routing ====================
 	
-	// 根路径
+	// root path
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello World')
 	})
 	
-	// 健康检查
+	// health check
 	app.get('/health', fn (mut c hono.Context) http.Response {
 		return c.text('OK')
 	})
@@ -32,7 +32,7 @@ fn main() {
 		return c.text('OK')
 	})
 	
-	// ==================== CRUD 路由 ====================
+	// ==================== CRUD routing ====================
 	
 	app.get('/api/users', fn (mut c hono.Context) http.Response {
 		return c.json('{"users": []}')
@@ -63,7 +63,7 @@ fn main() {
 		return c.json('{"id": "${id}", "patched": true}')
 	})
 	
-	// ==================== 多参数路由 ====================
+	// ==================== Multi-parameter routing ====================
 	
 	app.get('/api/users/:user_id/posts/:post_id', fn (mut c hono.Context) http.Response {
 		user_id := c.params['user_id'] or { '' }
@@ -77,7 +77,7 @@ fn main() {
 		return c.json('{"category": "${category}", "item": "${item}"}')
 	})
 	
-	// ==================== 查询参数路由 ====================
+	// ==================== Query parameter routing ====================
 	
 	app.get('/api/search', fn (mut c hono.Context) http.Response {
 		q := c.query['q'] or { '' }
@@ -86,7 +86,7 @@ fn main() {
 		return c.json('{"query": "${q}", "limit": ${limit}, "page": ${page}}')
 	})
 	
-	// ==================== 响应格式路由 ====================
+	// ==================== Response format routing ====================
 	
 	app.get('/api/json', fn (mut c hono.Context) http.Response {
 		return c.json('{"message": "JSON response"}')
@@ -106,7 +106,7 @@ fn main() {
 		return c.text('OK')
 	})
 	
-	// ==================== 中间件测试路由 ====================
+	// ==================== Middleware test routing ====================
 	
 	app.get('/api/middleware-test', fn (mut c hono.Context) http.Response {
 		return c.text('middleware test')
@@ -116,14 +116,14 @@ fn main() {
 		return c.json('{"order": "correct"}')
 	})
 	
-	// ==================== 自定义 404 ====================
+	// ==================== Custom 404 ====================
 	
 	app.not_found(fn (mut c hono.Context) http.Response {
 		c.status(404)
 		return c.json('{"error": "Not Found", "path": "${c.path}"}')
 	})
 	
-	// 启动服务器
+	// Start the server
 	println('[test-server] Starting on port 9999...')
 	app.listen(':9999')
 }

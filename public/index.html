@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Hono - 轻量级 V 语言 Web 框架</title>
+    <title>vono - 轻量级 V 语言 Web 框架</title>
     <style>
         * {
             margin: 0;
@@ -245,7 +245,7 @@
             }
         }
 
-        /* 分块上传相关样式 */
+        /* Partial upload related styles*/
         .upload-area {
             border: 2px dashed #ccc;
             border-radius: 8px;
@@ -314,11 +314,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 V-Hono</h1>
+            <h1>🚀 vono</h1>
             <p>轻量级 V 语言 Web 框架 - 功能完整展示</p>
         </div>
 
-        <!-- 核心特性展示 -->
+        <!-- Core features display -->
         <div class="section">
             <h2>✨ 核心特性</h2>
             <div class="feature-grid">
@@ -353,11 +353,11 @@
             </div>
         </div>
 
-        <!-- 功能测试区域 -->
+        <!-- Functional test area -->
         <div class="section">
             <h2>🧪 功能测试</h2>
             
-            <!-- Token 输入区域 -->
+            <!-- Token input area -->
             <div class="test-area">
                 <h4>🔑 认证 Token</h4>
                 <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
@@ -379,7 +379,7 @@
                     <button class="tab-button" onclick="showTab('upload')">分块上传</button>
                 </div>
 
-                <!-- API 测试 -->
+                <!-- API testing -->
                 <div id="api" class="tab-content active">
                     <div class="test-area">
                         <h4>健康检查</h4>
@@ -390,7 +390,7 @@
                     </div>
                 </div>
 
-                <!-- 文件服务测试 -->
+                <!-- File service test -->
                 <div id="files" class="tab-content">
                     <div class="test-area">
                         <h4>文件服务测试</h4>
@@ -403,7 +403,7 @@
                     </div>
                 </div>
 
-                <!-- 路由测试 -->
+                <!-- Routing test -->
                 <div id="routes" class="tab-content">
                     <div class="test-area">
                         <h4>动态路由测试</h4>
@@ -414,7 +414,7 @@
                     </div>
                 </div>
 
-                <!-- 静态文件测试 -->
+                <!-- Static file testing -->
                 <div id="static" class="tab-content">
                     <div class="test-area">
                         <h4>静态文件访问</h4>
@@ -425,7 +425,7 @@
                     </div>
                 </div>
 
-                <!-- 分块上传测试 -->
+                <!-- Chunked upload test -->
                 <div id="upload" class="tab-content">
                     <div class="test-area">
                         <h4>📤 分块上传功能</h4>
@@ -462,7 +462,7 @@
             </div>
         </div>
 
-        <!-- 可用端点 -->
+        <!-- Available endpoints -->
         <div class="section">
             <h2>📋 可用端点</h2>
             
@@ -537,7 +537,7 @@
             </div>
         </div>
 
-        <!-- 性能统计 -->
+        <!-- Performance Statistics -->
         <div class="section">
             <h2>📊 性能统计</h2>
             <div class="stats">
@@ -560,41 +560,41 @@
             </div>
         </div>
 
-        <!-- 代码示例 -->
+        <!-- Code example -->
         <div class="section">
             <h2>💻 代码示例</h2>
             <div class="code-block">
-// 基本路由设置
+//Basic routing settings
 mut app := hono.Hono.new()
 
-// 静态文件服务
+// Static file service
 app.use(hono.serve_static_default())
 app.use(hono.serve_static_path('/assets', './static'))
 
-// 基础路由
+//Basic routing
 app.get('/hello', fn (mut c hono.Context) http.Response {
     return c.text('Hello, World!')
 })
 
-// 动态路由
+// dynamic routing
 app.get('/users/:id', fn (mut c hono.Context) http.Response {
     user_id := c.params['id']
     return c.json('{"user_id": "${user_id}"}')
 })
 
-// 文件服务
+// file service
 app.get('/file/:filename', fn (mut c hono.Context) http.Response {
     filename := c.params['filename']
     return c.file('public/${filename}')
 })
 
-// 启动服务器
+// Start the server
 app.listen(':8080')
             </div>
         </div>
 
         <div class="footer">
-            <p>🎉 V-Hono 静态文件服务正常运行中</p>
+            <p>🎉 vono 静态文件服务正常运行中</p>
             <p>这是来自 <code>./public</code> 目录的 <code>index.html</code> 文件</p>
         </div>
     </div>
@@ -604,9 +604,9 @@ app.listen(':8080')
         let requestCount = 0;
         let successCount = 0;
         let totalResponseTime = 0;
-        let currentToken = 'abc123'; // 默认 token
+        let currentToken = 'abc123'; //Default token
 
-        // Token 管理函数
+        //Token management function
         function setToken() {
             const tokenInput = document.getElementById('token-input');
             const newToken = tokenInput.value.trim();
@@ -661,7 +661,7 @@ app.listen(':8080')
             }, 2000);
         }
 
-        // 添加 CSS 动画
+        //Add CSS animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
@@ -676,15 +676,15 @@ app.listen(':8080')
         document.head.appendChild(style);
 
         function showTab(tabName) {
-            // 隐藏所有标签内容
+            //Hide all label content
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => content.classList.remove('active'));
             
-            // 移除所有按钮的active类
+            //Remove the active class of all buttons
             const tabButtons = document.querySelectorAll('.tab-button');
             tabButtons.forEach(button => button.classList.remove('active'));
             
-            // 显示选中的标签内容
+            //Display the selected tag content
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
         }
@@ -698,7 +698,7 @@ app.listen(':8080')
             const startTime = Date.now();
             
             try {
-                // 构建带 token 的 URL
+                // Construct a URL with token
                 const url = new URL(endpoint, window.location.origin);
                 if (currentToken) {
                     url.searchParams.set('token', currentToken);
@@ -728,7 +728,7 @@ app.listen(':8080')
             const startTime = Date.now();
             
             try {
-                // 构建带 token 的 URL
+                // Construct a URL with token
                 const url = new URL(endpoint, window.location.origin);
                 if (currentToken) {
                     url.searchParams.set('token', currentToken);
@@ -737,26 +737,26 @@ app.listen(':8080')
                 const response = await fetch(url.toString());
                 const responseTime = Date.now() - startTime;
                 
-                // 获取所有响应头信息用于调试
+                // Get all response header information for debugging
                 const headers = {};
                 response.headers.forEach((value, key) => {
                     headers[key] = value;
                 });
                 
-                // 检查是否是图片文件 - 优先检查文件扩展名
+                // Check if it is an image file - check the file extension first
                 const urlPath = url.pathname.toLowerCase();
                 const isImageByExtension = urlPath.endsWith('.jpg') || urlPath.endsWith('.jpeg') || 
                                          urlPath.endsWith('.png') || urlPath.endsWith('.gif') || 
                                          urlPath.endsWith('.webp') || urlPath.endsWith('.svg');
                 
-                // 也检查 content-type
+                // Also check content-type
                 const contentType = response.headers.get('content-type') || '';
                 const isImageByType = contentType.startsWith('image/');
                 
                 const isImage = isImageByExtension || isImageByType;
                 
                 if (isImage) {
-                    // 对于图片文件，显示图片预览
+                    // For image files, display image preview
                     const blob = await response.blob();
                     const imageUrl = URL.createObjectURL(blob);
                     
@@ -776,7 +776,7 @@ app.listen(':8080')
                         <img src="${imageUrl}" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px;" alt="图片预览">
                     `;
                 } else {
-                    // 对于非图片文件，显示文本内容
+                    // For non-image files, display text content
                     const data = await response.text();
                     resultDiv.className = 'result';
                     resultDiv.innerHTML = `
@@ -811,7 +811,7 @@ app.listen(':8080')
             const startTime = Date.now();
             
             try {
-                // 构建带 token 的 URL
+                // Construct a URL with token
                 const url = new URL(endpoint, window.location.origin);
                 if (currentToken) {
                     url.searchParams.set('token', currentToken);
@@ -841,7 +841,7 @@ app.listen(':8080')
             const startTime = Date.now();
             
             try {
-                // 构建带 token 的 URL
+                // Construct a URL with token
                 const url = new URL(endpoint, window.location.origin);
                 if (currentToken) {
                     url.searchParams.set('token', currentToken);
@@ -871,7 +871,7 @@ app.listen(':8080')
             
             const successRate = Math.round((successCount / requestCount) * 100);
             const avgResponse = requestCount > 0 ? Math.round(totalResponseTime / requestCount) : 0;
-            const cacheHit = Math.round(Math.random() * 30 + 70); // 模拟缓存命中率
+            const cacheHit = Math.round(Math.random() * 30 + 70); //Simulate cache hit rate
             
             document.getElementById('request-count').textContent = requestCount;
             document.getElementById('success-rate').textContent = successRate + '%';
@@ -879,42 +879,42 @@ app.listen(':8080')
             document.getElementById('cache-hit').textContent = cacheHit + '%';
         }
 
-        // 页面加载时自动测试健康检查
+        // Automatically test health checks when the page loads
         window.addEventListener('load', function() {
             setTimeout(() => {
                 testAPI('/api/health');
             }, 1000);
         });
 
-        // 添加键盘事件支持
+        //Add keyboard event support
         document.getElementById('token-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 setToken();
             }
         });
 
-        // ===== 分块上传功能 =====
-        const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB 固定分片大小
+        // ===== Partial upload function =====
+        const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB fixed shard size
         let selectedFile = null;
         let fileHash = null;
         let totalChunks = 0;
         let uploadedChunks = 0;
 
-        // 请求池管理
+        //Request pool management
         class RequestPool {
             constructor(maxConcurrent = 6) {
                 this.maxConcurrent = maxConcurrent;
-                this.activePool = new Map(); // 活跃请求池 {requestId: Promise}
-                this.pendingPool = []; // 待请求池 [{requestId, task, resolve, reject}]
+                this.activePool = new Map(); //Active request pool {requestId: Promise}
+                this.pendingPool = []; //Pending request pool [{requestId, task, resolve, reject}]
                 this.requestIdCounter = 0;
             }
 
-            // 生成请求ID
+            // Generate request ID
             generateRequestId() {
                 return ++this.requestIdCounter;
             }
 
-            // 添加请求到池中
+            //Add request to the pool
             async addRequest(task) {
                 const requestId = this.generateRequestId();
                 
@@ -926,24 +926,24 @@ app.listen(':8080')
                         reject
                     };
 
-                    // 如果活跃池未满，直接执行
+                    // If the active pool is not full, execute directly
                     if (this.activePool.size < this.maxConcurrent) {
                         this.executeRequest(request);
                     } else {
-                        // 否则加入待请求池
+                        // Otherwise, join the pending request pool
                         this.pendingPool.push(request);
                         console.log(`请求 ${requestId} 加入待请求池，当前待请求数: ${this.pendingPool.length}`);
                     }
                 });
             }
 
-            // 执行请求
+            //Execute the request
             async executeRequest(request) {
                 const { requestId, task, resolve, reject } = request;
                 
                 console.log(`开始执行请求 ${requestId}，当前活跃请求数: ${this.activePool.size + 1}`);
                 
-                // 将请求添加到活跃池
+                //Add the request to the active pool
                 const promise = task()
                     .then(result => {
                         console.log(`请求 ${requestId} 执行成功`);
@@ -956,32 +956,32 @@ app.listen(':8080')
                         throw error;
                     })
                     .finally(() => {
-                        // 请求完成后从活跃池移除
+                        //Remove from active pool after request is completed
                         this.activePool.delete(requestId);
                         console.log(`请求 ${requestId} 完成，从活跃池移除，当前活跃请求数: ${this.activePool.size}`);
                         
-                        // 检查待请求池，如果有待请求则执行
+                        // Check the pending request pool and execute if there are pending requests
                         this.processPendingRequests();
                         
-                        // 触发状态更新事件
+                        //Trigger status update event
                         this.triggerStatusUpdate();
                     });
 
                 this.activePool.set(requestId, promise);
             }
 
-            // 处理待请求池中的请求
+            // Process requests in the pending request pool
             processPendingRequests() {
                 while (this.pendingPool.length > 0 && this.activePool.size < this.maxConcurrent) {
                     const request = this.pendingPool.shift();
                     this.executeRequest(request);
                     console.log(`从待请求池取出请求 ${request.requestId} 执行，剩余待请求数: ${this.pendingPool.length}`);
                 }
-                // 处理完待请求后也触发状态更新
+                // After processing the pending request, the status update is also triggered.
                 this.triggerStatusUpdate();
             }
 
-            // 获取池状态
+            // Get pool status
             getStatus() {
                 return {
                     activeCount: this.activePool.size,
@@ -990,7 +990,7 @@ app.listen(':8080')
                 };
             }
 
-            // 清空所有池
+            // Clear all pools
             clear() {
                 this.activePool.clear();
                 this.pendingPool = [];
@@ -998,22 +998,22 @@ app.listen(':8080')
                 this.triggerStatusUpdate();
             }
 
-            // 触发状态更新
+            // Trigger status update
             triggerStatusUpdate() {
-                // 使用 setTimeout 确保状态更新在下一个事件循环中执行
+                // Use setTimeout to ensure status updates are performed in the next event loop
                 setTimeout(() => {
                     updatePoolStatus();
                 }, 0);
             }
         }
 
-        // 创建全局请求池实例
+        //Create a global request pool instance
         const requestPool = new RequestPool(6);
 
-        // 文件选择处理
+        //File selection processing
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         
-        // 拖拽处理
+        //Drag processing
         const uploadArea = document.getElementById('uploadArea');
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -1039,13 +1039,13 @@ app.listen(':8080')
             const file = document.getElementById('fileInput').files[0];
             if (!file) return;
 
-            // 重置上传状态
+            //Reset upload status
             resetUploadState();
 
             selectedFile = file;
             totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             
-            // 显示文件信息
+            //Display file information
             document.getElementById('fileName').textContent = file.name;
             document.getElementById('fileSize').textContent = formatFileSize(file.size);
             document.getElementById('chunkCount').textContent = totalChunks;
@@ -1054,35 +1054,35 @@ app.listen(':8080')
             document.getElementById('fileInfo').style.display = 'block';
             document.getElementById('uploadBtn').style.display = 'inline-block';
             
-            // 计算文件hash
+            // Calculate file hash
             calculateFileHash(file).then(hash => {
                 fileHash = hash;
                 console.log('File hash:', hash);
             });
         }
 
-        // 重置上传状态
+        //Reset upload status
         function resetUploadState() {
-            // 重置进度条
+            //Reset progress bar
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('chunkStatus').textContent = '';
             document.getElementById('poolStatus').textContent = '';
             
-            // 隐藏进度容器
+            //Hide progress container
             document.getElementById('progressContainer').style.display = 'none';
             
-            // 重置状态信息
+            //Reset status information
             document.getElementById('uploadStatus').style.display = 'none';
             
-            // 重置上传按钮
+            //Reset upload button
             const uploadBtn = document.getElementById('uploadBtn');
             uploadBtn.disabled = false;
             uploadBtn.textContent = '开始上传';
             
-            // 重置变量
+            //Reset variables
             uploadedChunks = 0;
             
-            // 清空请求池
+            // Clear the request pool
             requestPool.clear();
         }
 
@@ -1099,37 +1099,37 @@ app.listen(':8080')
             document.getElementById('progressContainer').style.display = 'block';
             showUploadStatus('开始上传...', 'success');
 
-            // 清空之前的请求池
+            // Clear the previous request pool
             requestPool.clear();
 
             try {
                 let completedChunks = 0;
                 let failedChunks = [];
                 let instantSuccess = false;
-                let cancelledTasks = false; // 新增：标记是否已取消任务
+                let cancelledTasks = false; // New: Mark whether the task has been canceled
 
-                // 先串行检查第一个分片，检测秒传
+                // First check the first fragment serially and detect the second transmission
                 console.log('先检查第一个分片，检测秒传...');
                 const firstChunk = selectedFile.slice(0, CHUNK_SIZE);
                 const firstChunkHash = await calculateChunkHash(firstChunk);
                 const firstCheckResult = await checkChunkExists(fileHash, 0, firstChunkHash);
                 
-                // 如果第一个分片检测到秒传，直接返回
+                // If the first fragment detects instant transmission, return directly
                 if (firstCheckResult.all_chunk_uploaded) {
                     console.log('检测到秒传，所有分片都已上传完成！');
-                    updateProgress(totalChunks, totalChunks); // 更新进度到100%
+                    updateProgress(totalChunks, totalChunks); // Update progress to 100%
                     showUploadStatus('秒传成功！文件已完整上传。', 'success');
                     uploadBtn.textContent = '上传完成';
                     return;
                 }
                 
-                // 如果第一个分片已存在，记录进度
+                // If the first shard already exists, record the progress
                 if (firstCheckResult.exists) {
                     console.log('分片 0 已存在，跳过上传');
                     completedChunks++;
                     updateProgress(completedChunks, totalChunks);
                 } else {
-                    // 第一个分片不存在，需要上传
+                    //The first fragment does not exist and needs to be uploaded
                     await uploadChunk(selectedFile, firstChunk, {
                         fileHash, chunkIndex: 0, totalChunks, chunkHash: firstChunkHash
                     });
@@ -1138,7 +1138,7 @@ app.listen(':8080')
                     console.log('分片 0 上传完成');
                 }
 
-                // 创建剩余分片的上传任务并添加到请求池（并发处理）
+                //Create upload tasks for the remaining shards and add them to the request pool (concurrent processing)
                 const uploadPromises = [];
                 for (let i = 1; i < totalChunks; i++) {
                     const chunkIndex = i;
@@ -1147,10 +1147,10 @@ app.listen(':8080')
                             const chunk = selectedFile.slice(chunkIndex * CHUNK_SIZE, (chunkIndex + 1) * CHUNK_SIZE);
                             const chunkHash = await calculateChunkHash(chunk);
 
-                            // 检查分片是否已存在
+                            // Check if the shard already exists
                             const checkResult = await checkChunkExists(fileHash, chunkIndex, chunkHash);
                             
-                            // 如果分片已存在，跳过上传
+                            // If the shard already exists, skip uploading
                             if (checkResult.exists) {
                                 console.log(`分片 ${chunkIndex} 已存在，跳过上传`);
                                 completedChunks++;
@@ -1158,7 +1158,7 @@ app.listen(':8080')
                                 return { success: true, chunkIndex, skipped: true };
                             }
 
-                            // 上传分片
+                            //Upload fragments
                             await uploadChunk(selectedFile, chunk, {
                                 fileHash, chunkIndex, totalChunks, chunkHash
                             });
@@ -1177,15 +1177,15 @@ app.listen(':8080')
                     uploadPromises.push(promise);
                 }
 
-                            // 等待所有上传任务完成
+                            // Wait for all upload tasks to complete
             const results = await Promise.all(uploadPromises);
 
-            // 检查是否有秒传成功
+            // Check whether the instant transfer is successful
             if (instantSuccess) {
-                return; // 秒传成功，直接返回
+                return; // Successful transfer in seconds, return directly
             }
 
-            // 检查上传结果
+            // Check upload results
             const failedResults = results.filter(result => !result.success);
             if (failedResults.length > 0) {
                 const errorMessage = `部分分片上传失败: ${failedResults.map(f => `分片${f.chunkIndex}(${f.error})`).join(', ')}`;
@@ -1198,7 +1198,7 @@ app.listen(':8080')
             showUploadStatus('上传完成！文件已自动合并。', 'success');
             uploadBtn.textContent = '上传完成';
             
-            // 确保最终状态显示正确
+            // Make sure the final status is displayed correctly
             setTimeout(() => {
                 updatePoolStatus();
             }, 100);
@@ -1209,12 +1209,12 @@ app.listen(':8080')
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = '重新上传';
             } finally {
-                // 清空请求池
+                // Clear the request pool
                 requestPool.clear();
             }
         }
 
-        // 计算文件hash
+        // Calculate file hash
         async function calculateFileHash(file) {
             return new Promise(resolve => {
                 const spark = new SparkMD5.ArrayBuffer();
@@ -1227,7 +1227,7 @@ app.listen(':8080')
             });
         }
 
-        // 计算分片hash
+        // Calculate shard hash
         async function calculateChunkHash(chunk) {
             return new Promise(resolve => {
                 const spark = new SparkMD5.ArrayBuffer();
@@ -1240,7 +1240,7 @@ app.listen(':8080')
             });
         }
 
-        // 检查分片hash是否已存在
+        // Check if the shard hash already exists
         async function checkChunkExists(fileHash, chunkIndex, chunkHash) {
             const url = new URL('/upload/chunk_exists', window.location.origin);
             url.searchParams.set('file_hash', fileHash);
@@ -1257,7 +1257,7 @@ app.listen(':8080')
             if (!res.ok) return { exists: false, all_chunk_uploaded: false };
             const data = await res.json();
             
-            // 如果所有分片都已上传完成，直接返回 true 表示秒传成功
+            // If all fragments have been uploaded, return true directly to indicate successful upload in seconds.
             if (data.all_chunk_uploaded) {
                 console.log('所有分片都已上传完成，秒传成功！');
                 return { exists: true, all_chunk_uploaded: true };
@@ -1266,7 +1266,7 @@ app.listen(':8080')
             return { exists: data.exists, all_chunk_uploaded: false };
         }
 
-        // 上传分片
+        //Upload fragments
         async function uploadChunk(file, chunk, { fileHash, chunkIndex, totalChunks, chunkHash }) {
             const form = new FormData();
             form.append('file_hash', fileHash);
@@ -1299,22 +1299,22 @@ app.listen(':8080')
             }
         }
 
-        // 更新进度
+        // update progress
         function updateProgress(current, total) {
             const percentage = (current / total) * 100;
             document.getElementById('progressFill').style.width = percentage + '%';
             document.getElementById('chunkStatus').textContent = current + '/' + total + ' 分片已上传 (' + percentage.toFixed(1) + '%)';
             
-            // 更新请求池状态
+            //Update request pool status
             updatePoolStatus();
         }
 
-        // 更新请求池状态显示
+        //Update request pool status display
         function updatePoolStatus() {
             const status = requestPool.getStatus();
             const poolStatusElement = document.getElementById('poolStatus');
             if (poolStatusElement) {
-                // 如果所有请求都完成了，显示完成状态
+                // If all requests are completed, display completion status
                 if (status.activeCount === 0 && status.pendingCount === 0) {
                     poolStatusElement.textContent = `请求池状态: 所有请求已完成`;
                 } else {
@@ -1323,7 +1323,7 @@ app.listen(':8080')
             }
         }
 
-        // 显示上传状态
+        //Display upload status
         function showUploadStatus(message, type) {
             const status = document.getElementById('uploadStatus');
             status.textContent = message;
@@ -1331,7 +1331,7 @@ app.listen(':8080')
             status.style.display = 'block';
         }
 
-        // 格式化文件大小
+        //Format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;

@@ -5,10 +5,10 @@ import net.http
 fn main() {
 	println('=== 正则表达式缓存性能测试 ===')
 	
-	// 测试1: 大规模重复匹配测试
+	//Test 1: Large-scale repeated matching test
 	test_large_scale_repeated_matching()
 	
-	// 测试2: 多路由缓存效果测试
+	//Test 2: Multi-route cache effect test
 	test_multi_route_cache_effect()
 	
 	println('✅ 正则表达式缓存性能测试完成')
@@ -19,7 +19,7 @@ fn test_large_scale_repeated_matching() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加一个复杂的动态路由
+	//Add a complex dynamic route
 	handler := hono.ContextHandler{
 		path: '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id/replies/:reply_id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -30,10 +30,10 @@ fn test_large_scale_repeated_matching() {
 	
 	test_path := '/api/v1/users/123/posts/456/comments/789/replies/101'
 	
-	// 清空缓存
+	// clear cache
 	router.clear_regex_cache()
 	
-	// 第一次匹配（需要编译正则表达式）
+	// First match (requires compiled regular expression)
 	println('  第一次匹配 (编译正则表达式)...')
 	start_time1 := time.now()
 	result1 := router.match_route('GET', test_path)
@@ -43,11 +43,11 @@ fn test_large_scale_repeated_matching() {
 		println('  ✅ 第一次匹配成功')
 	}
 	
-	// 检查缓存状态
+	// Check cache status
 	regex_total, regex_compiled := router.get_regex_cache_stats()
 	println('  缓存状态: ${regex_compiled}/${regex_total} 已编译')
 	
-	// 大量重复匹配（使用缓存）
+	// Lots of repeated matches (using cache)
 	iterations := 100000
 	println('  执行 ${iterations} 次重复匹配 (使用缓存)...')
 	
@@ -73,7 +73,7 @@ fn test_large_scale_repeated_matching() {
 		println('  平均每次匹配时间: ${avg_time:.3f}μs')
 	}
 	
-	// 验证缓存没有增长（说明使用了缓存）
+	// Verify that the cache has not grown (indicating that cache is used)
 	_, regex_compiled_after := router.get_regex_cache_stats()
 	if regex_compiled_after == regex_compiled {
 		println('  ✅ 缓存使用正常 - 没有额外的编译')
@@ -87,7 +87,7 @@ fn test_multi_route_cache_effect() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加多个复杂的动态路由
+	//Add multiple complex dynamic routes
 	routes_and_paths := [
 		{
 			'route': '/api/:version/users/:user_id/posts/:post_id'
@@ -111,7 +111,7 @@ fn test_multi_route_cache_effect() {
 		}
 	]
 	
-	// 添加路由
+	//Add route
 	for item in routes_and_paths {
 		handler := hono.ContextHandler{
 			path: item['route']
@@ -122,10 +122,10 @@ fn test_multi_route_cache_effect() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 清空缓存
+	// clear cache
 	router.clear_regex_cache()
 	
-	// 第一轮匹配（编译所有正则表达式）
+	// First round of matching (compile all regular expressions)
 	println('  第一轮匹配 - 编译阶段...')
 	start_time1 := time.now()
 	mut first_round_matches := 0
@@ -141,7 +141,7 @@ fn test_multi_route_cache_effect() {
 	println('  第一轮匹配时间: ${first_round_time}')
 	println('  第一轮成功匹配: ${first_round_matches}')
 	
-	// 多轮重复匹配（使用缓存）
+	//Multiple rounds of repeated matching (using cache)
 	rounds := 10000
 	println('  执行 ${rounds} 轮重复匹配 (使用缓存)...')
 	
@@ -163,7 +163,7 @@ fn test_multi_route_cache_effect() {
 	println('  ${rounds}轮重复匹配时间: ${cached_rounds_time}')
 	println('  总成功匹配次数: ${total_cached_matches}')
 	
-	// 计算性能对比
+	// Computational performance comparison
 	if first_round_matches > 0 && total_cached_matches > 0 {
 		avg_first_round := f64(first_round_time.microseconds()) / f64(first_round_matches)
 		avg_cached := f64(cached_rounds_time.microseconds()) / f64(total_cached_matches)
@@ -177,7 +177,7 @@ fn test_multi_route_cache_effect() {
 		}
 	}
 	
-	// 验证缓存状态
+	//Verify cache status
 	_, regex_compiled_final := router.get_regex_cache_stats()
 	if regex_compiled_final == regex_compiled_after_first {
 		println('  ✅ 缓存工作正常 - 没有额外编译')
@@ -185,6 +185,6 @@ fn test_multi_route_cache_effect() {
 		println('  ❌ 缓存异常 - 发生了 ${regex_compiled_final - regex_compiled_after_first} 次额外编译')
 	}
 	
-	// 显示详细统计
+	// Show detailed statistics
 	router.analyze_router_performance()
 }

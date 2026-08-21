@@ -3,7 +3,7 @@ import net.http
 import rand
 import time
 
-// Bearer Auth Middleware 属性测试
+// Bearer Auth Middleware property test
 // Property-Based Testing for Bearer Auth functionality
 
 const test_iterations = 100
@@ -41,7 +41,7 @@ fn (stats BearerAuthTestStats) print_summary() {
 	}
 }
 
-// 生成随机的 token
+// Generate random token
 fn generate_random_token() string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	len := rand.int_in_range(16, 64) or { 32 }
@@ -53,21 +53,21 @@ fn generate_random_token() string {
 	return token
 }
 
-// 生成随机的 realm
+// Generate a random realm
 fn generate_random_realm() string {
 	realms := ['api', 'admin', 'user', 'protected', 'secure', 'private']
 	idx := rand.int_in_range(0, realms.len) or { 0 }
 	return realms[idx]
 }
 
-// 生成随机的 prefix
+// Generate random prefix
 fn generate_random_prefix() string {
 	prefixes := ['Bearer', 'Token', 'ApiKey', 'Auth']
 	idx := rand.int_in_range(0, prefixes.len) or { 0 }
 	return prefixes[idx]
 }
 
-// 创建带 Authorization 头的测试 Context
+//Create a test Context with Authorization header
 fn create_bearer_context_with_auth(auth_header string) hono.Context {
 	mut headers := http.new_header()
 	if auth_header.len > 0 {
@@ -82,7 +82,7 @@ fn create_bearer_context_with_auth(auth_header string) hono.Context {
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 创建带自定义 header 的测试 Context
+//Create a test Context with custom header
 fn create_bearer_context_with_custom_header(header_name string, header_value string) hono.Context {
 	mut headers := http.new_header()
 	if header_value.len > 0 {
@@ -97,7 +97,7 @@ fn create_bearer_context_with_custom_header(header_name string, header_value str
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 模拟 next 函数，返回一个简单的响应
+// Simulate the next function and return a simple response
 fn bearer_mock_next(mut c hono.Context) http.Response {
 	c.status(200)
 	return c.text('OK')
@@ -367,7 +367,7 @@ fn main() {
 
 	mut stats := BearerAuthTestStats{}
 
-	// 运行属性测试
+	//Run property tests
 	// Feature: builtin-middleware, Property 9: Bearer Token Validation
 	// Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10
 	stats.run_property_test('Property 9: Bearer Token Validation', test_property_9_bearer_token_validation)
@@ -375,6 +375,6 @@ fn main() {
 	stats.run_property_test('Property 9: Realm Configuration', test_property_9_realm_configuration)
 	stats.run_property_test('Property 9: Custom Header Name', test_property_9_custom_header_name)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

@@ -1,13 +1,13 @@
-// 简单的 uSockets 服务器测试
-// 从 v-hono 目录运行: v run tests/test_usockets_simple_server.v
-// 运行后访问: http://localhost:3000/
+// Simple uSockets server test
+// Run from the vono directory: v run tests/test_usockets_simple_server.v
+//Access after running: http://localhost:3000/
 
 module main
 
 import net.http
 import strings
 
-// 复制必要的类型定义用于独立测试
+// Copy necessary type definitions for standalone testing
 struct TestContext {
 mut:
 	params      map[string]string
@@ -40,7 +40,7 @@ fn main() {
 	println('由于模块导入限制，这里只测试编译是否成功。')
 	println('要测试完整的 uSockets 服务器，请使用:')
 	println('')
-	println('  1. 安装 v-hono 到 vpm:')
+	println('  1. 安装 vono 到 vpm:')
 	println('     v install meiseayoung.hono')
 	println('')
 	println('  2. 运行现有测试服务器:')
@@ -50,7 +50,7 @@ fn main() {
 	println('     go run tests/test_usockets_integration.go')
 	println('')
 	
-	// 简单的类型测试
+	// Simple type test
 	mut ctx := TestContext{
 		params: {'id': '123'}
 		query: {'q': 'test'}

@@ -1,8 +1,8 @@
 // test_stream_sse_properties.v
 // Property-Based Testing for stream_sse() function
 // Feature: sse-streaming-helper
-// Property 6: streamSSE() 设置正确的 HTTP 头
-// Property 7: SSE 事件格式化正确性
+// Property 6: streamSSE() sets the correct HTTP headers
+// Property 7: SSE event formatting correctness
 // Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
 module main
 
@@ -337,7 +337,7 @@ fn get_stream_sse_headers() map[string]string {
 }
 
 // ============================================================================
-// Property 6: streamSSE() 设置正确的 HTTP 头
+// Property 6: streamSSE() sets the correct HTTP headers
 // Feature: sse-streaming-helper, Property 6
 // Validates: Requirements 3.1, 3.2, 3.3
 //
@@ -491,7 +491,7 @@ fn test_property_6g_sse_headers_differ_from_text() bool {
 
 
 // ============================================================================
-// Property 7: SSE 事件格式化正确性
+// Property 7: SSE event formatting correctness
 // Feature: sse-streaming-helper, Property 7
 // Validates: Requirements 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
 //
@@ -956,7 +956,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 6 tests
-	// Feature: sse-streaming-helper, Property 6: streamSSE() 设置正确的 HTTP 头
+	// Feature: sse-streaming-helper, Property 6: streamSSE() sets the correct HTTP headers
 	// Validates: Requirements 3.1, 3.2, 3.3
 	println('--- Property 6: streamSSE() 设置正确的 HTTP 头 ---')
 	stats.run_property_test('Property 6a: Content-Type header (text/event-stream)', test_property_6a_content_type_header)
@@ -968,7 +968,7 @@ fn main() {
 	stats.run_property_test('Property 6g: SSE headers differ from text', test_property_6g_sse_headers_differ_from_text)
 
 	// Run Property 7 tests
-	// Feature: sse-streaming-helper, Property 7: SSE 事件格式化正确性
+	// Feature: sse-streaming-helper, Property 7: SSE event formatting correctness
 	// Validates: Requirements 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
 	println('\n--- Property 7: SSE 事件格式化正确性 ---')
 	stats.run_property_test('Property 7a: Data field formatting', test_property_7a_data_field_formatting)

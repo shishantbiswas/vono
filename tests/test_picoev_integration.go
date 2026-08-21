@@ -1,9 +1,9 @@
-// picoev 优化集成测试 (Go 版本)
-// 测试 picoev 服务器的完整功能，确保优化没有引入新问题
+// picoev optimized integration tests (Go version)
+// Test the complete functionality of the picoev server to ensure that the optimization does not introduce new problems
 //
-// 使用方法:
-// 1. 先启动测试服务器: v -enable-globals run v-hono/tests/test_picoev_server.v
-// 2. 运行测试: go run v-hono/tests/test_picoev_integration.go
+// How to use:
+// 1. Start the test server first: v -enable-globals run vono/tests/test_picoev_server.v
+// 2. Run the test: go run vono/tests/test_picoev_integration.go
 
 package main
 
@@ -61,11 +61,11 @@ func main() {
 	fmt.Println("╚═══════════════════════════════════════════════════════════════╝")
 	fmt.Println()
 
-	// 验证服务器是否运行
+	// Verify that the server is running
 	fmt.Println("🔍 检查测试服务器...")
 	if !checkServerReady() {
 		fmt.Println("❌ 服务器未运行")
-		fmt.Println("   请先启动: v -enable-globals run v-hono/tests/test_picoev_server.v")
+		fmt.Println("   请先启动: v -enable-globals run vono/tests/test_picoev_server.v")
 		return
 	}
 	fmt.Println("✅ 服务器已就绪")
@@ -73,64 +73,64 @@ func main() {
 
 	stats := &TestStats{}
 
-	// 1. 基本 GET 路由测试
+	// 1. Basic GET routing test
 	fmt.Println("📦 1. 基本 GET 路由测试")
 	stats.run("GET 根路径", testGetRoot)
 	stats.run("GET 健康检查", testGetHealth)
 	stats.run("GET 静态路由", testGetStatic)
 	fmt.Println()
 
-	// 2. 动态路由测试
+	// 2. Dynamic routing test
 	fmt.Println("📦 2. 动态路由测试")
 	stats.run("单参数路由", testSingleParam)
 	stats.run("多参数路由", testMultiParams)
 	stats.run("嵌套参数路由", testNestedParams)
 	fmt.Println()
 
-	// 3. 查询参数测试
+	// 3. Query parameter test
 	fmt.Println("📦 3. 查询参数测试")
 	stats.run("单个查询参数", testSingleQuery)
 	stats.run("多个查询参数", testMultiQuery)
 	fmt.Println()
 
-	// 4. 响应格式测试
+	// 4. Response format test
 	fmt.Println("📦 4. 响应格式测试")
 	stats.run("JSON 响应", testJSONResponse)
 	stats.run("HTML 响应", testHTMLResponse)
 	stats.run("自定义状态码 201", testCustomStatus)
 	fmt.Println()
 
-	// 5. 中间件测试
+	// 5. Middleware testing
 	fmt.Println("📦 5. 中间件测试")
 	stats.run("全局中间件响应头", testMiddlewareHeader)
 	fmt.Println()
 
-	// 6. 404 处理测试
+	// 6. 404 handling test
 	fmt.Println("📦 6. 错误处理测试")
 	stats.run("404 未找到", testNotFound)
 	fmt.Println()
 
-	// 7. Keep-Alive 测试
+	// 7. Keep-Alive test
 	fmt.Println("📦 7. Keep-Alive 连接测试")
 	stats.run("连接复用", testKeepAlive)
 	fmt.Println()
 
-	// 8. 性能测试
+	// 8. Performance testing
 	fmt.Println("📦 8. 性能测试")
 	stats.run("响应时间 < 50ms", testResponseTime)
 	stats.run("吞吐量测试", testThroughput)
 	fmt.Println()
 
-	// 9. 高并发基准测试
+	// 9. High concurrency benchmark test
 	fmt.Println("📦 9. Keep-Alive 基准测试")
 	testBenchmark()
 	fmt.Println()
 
-	// 输出总结
+	// Output summary
 	stats.summary()
 }
 
-// 检查服务器是否就绪
+// Check if the server is ready
 func checkServerReady() bool {
 	client := &http.Client{Timeout: 2 * time.Second}
 	for i := 0; i < 5; i++ {
@@ -144,7 +144,7 @@ func checkServerReady() bool {
 	return false
 }
 
-// ==================== 基本 GET 路由测试 ====================
+// ==================== Basic GET routing test ====================
 
 func testGetRoot() bool {
 	resp, body := doGet("/")
@@ -161,7 +161,7 @@ func testGetStatic() bool {
 	return resp != nil && resp.StatusCode == 200 && body == "OK"
 }
 
-// ==================== 动态路由测试 ====================
+// ==================== Dynamic routing test ====================
 
 func testSingleParam() bool {
 	resp, body := doGet("/api/users/456")
@@ -178,7 +178,7 @@ func testNestedParams() bool {
 	return resp != nil && resp.StatusCode == 200 && strings.Contains(body, "tech") && strings.Contains(body, "laptop")
 }
 
-// ==================== 查询参数测试 ====================
+// ==================== Query parameter test ====================
 
 func testSingleQuery() bool {
 	resp, body := doGet("/api/search?q=test")
@@ -190,7 +190,7 @@ func testMultiQuery() bool {
 	return resp != nil && resp.StatusCode == 200 && strings.Contains(body, "hello")
 }
 
-// ==================== 响应格式测试 ====================
+// ==================== Response format test ====================
 
 func testJSONResponse() bool {
 	resp, _ := doGet("/api/json")
@@ -215,11 +215,11 @@ func testCustomStatus() bool {
 	return resp != nil && resp.StatusCode == 201
 }
 
-// ==================== 中间件测试 ====================
+// ==================== Middleware testing ====================
 
 func testMiddlewareHeader() bool {
 	resp, body := doGet("/api/health")
-	// 检查中间件添加的响应头
+	// Check the response header added by the middleware
 	if resp == nil {
 		return false
 	}
@@ -227,17 +227,17 @@ func testMiddlewareHeader() bool {
 	return resp.StatusCode == 200 && body == "OK" && middlewareHeader == "applied"
 }
 
-// ==================== 错误处理测试 ====================
+// ==================== Error handling test ====================
 
 func testNotFound() bool {
 	resp, _ := doGet("/nonexistent/path/here")
 	return resp != nil && resp.StatusCode == 404
 }
 
-// ==================== Keep-Alive 测试 ====================
+// ==================== Keep-Alive test ====================
 
 func testKeepAlive() bool {
-	// 使用同一个 transport 发送多个请求
+	// Use the same transport to send multiple requests
 	transport := &http.Transport{
 		MaxIdleConns:        10,
 		IdleConnTimeout:     30 * time.Second,
@@ -256,7 +256,7 @@ func testKeepAlive() bool {
 	return true
 }
 
-// ==================== 性能测试 ====================
+// ==================== Performance test ====================
 
 func testResponseTime() bool {
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -274,7 +274,7 @@ func testResponseTime() bool {
 	elapsed := time.Since(start)
 	avgMs := float64(elapsed.Milliseconds()) / 10.0
 
-	// 平均响应时间应小于 50ms
+	//Average response time should be less than 50ms
 	return avgMs < 50.0
 }
 
@@ -297,11 +297,11 @@ func testThroughput() bool {
 	rps := float64(success) * 1000.0 / float64(elapsed.Milliseconds())
 	fmt.Printf("(%.0f req/s) ", rps)
 
-	// 吞吐量应大于 20 req/s，成功率 > 90%
+	// Throughput should be greater than 20 req/s, success rate > 90%
 	return rps > 20.0 && success >= requests*9/10
 }
 
-// Keep-Alive 基准测试
+// Keep-Alive benchmark
 func testBenchmark() {
 	requests := 5000
 
@@ -312,14 +312,14 @@ func testBenchmark() {
 	}
 	defer conn.Close()
 
-	// 预热
+	// preheat
 	for i := 0; i < 100; i++ {
 		fmt.Fprintf(conn, "GET /health HTTP/1.1\r\nHost: 127.0.0.1:9999\r\nConnection: keep-alive\r\n\r\n")
 		buf := make([]byte, 256)
 		conn.Read(buf)
 	}
 
-	// 正式测试
+	//Formal testing
 	start := time.Now()
 	success := 0
 
@@ -346,7 +346,7 @@ func testBenchmark() {
 	fmt.Printf("  平均延迟: %.2fμs\n", avgUs)
 }
 
-// 辅助函数
+// helper function
 func doGet(path string) (*http.Response, string) {
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Get(baseURL + path)

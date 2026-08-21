@@ -21,14 +21,14 @@ fn test_logger_creation() {
 fn test_log_levels() {
 	println('=== 测试日志级别 ===')
 	
-	// 测试字符串转日志级别
+	// Convert test string to log level
 	assert hono.parse_log_level('debug') == hono.LogLevel.debug
 	assert hono.parse_log_level('info') == hono.LogLevel.info
 	assert hono.parse_log_level('warn') == hono.LogLevel.warn
 	assert hono.parse_log_level('error') == hono.LogLevel.error
-	assert hono.parse_log_level('invalid') == hono.LogLevel.info  // 默认值
+	assert hono.parse_log_level('invalid') == hono.LogLevel.info  // default value
 	
-	// 测试日志级别转字符串
+	//Test log level to string
 	assert hono.log_level_to_string(hono.LogLevel.debug) == 'DEBUG'
 	assert hono.log_level_to_string(hono.LogLevel.info) == 'INFO'
 	assert hono.log_level_to_string(hono.LogLevel.warn) == 'WARN'
@@ -48,16 +48,16 @@ fn test_console_logging() {
 	
 	mut logger := hono.new_logger(config)
 	
-	// 测试基本日志方法
+	//Test basic logging method
 	logger.debug('这是一条调试消息')
 	logger.info('这是一条信息消息')
 	logger.warn('这是一条警告消息')
 	logger.error('这是一条错误消息')
 	
-	// 测试带模块的日志
+	//Test the log with module
 	logger.info_with_module('模块信息消息', 'TEST')
 	
-	// 测试带字段的日志
+	//Test logs with fields
 	fields := {
 		'user_id': '12345'
 		'action': 'login'
@@ -65,7 +65,7 @@ fn test_console_logging() {
 	}
 	logger.info_with_fields('用户登录', fields)
 	
-	// 测试带请求ID的日志
+	//Test the log with request ID
 	logger.info_with_request('处理请求', 'req-123456')
 	
 	println('✅ 控制台日志输出测试通过')
@@ -76,7 +76,7 @@ fn test_file_logging() {
 	
 	log_file := './test_log.log'
 	
-	// 清理可能存在的测试文件
+	// Clean up any test files that may exist
 	if os.exists(log_file) {
 		os.rm(log_file) or {}
 	}
@@ -85,20 +85,20 @@ fn test_file_logging() {
 		level: hono.LogLevel.info
 		output: hono.LogOutput.file
 		file_path: log_file
-		enable_colors: false  // 文件输出不需要颜色
+		enable_colors: false  //File output does not require color
 	}
 	
 	mut logger := hono.new_logger(config)
 	
-	// 写入一些日志
+	//Write some logs
 	logger.info('测试文件日志 1')
 	logger.warn('测试文件日志 2')
 	logger.error('测试文件日志 3')
 	
-	// 等待一下确保文件写入完成
+	// Wait to make sure the file is written to completion
 	time.sleep(100 * time.millisecond)
 	
-	// 验证文件是否存在且有内容
+	// Verify that the file exists and has content
 	assert os.exists(log_file)
 	
 	content := os.read_file(log_file) or {
@@ -112,7 +112,7 @@ fn test_file_logging() {
 	assert content.contains('WARN')
 	assert content.contains('ERROR')
 	
-	// 清理测试文件
+	// Clean test files
 	os.rm(log_file) or {}
 	
 	println('✅ 文件日志输出测试通过')
@@ -123,7 +123,7 @@ fn test_json_logging() {
 	
 	log_file := './test_json_log.log'
 	
-	// 清理可能存在的测试文件
+	// Clean up any test files that may exist
 	if os.exists(log_file) {
 		os.rm(log_file) or {}
 	}
@@ -137,17 +137,17 @@ fn test_json_logging() {
 	
 	mut logger := hono.new_logger(config)
 	
-	// 写入JSON格式日志
+	//Write log in JSON format
 	fields := {
 		'user_id': '12345'
 		'action': 'test'
 	}
 	logger.info_with_fields('JSON日志测试', fields)
 	
-	// 等待文件写入
+	// Wait for file to be written
 	time.sleep(100 * time.millisecond)
 	
-	// 验证JSON格式
+	//Verify JSON format
 	assert os.exists(log_file)
 	content := os.read_file(log_file) or {
 		panic('无法读取JSON日志文件: ${err}')
@@ -157,7 +157,7 @@ fn test_json_logging() {
 	assert content.contains('"message":"JSON日志测试"')
 	assert content.contains('"user_id":"12345"')
 	
-	// 清理测试文件
+	// Clean test files
 	os.rm(log_file) or {}
 	
 	println('✅ JSON格式日志测试通过')
@@ -172,10 +172,10 @@ fn test_global_logger() {
 		enable_colors: true
 	}
 	
-	// 创建日志器实例
+	//Create a logger instance
 	mut logger := hono.new_logger(config)
 	
-	// 使用日志器方法
+	//Use logger method
 	logger.info('日志器信息消息')
 	logger.warn('日志器警告消息')
 	logger.error('日志器错误消息')

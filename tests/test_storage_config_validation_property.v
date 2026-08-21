@@ -6,7 +6,7 @@ import x.json2
 
 // ============================================================================
 // Property 3: Configuration Validation
-// Feature: v-hono-upload-integration, Property 3: Configuration Validation
+// Feature: vono-upload-integration, Property 3: Configuration Validation
 // Validates: Requirements 3.3, 4.2, 5.2, 6.4, 6.5
 //
 // *For any* storage configuration with missing required fields, attempting to
@@ -665,7 +665,7 @@ fn test_property_3_8_json_parsing_valid_config() bool {
 
 fn main() {
 	println('🚀 开始 Configuration Validation 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 3: Configuration Validation')
+	println('Feature: vono-upload-integration, Property 3: Configuration Validation')
 	println('Validates: Requirements 3.3, 4.2, 5.2, 6.4, 6.5')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

@@ -2,7 +2,7 @@ import meiseayoung.hono
 import rand
 import time
 
-// JWT 中间件属性测试
+// JWT middleware property testing
 // Property-Based Testing for JWT functionality
 
 const test_iterations = 100
@@ -40,7 +40,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机的 subject
+// Generate a random subject
 fn generate_random_subject() string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	len := rand.int_in_range(5, 30) or { 10 }
@@ -52,7 +52,7 @@ fn generate_random_subject() string {
 	return subject
 }
 
-// 生成随机的 issuer
+// Generate random issuer
 fn generate_random_issuer() string {
 	prefixes := ['https://auth.', 'https://api.', 'https://']
 	domains := ['example.com', 'test.org', 'myapp.io', 'service.net']
@@ -62,7 +62,7 @@ fn generate_random_issuer() string {
 }
 
 
-// 生成随机的密钥
+// Generate a random key
 fn generate_random_secret() string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
 	len := rand.int_in_range(32, 64) or { 32 }
@@ -74,7 +74,7 @@ fn generate_random_secret() string {
 	return secret
 }
 
-// 生成随机的自定义声明
+// Generate random custom declarations
 fn generate_random_claims() map[string]string {
 	mut claims := map[string]string{}
 	num_claims := rand.int_in_range(0, 5) or { 2 }
@@ -88,7 +88,7 @@ fn generate_random_claims() map[string]string {
 	return claims
 }
 
-// 生成随机的 JwtPayload
+// Generate a random JwtPayload
 fn generate_random_payload() hono.JwtPayload {
 	now := time.now().unix()
 	
@@ -104,7 +104,7 @@ fn generate_random_payload() hono.JwtPayload {
 	}
 }
 
-// 随机选择算法
+// Random selection algorithm
 fn random_algorithm() hono.JwtAlgorithm {
 	idx := rand.int_in_range(0, 3) or { 0 }
 	return match idx {
@@ -130,19 +130,19 @@ fn test_property_6_jwt_sign_verify_roundtrip() bool {
 		secret := generate_random_secret()
 		alg := random_algorithm()
 		
-		// 签名 JWT
+		//Sign JWT
 		token := hono.sign_jwt(payload, secret, alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
-		// 验证 JWT
+		// Validate JWT
 		verified_payload := hono.verify_jwt(token, secret, alg) or {
 			println('  Iteration ${i}: Failed to verify JWT: ${err}')
 			return false
 		}
 		
-		// 验证 payload 字段
+		//Verify payload field
 		if verified_payload.sub != payload.sub {
 			println('  Iteration ${i}: Subject mismatch - expected "${payload.sub}", got "${verified_payload.sub}"')
 			return false
@@ -178,7 +178,7 @@ fn test_property_6_jwt_sign_verify_roundtrip() bool {
 			return false
 		}
 		
-		// 验证自定义声明
+		// Validate custom declaration
 		for key, value in payload.claims {
 			if key !in verified_payload.claims {
 				println('  Iteration ${i}: Missing claim "${key}"')
@@ -209,29 +209,29 @@ fn test_property_7_jwt_expiration_enforcement() bool {
 	for i in 0 .. test_iterations {
 		now := time.now().unix()
 		
-		// 创建已过期的 payload
+		//Create expired payload
 		mut payload := generate_random_payload()
-		// 设置过期时间为过去（1秒到1小时前）
+		//Set the expiration time to the past (1 second to 1 hour ago)
 		seconds_ago := rand.int_in_range(1, 3600) or { 60 }
 		payload.exp = now - seconds_ago
 		
 		secret := generate_random_secret()
 		alg := random_algorithm()
 		
-		// 签名 JWT
+		//Sign JWT
 		token := hono.sign_jwt(payload, secret, alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
-		// 使用带过期验证的选项验证 JWT
+		// Validate JWT using option with expiration validation
 		verify_options := hono.JwtVerifyOptions{
 			exp: true
 			nbf: false
 			iat: false
 		}
 		
-		// 验证应该失败（因为 token 已过期）
+		// Authentication should fail (because token has expired)
 		if _ := hono.verify_jwt_with_options(token, secret, alg, verify_options) {
 			println('  Iteration ${i}: Expired JWT was accepted (should have been rejected)')
 			return false
@@ -258,25 +258,25 @@ fn test_property_8_jwt_algorithm_consistency() bool {
 		payload := generate_random_payload()
 		secret := generate_random_secret()
 		
-		// 随机选择签名算法
+		// Randomly select signature algorithm
 		sign_alg_idx := rand.int_in_range(0, algorithms.len) or { 0 }
 		sign_alg := algorithms[sign_alg_idx]
 		
-		// 选择不同的验证算法
+		//Choose different verification algorithms
 		mut verify_alg_idx := rand.int_in_range(0, algorithms.len) or { 0 }
-		// 确保验证算法与签名算法不同
+		// Make sure the verification algorithm is different from the signature algorithm
 		for verify_alg_idx == sign_alg_idx {
 			verify_alg_idx = rand.int_in_range(0, algorithms.len) or { 0 }
 		}
 		verify_alg := algorithms[verify_alg_idx]
 		
-		// 签名 JWT
+		//Sign JWT
 		token := hono.sign_jwt(payload, secret, sign_alg) or {
 			println('  Iteration ${i}: Failed to sign JWT: ${err}')
 			return false
 		}
 		
-		// 使用不同算法验证应该失败
+		// Verification using different algorithms should fail
 		if _ := hono.verify_jwt(token, secret, verify_alg) {
 			println('  Iteration ${i}: JWT verified with wrong algorithm (signed with ${sign_alg}, verified with ${verify_alg})')
 			return false
@@ -292,7 +292,7 @@ fn main() {
 
 	mut stats := PropertyTestStats{}
 
-	// 运行属性测试
+	//Run property tests
 	// Feature: builtin-middleware, Property 6: JWT Sign-Verify Round-Trip
 	// Validates: Requirements 3.1, 3.4, 3.11
 	stats.run_property_test('Property 6: JWT Sign-Verify Round-Trip', test_property_6_jwt_sign_verify_roundtrip)
@@ -305,6 +305,6 @@ fn main() {
 	// Validates: Requirements 3.7
 	stats.run_property_test('Property 8: JWT Algorithm Consistency', test_property_8_jwt_algorithm_consistency)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

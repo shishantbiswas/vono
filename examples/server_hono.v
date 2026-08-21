@@ -1,6 +1,6 @@
-// v-hono 服务器示例 - 用于性能对比测试
-// 运行: v run server_hono.v
-// 测试: curl http://127.0.0.1:8081/
+// vono server example - for performance comparison testing
+// Run: v run server_hono.v
+//Test: curl http://127.0.0.1:8081/
 
 module main
 
@@ -10,7 +10,7 @@ import net.http
 fn main() {
 	mut app := hono.Hono.new()
 	
-	// 静态路由
+	// static routing
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello World')
 	})
@@ -27,7 +27,7 @@ fn main() {
 		return c.json('{"created": true}')
 	})
 	
-	// 动态路由
+	// dynamic routing
 	app.get('/api/users/:id', fn (mut c hono.Context) http.Response {
 		id := c.params['id'] or { '' }
 		return c.json('{"id": "${id}"}')
@@ -50,6 +50,6 @@ fn main() {
 		return c.json('{"category": "${cat}", "item": "${item}"}')
 	})
 	
-	println('启动 v-hono 服务器在端口 8081...')
+	println('启动 vono 服务器在端口 8081...')
 	app.listen(':8081')
 }

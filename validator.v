@@ -4,7 +4,7 @@ import net.http
 import x.json2
 import regex
 
-// ValidationTarget 枚举 - 验证目标类型
+// ValidationTarget enumeration - validation target type
 pub enum ValidationTarget {
 	json    // JSON body
 	query   // Query parameters
@@ -13,10 +13,10 @@ pub enum ValidationTarget {
 	form    // Form data
 }
 
-// Schema 联合类型 - 支持多种 Schema 类型
+// Schema union type - supports multiple Schema types
 pub type Schema = StringSchema | IntSchema | FloatSchema | BoolSchema | ArraySchema | ObjectSchema
 
-// StringSchema 结构体 - 字符串验证规则
+// StringSchema structure - string validation rules
 pub struct StringSchema {
 pub:
 	required    bool
@@ -27,7 +27,7 @@ pub:
 	default_val string
 }
 
-// IntSchema 结构体 - 整数验证规则
+// IntSchema structure - integer validation rules
 pub struct IntSchema {
 pub:
 	required    bool
@@ -37,7 +37,7 @@ pub:
 	default_val int
 }
 
-// FloatSchema 结构体 - 浮点数验证规则
+// FloatSchema structure - floating point number validation rules
 pub struct FloatSchema {
 pub:
 	required    bool
@@ -46,7 +46,7 @@ pub:
 	default_val f64
 }
 
-// BoolSchema 结构体 - 布尔验证规则
+// BoolSchema structure - Boolean validation rules
 pub struct BoolSchema {
 pub:
 	required    bool
@@ -54,7 +54,7 @@ pub:
 }
 
 
-// ArraySchema 结构体 - 数组验证规则
+// ArraySchema structure - array validation rules
 pub struct ArraySchema {
 pub:
 	required  bool
@@ -63,14 +63,14 @@ pub:
 	items     &Schema = unsafe { nil }
 }
 
-// ObjectSchema 结构体 - 对象验证规则
+// ObjectSchema structure - object validation rules
 pub struct ObjectSchema {
 pub:
 	required   bool
 	properties map[string]Schema
 }
 
-// ValidationResult 结构体 - 验证结果
+// ValidationResult structure - validation result
 pub struct ValidationResult {
 pub:
 	success bool
@@ -78,7 +78,7 @@ pub:
 	data    map[string]json2.Any
 }
 
-// ValidationError 结构体 - 验证错误
+// ValidationError structure - validation error
 pub struct ValidationError {
 pub:
 	field   string
@@ -86,7 +86,7 @@ pub:
 	code    string
 }
 
-// ValidatorOptions 结构体 - 验证器配置选项
+// ValidatorOptions structure - validator configuration options
 pub struct ValidatorOptions {
 pub:
 	on_error ?fn ([]ValidationError, mut Context) http.Response
@@ -94,38 +94,38 @@ pub:
 
 
 // ============================================================================
-// Schema Builder API - 工厂函数
+// Schema Builder API - factory function
 // ============================================================================
 
-// v_string - 创建字符串 Schema
+// v_string - Create string Schema
 pub fn v_string() StringSchema {
 	return StringSchema{}
 }
 
-// v_int - 创建整数 Schema
+// v_int - Create an integer Schema
 pub fn v_int() IntSchema {
 	return IntSchema{}
 }
 
-// v_float - 创建浮点数 Schema
+// v_float - Create a floating point number Schema
 pub fn v_float() FloatSchema {
 	return FloatSchema{}
 }
 
-// v_bool - 创建布尔 Schema
+// v_bool - Create a Boolean Schema
 pub fn v_bool() BoolSchema {
 	return BoolSchema{}
 }
 
-// v_array - 创建数组 Schema
+// v_array - Create array Schema
 pub fn v_array(items Schema) ArraySchema {
-	// 直接存储 Schema 的副本
+	// Directly store a copy of the Schema
 	return ArraySchema{
 		items: &items
 	}
 }
 
-// v_object - 创建对象 Schema
+// v_object - Create object Schema
 pub fn v_object(properties map[string]Schema) ObjectSchema {
 	return ObjectSchema{
 		properties: properties
@@ -133,10 +133,10 @@ pub fn v_object(properties map[string]Schema) ObjectSchema {
 }
 
 // ============================================================================
-// StringSchema 链式方法
+// StringSchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s StringSchema) required() StringSchema {
 	return StringSchema{
 		...s
@@ -144,7 +144,7 @@ pub fn (s StringSchema) required() StringSchema {
 	}
 }
 
-// min - 设置最小长度
+// min - set the minimum length
 pub fn (s StringSchema) min(len int) StringSchema {
 	return StringSchema{
 		...s
@@ -152,7 +152,7 @@ pub fn (s StringSchema) min(len int) StringSchema {
 	}
 }
 
-// max - 设置最大长度
+// max - sets the maximum length
 pub fn (s StringSchema) max(len int) StringSchema {
 	return StringSchema{
 		...s
@@ -160,7 +160,7 @@ pub fn (s StringSchema) max(len int) StringSchema {
 	}
 }
 
-// pattern - 设置正则表达式模式
+// pattern - Set the regular expression pattern
 pub fn (s StringSchema) pattern(regex_pattern string) StringSchema {
 	return StringSchema{
 		...s
@@ -168,7 +168,7 @@ pub fn (s StringSchema) pattern(regex_pattern string) StringSchema {
 	}
 }
 
-// enum_of - 设置枚举值
+// enum_of - set enumeration value
 pub fn (s StringSchema) enum_of(values []string) StringSchema {
 	return StringSchema{
 		...s
@@ -176,7 +176,7 @@ pub fn (s StringSchema) enum_of(values []string) StringSchema {
 	}
 }
 
-// default_value - 设置默认值
+// default_value - set default value
 pub fn (s StringSchema) default_value(val string) StringSchema {
 	return StringSchema{
 		...s
@@ -186,10 +186,10 @@ pub fn (s StringSchema) default_value(val string) StringSchema {
 
 
 // ============================================================================
-// IntSchema 链式方法
+//IntSchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s IntSchema) required() IntSchema {
 	return IntSchema{
 		...s
@@ -197,7 +197,7 @@ pub fn (s IntSchema) required() IntSchema {
 	}
 }
 
-// min - 设置最小值
+// min - set the minimum value
 pub fn (s IntSchema) min(val int) IntSchema {
 	return IntSchema{
 		...s
@@ -205,7 +205,7 @@ pub fn (s IntSchema) min(val int) IntSchema {
 	}
 }
 
-// max - 设置最大值
+// max - set the maximum value
 pub fn (s IntSchema) max(val int) IntSchema {
 	return IntSchema{
 		...s
@@ -213,7 +213,7 @@ pub fn (s IntSchema) max(val int) IntSchema {
 	}
 }
 
-// enum_of - 设置枚举值
+// enum_of - set enumeration value
 pub fn (s IntSchema) enum_of(values []int) IntSchema {
 	return IntSchema{
 		...s
@@ -221,7 +221,7 @@ pub fn (s IntSchema) enum_of(values []int) IntSchema {
 	}
 }
 
-// default_value - 设置默认值
+// default_value - set default value
 pub fn (s IntSchema) default_value(val int) IntSchema {
 	return IntSchema{
 		...s
@@ -230,10 +230,10 @@ pub fn (s IntSchema) default_value(val int) IntSchema {
 }
 
 // ============================================================================
-// FloatSchema 链式方法
+// FloatSchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s FloatSchema) required() FloatSchema {
 	return FloatSchema{
 		...s
@@ -241,7 +241,7 @@ pub fn (s FloatSchema) required() FloatSchema {
 	}
 }
 
-// min - 设置最小值
+// min - set the minimum value
 pub fn (s FloatSchema) min(val f64) FloatSchema {
 	return FloatSchema{
 		...s
@@ -249,7 +249,7 @@ pub fn (s FloatSchema) min(val f64) FloatSchema {
 	}
 }
 
-// max - 设置最大值
+// max - set the maximum value
 pub fn (s FloatSchema) max(val f64) FloatSchema {
 	return FloatSchema{
 		...s
@@ -257,7 +257,7 @@ pub fn (s FloatSchema) max(val f64) FloatSchema {
 	}
 }
 
-// default_value - 设置默认值
+// default_value - set default value
 pub fn (s FloatSchema) default_value(val f64) FloatSchema {
 	return FloatSchema{
 		...s
@@ -266,10 +266,10 @@ pub fn (s FloatSchema) default_value(val f64) FloatSchema {
 }
 
 // ============================================================================
-// BoolSchema 链式方法
+// BoolSchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s BoolSchema) required() BoolSchema {
 	return BoolSchema{
 		...s
@@ -277,7 +277,7 @@ pub fn (s BoolSchema) required() BoolSchema {
 	}
 }
 
-// default_value - 设置默认值
+// default_value - set default value
 pub fn (s BoolSchema) default_value(val bool) BoolSchema {
 	return BoolSchema{
 		...s
@@ -287,10 +287,10 @@ pub fn (s BoolSchema) default_value(val bool) BoolSchema {
 
 
 // ============================================================================
-// ArraySchema 链式方法
+//ArraySchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s ArraySchema) required() ArraySchema {
 	return ArraySchema{
 		...s
@@ -298,7 +298,7 @@ pub fn (s ArraySchema) required() ArraySchema {
 	}
 }
 
-// min_items_count - 设置最小元素数量
+// min_items_count - sets the minimum number of elements
 pub fn (s ArraySchema) min_items_count(count int) ArraySchema {
 	return ArraySchema{
 		...s
@@ -306,7 +306,7 @@ pub fn (s ArraySchema) min_items_count(count int) ArraySchema {
 	}
 }
 
-// max_items_count - 设置最大元素数量
+// max_items_count - sets the maximum number of elements
 pub fn (s ArraySchema) max_items_count(count int) ArraySchema {
 	return ArraySchema{
 		...s
@@ -315,10 +315,10 @@ pub fn (s ArraySchema) max_items_count(count int) ArraySchema {
 }
 
 // ============================================================================
-// ObjectSchema 链式方法
+// ObjectSchema chain method
 // ============================================================================
 
-// required - 设置为必需字段
+// required - set as a required field
 pub fn (s ObjectSchema) required() ObjectSchema {
 	return ObjectSchema{
 		...s
@@ -328,10 +328,10 @@ pub fn (s ObjectSchema) required() ObjectSchema {
 
 
 // ============================================================================
-// 验证逻辑实现
+//Verify logic implementation
 // ============================================================================
 
-// validate_value - 验证单个值
+// validate_value - validate a single value
 fn validate_value(field_name string, value json2.Any, schema Schema) []ValidationError {
 	mut errors := []ValidationError{}
 	
@@ -359,11 +359,11 @@ fn validate_value(field_name string, value json2.Any, schema Schema) []Validatio
 	return errors
 }
 
-// validate_string - 验证字符串值
+// validate_string - validate string value
 fn validate_string(field_name string, value json2.Any, schema StringSchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -375,10 +375,10 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 		return errors
 	}
 	
-	// 获取字符串值
+	// Get string value
 	str_val := value.str()
 	
-	// 检查空字符串
+	// Check for empty string
 	if str_val.len == 0 && schema.required {
 		errors << ValidationError{
 			field: field_name
@@ -388,7 +388,7 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 		return errors
 	}
 	
-	// 检查最小长度
+	// Check the minimum length
 	if schema.min_length > 0 && str_val.len < schema.min_length {
 		errors << ValidationError{
 			field: field_name
@@ -397,7 +397,7 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 		}
 	}
 	
-	// 检查最大长度
+	// Check the maximum length
 	if schema.max_length > 0 && str_val.len > schema.max_length {
 		errors << ValidationError{
 			field: field_name
@@ -406,7 +406,7 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 		}
 	}
 	
-	// 检查正则表达式模式
+	// Check regular expression pattern
 	if schema.pattern.len > 0 {
 		mut re := regex.regex_opt(schema.pattern) or {
 			errors << ValidationError{
@@ -426,7 +426,7 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 		}
 	}
 	
-	// 检查枚举值
+	// Check enumeration value
 	if schema.enum_values.len > 0 {
 		if str_val !in schema.enum_values {
 			errors << ValidationError{
@@ -441,11 +441,11 @@ fn validate_string(field_name string, value json2.Any, schema StringSchema) []Va
 }
 
 
-// validate_int - 验证整数值
+// validate_int - validates integer values
 fn validate_int(field_name string, value json2.Any, schema IntSchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -457,10 +457,10 @@ fn validate_int(field_name string, value json2.Any, schema IntSchema) []Validati
 		return errors
 	}
 	
-	// 尝试转换为整数
+	//Try to convert to integer
 	int_val := value.int()
 	
-	// 检查最小值
+	// Check the minimum value
 	if min := schema.min {
 		if int_val < min {
 			errors << ValidationError{
@@ -471,7 +471,7 @@ fn validate_int(field_name string, value json2.Any, schema IntSchema) []Validati
 		}
 	}
 	
-	// 检查最大值
+	// Check the maximum value
 	if max := schema.max {
 		if int_val > max {
 			errors << ValidationError{
@@ -482,7 +482,7 @@ fn validate_int(field_name string, value json2.Any, schema IntSchema) []Validati
 		}
 	}
 	
-	// 检查枚举值
+	// Check enumeration value
 	if schema.enum_values.len > 0 {
 		if int_val !in schema.enum_values {
 			errors << ValidationError{
@@ -496,11 +496,11 @@ fn validate_int(field_name string, value json2.Any, schema IntSchema) []Validati
 	return errors
 }
 
-// validate_float - 验证浮点数值
+// validate_float - validate floating point values
 fn validate_float(field_name string, value json2.Any, schema FloatSchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -512,10 +512,10 @@ fn validate_float(field_name string, value json2.Any, schema FloatSchema) []Vali
 		return errors
 	}
 	
-	// 尝试转换为浮点数
+	//Try to convert to float
 	float_val := value.f64()
 	
-	// 检查最小值
+	// Check the minimum value
 	if min := schema.min {
 		if float_val < min {
 			errors << ValidationError{
@@ -526,7 +526,7 @@ fn validate_float(field_name string, value json2.Any, schema FloatSchema) []Vali
 		}
 	}
 	
-	// 检查最大值
+	// Check the maximum value
 	if max := schema.max {
 		if float_val > max {
 			errors << ValidationError{
@@ -540,11 +540,11 @@ fn validate_float(field_name string, value json2.Any, schema FloatSchema) []Vali
 	return errors
 }
 
-// validate_bool - 验证布尔值
+// validate_bool - validate boolean value
 fn validate_bool(field_name string, value json2.Any, schema BoolSchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -556,13 +556,13 @@ fn validate_bool(field_name string, value json2.Any, schema BoolSchema) []Valida
 		return errors
 	}
 	
-	// 验证是否为布尔类型
+	// Verify if it is a boolean type
 	match value {
 		bool {
-			// 有效的布尔值
+			// Valid boolean value
 		}
 		else {
-			// 尝试从字符串转换
+			// Attempt to convert from string
 			str_val := value.str().to_lower()
 			if str_val !in ['true', 'false', '1', '0'] {
 				errors << ValidationError{
@@ -578,11 +578,11 @@ fn validate_bool(field_name string, value json2.Any, schema BoolSchema) []Valida
 }
 
 
-// validate_array - 验证数组值
+// validate_array - validate array values
 fn validate_array(field_name string, value json2.Any, schema ArraySchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -594,10 +594,10 @@ fn validate_array(field_name string, value json2.Any, schema ArraySchema) []Vali
 		return errors
 	}
 	
-	// 获取数组
+	// Get array
 	arr := value.as_array()
 	
-	// 检查最小元素数量
+	// Check the minimum number of elements
 	if schema.min_items > 0 && arr.len < schema.min_items {
 		errors << ValidationError{
 			field: field_name
@@ -606,7 +606,7 @@ fn validate_array(field_name string, value json2.Any, schema ArraySchema) []Vali
 		}
 	}
 	
-	// 检查最大元素数量
+	// Check the maximum number of elements
 	if schema.max_items > 0 && arr.len > schema.max_items {
 		errors << ValidationError{
 			field: field_name
@@ -615,7 +615,7 @@ fn validate_array(field_name string, value json2.Any, schema ArraySchema) []Vali
 		}
 	}
 	
-	// 验证数组元素
+	//Verify array elements
 	if schema.items != unsafe { nil } {
 		for i, item in arr {
 			item_errors := validate_value('${field_name}[${i}]', item, *schema.items)
@@ -626,11 +626,11 @@ fn validate_array(field_name string, value json2.Any, schema ArraySchema) []Vali
 	return errors
 }
 
-// validate_object - 验证对象值（递归验证嵌套属性）
+// validate_object - validate object values ​​(recursively validate nested properties)
 fn validate_object(field_name string, value json2.Any, schema ObjectSchema) []ValidationError {
 	mut errors := []ValidationError{}
 	
-	// 检查值是否为 null
+	// Check if the value is null
 	if value is json2.Null {
 		if schema.required {
 			errors << ValidationError{
@@ -642,10 +642,10 @@ fn validate_object(field_name string, value json2.Any, schema ObjectSchema) []Va
 		return errors
 	}
 	
-	// 获取对象
+	// get object
 	obj := value.as_map()
 	
-	// 验证每个属性
+	// Validate each attribute
 	for prop_name, prop_schema in schema.properties {
 		full_field_name := if field_name.len > 0 { '${field_name}.${prop_name}' } else { prop_name }
 		
@@ -654,7 +654,7 @@ fn validate_object(field_name string, value json2.Any, schema ObjectSchema) []Va
 			prop_errors := validate_value(full_field_name, prop_value, prop_schema)
 			errors << prop_errors
 		} else {
-			// 字段不存在，检查是否必需
+			// Field does not exist, check if it is required
 			is_required := match prop_schema {
 				StringSchema { prop_schema.required }
 				IntSchema { prop_schema.required }
@@ -677,18 +677,18 @@ fn validate_object(field_name string, value json2.Any, schema ObjectSchema) []Va
 	return errors
 }
 
-// validate_schema - 验证数据是否符合 ObjectSchema
+// validate_schema - Verify that the data conforms to the ObjectSchema
 pub fn validate_schema(data map[string]json2.Any, schema ObjectSchema) ValidationResult {
 	mut errors := []ValidationError{}
 	
-	// 验证每个属性
+	// Validate each attribute
 	for prop_name, prop_schema in schema.properties {
 		if prop_name in data {
 			prop_value := data[prop_name] or { json2.Null{} }
 			prop_errors := validate_value(prop_name, prop_value, prop_schema)
 			errors << prop_errors
 		} else {
-			// 字段不存在，检查是否必需
+			// Field does not exist, check if it is required
 			is_required := match prop_schema {
 				StringSchema { prop_schema.required }
 				IntSchema { prop_schema.required }
@@ -717,25 +717,25 @@ pub fn validate_schema(data map[string]json2.Any, schema ObjectSchema) Validatio
 
 
 // ============================================================================
-// 验证中间件实现
+//Verify middleware implementation
 // ============================================================================
 
-// validator - 验证中间件工厂函数
-// 返回一个 ContextMiddleware，用于验证请求数据
+// validator - validation middleware factory function
+// Return a ContextMiddleware for validating request data
 pub fn validator(target ValidationTarget, schema ObjectSchema, options ...ValidatorOptions) ContextMiddleware {
 	opts := if options.len > 0 { options[0] } else { ValidatorOptions{} }
 	
 	return fn [target, schema, opts] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 根据目标类型获取数据
+		// Get data based on target type
 		data := get_validation_data(c, target) or {
-			// 解析错误
+			// Parsing error
 			errors := [ValidationError{
 				field: ''
 				message: err.msg()
 				code: 'parse_error'
 			}]
 			
-			// 使用自定义错误处理器或默认响应
+			// Use custom error handler or default response
 			if on_error := opts.on_error {
 				return on_error(errors, mut c)
 			}
@@ -744,11 +744,11 @@ pub fn validator(target ValidationTarget, schema ObjectSchema, options ...Valida
 			return c.json(build_error_response(errors))
 		}
 		
-		// 验证数据
+		//Verify data
 		result := validate_schema(data, schema)
 		
 		if !result.success {
-			// 使用自定义错误处理器或默认响应
+			// Use custom error handler or default response
 			if on_error := opts.on_error {
 				return on_error(result.errors, mut c)
 			}
@@ -757,15 +757,15 @@ pub fn validator(target ValidationTarget, schema ObjectSchema, options ...Valida
 			return c.json(build_error_response(result.errors))
 		}
 		
-		// 将验证后的数据存储到 Context
+		// Store the verified data in Context
 		store_validated_data(mut c, result.data)
 		
-		// 继续处理请求
+		// Continue processing the request
 		return next(mut c)
 	}
 }
 
-// get_validation_data - 根据目标类型获取要验证的数据
+// get_validation_data - Get the data to be validated based on the target type
 fn get_validation_data(c Context, target ValidationTarget) !map[string]json2.Any {
 	match target {
 		.json {
@@ -786,7 +786,7 @@ fn get_validation_data(c Context, target ValidationTarget) !map[string]json2.Any
 	}
 }
 
-// parse_json_body - 解析 JSON 请求体
+// parse_json_body - Parse the JSON request body
 fn parse_json_body(c Context) !map[string]json2.Any {
 	if c.body.len == 0 {
 		return map[string]json2.Any{}
@@ -799,7 +799,7 @@ fn parse_json_body(c Context) !map[string]json2.Any {
 	return raw.as_map()
 }
 
-// parse_query_params - 解析查询参数
+// parse_query_params - parse query parameters
 fn parse_query_params(c Context) !map[string]json2.Any {
 	mut data := map[string]json2.Any{}
 	
@@ -810,7 +810,7 @@ fn parse_query_params(c Context) !map[string]json2.Any {
 	return data
 }
 
-// parse_path_params - 解析路径参数
+// parse_path_params - parse path parameters
 fn parse_path_params(c Context) !map[string]json2.Any {
 	mut data := map[string]json2.Any{}
 	
@@ -821,11 +821,11 @@ fn parse_path_params(c Context) !map[string]json2.Any {
 	return data
 }
 
-// parse_headers - 解析请求头
+// parse_headers - parse request headers
 fn parse_headers(c Context) !map[string]json2.Any {
 	mut data := map[string]json2.Any{}
 	
-	// 获取常用请求头
+	// Get common request headers
 	common_headers := ['Content-Type', 'Accept', 'Authorization', 'X-Request-ID', 
 		'X-Forwarded-For', 'User-Agent', 'Host', 'Origin', 'Referer']
 	
@@ -838,7 +838,7 @@ fn parse_headers(c Context) !map[string]json2.Any {
 	return data
 }
 
-// parse_form_data - 解析表单数据
+// parse_form_data - Parse form data
 fn parse_form_data(c Context) !map[string]json2.Any {
 	mut data := map[string]json2.Any{}
 	
@@ -846,7 +846,7 @@ fn parse_form_data(c Context) !map[string]json2.Any {
 		return data
 	}
 	
-	// 解析 application/x-www-form-urlencoded 格式
+	// Parse application/x-www-form-urlencoded format
 	pairs := c.body.split('&')
 	for pair in pairs {
 		eq_pos := pair.index('=') or { continue }
@@ -857,7 +857,7 @@ fn parse_form_data(c Context) !map[string]json2.Any {
 		key := pair[..eq_pos]
 		value := if eq_pos + 1 < pair.len { pair[eq_pos + 1..] } else { '' }
 		
-		// URL 解码
+		// URL decoding
 		decoded_key := url_decode(key)
 		decoded_value := url_decode(value)
 		
@@ -868,14 +868,14 @@ fn parse_form_data(c Context) !map[string]json2.Any {
 }
 
 
-// url_decode - URL 解码
+// url_decode - URL decoding
 fn url_decode(s string) string {
 	mut result := []u8{}
 	mut i := 0
 	
 	for i < s.len {
 		if s[i] == `%` && i + 2 < s.len {
-			// 尝试解码十六进制
+			//Try to decode hexadecimal
 			hex_str := s[i + 1..i + 3]
 			if hex_val := hex_to_byte(hex_str) {
 				result << hex_val
@@ -895,7 +895,7 @@ fn url_decode(s string) string {
 	return result.bytestr()
 }
 
-// hex_to_byte - 将两位十六进制字符串转换为字节
+// hex_to_byte - Converts a two-digit hexadecimal string to bytes
 fn hex_to_byte(hex string) ?u8 {
 	if hex.len != 2 {
 		return none
@@ -907,7 +907,7 @@ fn hex_to_byte(hex string) ?u8 {
 	return u8(high * 16 + low)
 }
 
-// hex_char_to_val - 将十六进制字符转换为数值
+// hex_char_to_val - Convert hexadecimal characters to numeric values
 fn hex_char_to_val(c u8) ?int {
 	if c >= `0` && c <= `9` {
 		return int(c - `0`)
@@ -921,9 +921,9 @@ fn hex_char_to_val(c u8) ?int {
 	return none
 }
 
-// store_validated_data - 将验证后的数据存储到 Context
+// store_validated_data - stores validated data into Context
 fn store_validated_data(mut c Context, data map[string]json2.Any) {
-	// 将数据序列化为 JSON 字符串存储
+	//Serialize data into JSON string storage
 	mut json_parts := []string{}
 	for key, value in data {
 		json_parts << '"${key}":${value.json_str()}'
@@ -931,13 +931,13 @@ fn store_validated_data(mut c Context, data map[string]json2.Any) {
 	json_str := '{${json_parts.join(",")}}'
 	c.set('validated_data', json_str)
 	
-	// 同时存储各个字段的字符串值（便于快速访问）
+	// Store the string values ​​of each field at the same time (for quick access)
 	for key, value in data {
 		c.set('validated_${key}', value.str())
 	}
 }
 
-// build_error_response - 构建错误响应 JSON
+// build_error_response - Build error response JSON
 fn build_error_response(errors []ValidationError) string {
 	mut error_parts := []string{}
 	
@@ -948,14 +948,14 @@ fn build_error_response(errors []ValidationError) string {
 	return '{"error":"Bad Request","errors":[${error_parts.join(",")}]}'
 }
 
-// get_validated_data - 从 Context 获取验证后的数据
+// get_validated_data - Get validated data from Context
 pub fn get_validated_data(c Context) map[string]string {
 	mut data := map[string]string{}
 	
-	// 从 store 中获取所有以 validated_ 开头的键
+	// Get all keys starting with validated_ from the store
 	for key, value in c.store {
 		if key.starts_with('validated_') && key != 'validated_data' {
-			field_name := key[10..] // 移除 'validated_' 前缀
+			field_name := key[10..] // Remove 'validated_' prefix
 			data[field_name] = value
 		}
 	}
@@ -963,12 +963,12 @@ pub fn get_validated_data(c Context) map[string]string {
 	return data
 }
 
-// get_validated_json - 从 Context 获取验证后的完整 JSON 数据
+// get_validated_json - Get the complete validated JSON data from the Context
 pub fn get_validated_json(c Context) ?string {
 	return c.get('validated_data')
 }
 
-// get_validated_field - 从 Context 获取单个验证后的字段值
+// get_validated_field - Get a single validated field value from the Context
 pub fn get_validated_field(c Context, field string) ?string {
 	return c.get('validated_${field}')
 }

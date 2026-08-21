@@ -8,15 +8,15 @@ import crypto.sha1
 import crypto.md5
 import encoding.hex
 
-// TencentCOS 腾讯云 COS 存储提供者
+// TencentCOS Tencent Cloud COS storage provider
 pub struct TencentCOS {
 	config TencentCOSConfig
 mut:
-	// 用于跟踪分片上传的内存存储
+	// Memory storage used to track multipart uploads
 	multipart_uploads map[string]COSMultipartUploadState
 }
 
-// COS 分片上传状态
+// COS multipart upload status
 struct COSMultipartUploadState {
 mut:
 	bucket       string
@@ -27,9 +27,9 @@ mut:
 	created_at   i64
 }
 
-// 创建腾讯云 COS 存储提供者
+//Create Tencent Cloud COS storage provider
 pub fn new_tencent_cos(config TencentCOSConfig) !TencentCOS {
-	// 验证配置
+	//Verify configuration
 	validation := validate_tencent_cos_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
@@ -42,11 +42,11 @@ pub fn new_tencent_cos(config TencentCOSConfig) !TencentCOS {
 }
 
 // ============================================================================
-// 腾讯云 COS 签名算法实现 (COS Signature)
-// 参考: https://cloud.tencent.com/document/product/436/7778
+//Tencent Cloud COS signature algorithm implementation (COS Signature)
+// Reference: https://cloud.tencent.com/document/product/436/7778
 // ============================================================================
 
-// 签名请求所需的信息
+// Information required to sign the request
 struct COSSigningInfo {
 	method              string
 	uri                 string
@@ -59,20 +59,20 @@ struct COSSigningInfo {
 	url_param_list      string
 }
 
-// 创建签名信息
+//Create signature information
 fn (c TencentCOS) create_signing_info(method string, uri string, query_params map[string]string, headers map[string]string) COSSigningInfo {
 	now := time.utc()
 	timestamp := now.unix()
 	
-	// 计算签名有效期 (当前时间 - 60秒 到 当前时间 + 3600秒)
+	// Calculate signature validity period (current time - 60 seconds to current time + 3600 seconds)
 	start_time := timestamp - 60
 	end_time := timestamp + 3600
 	key_time := '${start_time};${end_time}'
 	
-	// 构建查询字符串
+	// Build query string
 	query_string := c.build_canonical_query_string(query_params)
 	
-	// 获取签名头列表
+	// Get the signature header list
 	signed_headers := c.get_signed_headers(headers)
 	header_list := c.get_header_list(headers)
 	url_param_list := c.get_url_param_list(query_params)
@@ -90,13 +90,13 @@ fn (c TencentCOS) create_signing_info(method string, uri string, query_params ma
 	}
 }
 
-// 构建规范查询字符串
+// Build canonical query string
 fn (c TencentCOS) build_canonical_query_string(params map[string]string) string {
 	if params.len == 0 {
 		return ''
 	}
 
-	// 获取排序后的键（小写）
+	// Get the sorted keys (lowercase)
 	mut keys := []string{}
 	mut lower_params := map[string]string{}
 	for key, value in params {
@@ -116,12 +116,12 @@ fn (c TencentCOS) build_canonical_query_string(params map[string]string) string 
 	return parts.join('&')
 }
 
-// 获取签名头列表（小写排序，分号分隔）
+// Get the signature header list (sorted by lowercase, semicolon separated)
 fn (c TencentCOS) get_signed_headers(headers map[string]string) string {
 	mut header_names := []string{}
 	for key, _ in headers {
 		lower_key := key.to_lower()
-		// 只包含需要签名的头
+		// Only include headers that need to be signed
 		if c.should_sign_header(lower_key) {
 			header_names << lower_key
 		}
@@ -130,7 +130,7 @@ fn (c TencentCOS) get_signed_headers(headers map[string]string) string {
 	return header_names.join(';')
 }
 
-// 获取头列表（用于签名）
+// Get the header list (for signature)
 fn (c TencentCOS) get_header_list(headers map[string]string) string {
 	mut header_names := []string{}
 	for key, _ in headers {
@@ -143,7 +143,7 @@ fn (c TencentCOS) get_header_list(headers map[string]string) string {
 	return header_names.join(';')
 }
 
-// 获取 URL 参数列表（用于签名）
+// Get URL parameter list (for signature)
 fn (c TencentCOS) get_url_param_list(params map[string]string) string {
 	if params.len == 0 {
 		return ''
@@ -157,23 +157,23 @@ fn (c TencentCOS) get_url_param_list(params map[string]string) string {
 	return keys.join(';')
 }
 
-// 判断是否需要签名该头
+// Determine whether the header needs to be signed
 fn (c TencentCOS) should_sign_header(header_name string) bool {
-	// COS 签名需要包含的头
+	//Headers that COS signature needs to include
 	required_headers := ['host', 'content-type', 'content-length', 'content-md5']
 	if header_name in required_headers {
 		return true
 	}
-	// x-cos- 开头的头都需要签名
+	// The headers starting with x-cos- need to be signed
 	if header_name.starts_with('x-cos-') {
 		return true
 	}
 	return false
 }
 
-// 构建规范请求
+// Build specification request
 fn (c TencentCOS) build_canonical_request(info COSSigningInfo) string {
-	// 构建规范头
+	// Build specification header
 	mut canonical_headers := ''
 	mut header_names := []string{}
 	for key, _ in info.headers {
@@ -185,7 +185,7 @@ fn (c TencentCOS) build_canonical_request(info COSSigningInfo) string {
 	header_names.sort()
 
 	for name in header_names {
-		// 查找原始键（不区分大小写）
+		// Find the original key (case insensitive)
 		for key, value in info.headers {
 			if key.to_lower() == name {
 				canonical_headers += '${name}=${urllib.query_escape(value.trim_space())}\n'
@@ -194,7 +194,7 @@ fn (c TencentCOS) build_canonical_request(info COSSigningInfo) string {
 		}
 	}
 	
-	// 移除最后的换行符
+	// Remove the last newline character
 	if canonical_headers.len > 0 {
 		canonical_headers = canonical_headers.trim_right('\n')
 	}
@@ -203,7 +203,7 @@ fn (c TencentCOS) build_canonical_request(info COSSigningInfo) string {
 	return '${info.method}\n${info.uri}\n${info.query_string}\n${canonical_headers}\n'
 }
 
-// 构建待签名字符串
+//Construct the string to be signed
 fn (c TencentCOS) build_string_to_sign(info COSSigningInfo, canonical_request string) string {
 	// sha1 = lowercase(HexEncode(Hash(HttpString)))
 	request_hash := sha1.sum(canonical_request.bytes())
@@ -213,35 +213,35 @@ fn (c TencentCOS) build_string_to_sign(info COSSigningInfo, canonical_request st
 	return 'sha1\n${info.key_time}\n${hashed_request}\n'
 }
 
-// 计算签名密钥
+// Calculate signature key
 fn (c TencentCOS) get_signing_key(key_time string) []u8 {
 	// SignKey = HMAC-SHA1(SecretKey, KeyTime)
 	return cos_hmac_sha1(c.config.secret_key.bytes(), key_time.bytes())
 }
 
-// 计算签名
+// Calculate signature
 fn (c TencentCOS) calculate_signature(info COSSigningInfo, string_to_sign string) string {
 	signing_key := c.get_signing_key(info.key_time)
 	signature := cos_hmac_sha1(signing_key, string_to_sign.bytes())
 	return hex.encode(signature).to_lower()
 }
 
-// COS HMAC-SHA1 实现
+// COS HMAC-SHA1 implementation
 fn cos_hmac_sha1(key []u8, data []u8) []u8 {
 	block_size := 64
 	mut k := key.clone()
 	
-	// 如果 key 长度大于 block_size，先进行 hash
+	// If the key length is greater than block_size, hash first
 	if k.len > block_size {
 		k = sha1.sum(k)
 	}
 	
-	// 如果 key 长度小于 block_size，用 0 填充
+	// If the key length is less than block_size, fill it with 0
 	for k.len < block_size {
 		k << u8(0)
 	}
 	
-	// 计算 inner 和 outer padding
+	// Calculate inner and outer padding
 	mut i_pad := []u8{len: block_size}
 	mut o_pad := []u8{len: block_size}
 	for i in 0 .. block_size {
@@ -260,7 +260,7 @@ fn cos_hmac_sha1(key []u8, data []u8) []u8 {
 	return sha1.sum(outer_data)
 }
 
-// 构建 Authorization 头
+//Build the Authorization header
 fn (c TencentCOS) build_authorization_header(info COSSigningInfo, signature string) string {
 	// q-sign-algorithm=sha1&q-ak=SecretId&q-sign-time=KeyTime&q-key-time=KeyTime&q-header-list=HeaderList&q-url-param-list=UrlParamList&q-signature=Signature
 	mut auth := 'q-sign-algorithm=sha1'
@@ -274,46 +274,46 @@ fn (c TencentCOS) build_authorization_header(info COSSigningInfo, signature stri
 	return auth
 }
 
-// 签名请求并返回完整的请求头
+// Sign the request and return the complete request headers
 pub fn (c TencentCOS) sign_request(method string, uri string, query_params map[string]string, mut headers map[string]string) map[string]string {
-	// 创建签名信息
+	//Create signature information
 	info := c.create_signing_info(method, uri, query_params, headers)
 	
-	// 构建规范请求
+	// Build specification request
 	canonical_request := c.build_canonical_request(info)
 	
-	// 构建待签名字符串
+	//Construct the string to be signed
 	string_to_sign := c.build_string_to_sign(info, canonical_request)
 	
-	// 计算签名
+	// Calculate signature
 	signature := c.calculate_signature(info, string_to_sign)
 	
-	// 构建 Authorization 头
+	//Build the Authorization header
 	headers['Authorization'] = c.build_authorization_header(info, signature)
 	
 	return headers
 }
 
 // ============================================================================
-// HTTP 请求辅助方法
+// HTTP request helper method
 // ============================================================================
 
-// 获取主机名
+// Get the host name
 fn (c TencentCOS) get_host(bucket string) string {
-	// COS 域名格式: <BucketName-APPID>.cos.<Region>.myqcloud.com
+	// COS domain name format: <BucketName-APPID>.cos.<Region>.myqcloud.com
 	if bucket != '' {
 		return '${bucket}.cos.${c.config.region}.myqcloud.com'
 	}
 	return 'cos.${c.config.region}.myqcloud.com'
 }
 
-// 获取完整 URL
+// Get the full URL
 fn (c TencentCOS) get_url(bucket string, key string, query_params map[string]string) string {
 	host := c.get_host(bucket)
 	
 	mut path := ''
 	if key != '' {
-		// URL 编码 key，但保留 /
+		// URL encode key, but keep /
 		path = '/' + c.encode_key(key)
 	} else {
 		path = '/'
@@ -329,7 +329,7 @@ fn (c TencentCOS) get_url(bucket string, key string, query_params map[string]str
 	return url
 }
 
-// URL 编码 key（保留 /）
+// URL encoding key (reserved /)
 fn (c TencentCOS) encode_key(key string) string {
 	parts := key.split('/')
 	mut encoded_parts := []string{}
@@ -339,7 +339,7 @@ fn (c TencentCOS) encode_key(key string) string {
 	return encoded_parts.join('/')
 }
 
-// 构建查询字符串（不进行小写转换）
+// Build query string (no lowercase conversion)
 fn (c TencentCOS) build_query_string(params map[string]string) string {
 	if params.len == 0 {
 		return ''
@@ -361,7 +361,7 @@ fn (c TencentCOS) build_query_string(params map[string]string) string {
 	return parts.join('&')
 }
 
-// 获取 URI 路径
+// Get URI path
 fn (c TencentCOS) get_uri_path(key string) string {
 	if key != '' {
 		return '/' + c.encode_key(key)
@@ -369,30 +369,30 @@ fn (c TencentCOS) get_uri_path(key string) string {
 	return '/'
 }
 
-// 执行 HTTP 请求
+//Perform HTTP request
 fn (c TencentCOS) do_request(method http.Method, bucket string, key string, query_params map[string]string, extra_headers map[string]string, payload []u8) !http.Response {
 	url := c.get_url(bucket, key, query_params)
 	uri := c.get_uri_path(key)
 	
-	// 准备请求头
+	// Prepare request headers
 	mut headers := extra_headers.clone()
 	headers['Host'] = c.get_host(bucket)
 	
-	// 如果有 payload，计算 Content-Length
+	// If there is a payload, calculate Content-Length
 	if payload.len > 0 {
 		headers['Content-Length'] = payload.len.str()
 	}
 	
-	// 签名请求
+	// Signature request
 	signed_headers := c.sign_request(method.str(), uri, query_params, mut headers)
 	
-	// 构建 http.Header
+	// Build http.Header
 	mut http_header := http.Header{}
 	for k, v in signed_headers {
 		http_header.add_custom(k, v) or {}
 	}
 	
-	// 执行请求
+	//Execute the request
 	mut config := http.FetchConfig{
 		url: url
 		method: method
@@ -407,11 +407,11 @@ fn (c TencentCOS) do_request(method http.Method, bucket string, key string, quer
 	return response
 }
 
-// 解析 COS 错误响应
+// Parse COS error response
 fn (c TencentCOS) parse_error_response(response http.Response, operation string) StorageError {
 	status := response.status_code
 	
-	// 根据状态码判断错误类型
+	// Determine the error type based on the status code
 	kind := match status {
 		403 { StorageErrorKind.access_denied }
 		404 { StorageErrorKind.object_not_found }
@@ -421,7 +421,7 @@ fn (c TencentCOS) parse_error_response(response http.Response, operation string)
 		else { StorageErrorKind.unknown }
 	}
 	
-	// 尝试从响应体解析错误消息
+	// Attempt to parse the error message from the response body
 	message := if response.body.len > 0 {
 		c.extract_error_message(response.body)
 	} else {
@@ -431,15 +431,15 @@ fn (c TencentCOS) parse_error_response(response http.Response, operation string)
 	return new_storage_error_with_status(kind, message, 'tencent_cos', operation, status)
 }
 
-// 从 XML 错误响应中提取错误消息
+//Extract the error message from the XML error response
 fn (c TencentCOS) extract_error_message(body string) string {
-	// 简单的 XML 解析，提取 <Message> 标签内容
+	// Simple XML parsing, extract <Message> tag content
 	if message_start := body.index('<Message>') {
 		if message_end := body.index('</Message>') {
 			return body[message_start + 9..message_end]
 		}
 	}
-	// 尝试提取 <Code> 标签
+	// Try to extract the <Code> tag
 	if code_start := body.index('<Code>') {
 		if code_end := body.index('</Code>') {
 			return body[code_start + 6..code_end]
@@ -448,7 +448,7 @@ fn (c TencentCOS) extract_error_message(body string) string {
 	return body
 }
 
-// 计算数据的 ETag (MD5)
+// Calculate the ETag (MD5) of the data
 fn (c TencentCOS) calculate_etag(data []u8) string {
 	hash := md5.sum(data)
 	mut result := ''
@@ -460,10 +460,10 @@ fn (c TencentCOS) calculate_etag(data []u8) string {
 
 
 // ============================================================================
-// StorageProvider 接口实现 - 基本操作
+// StorageProvider interface implementation - basic operations
 // ============================================================================
 
-// 上传文件
+//Upload file
 pub fn (mut c TencentCOS) upload(bucket string, key string, data []u8, content_type string) !StorageResult {
 	mut headers := map[string]string{}
 	if content_type != '' {
@@ -478,15 +478,15 @@ pub fn (mut c TencentCOS) upload(bucket string, key string, data []u8, content_t
 		return error(c.parse_error_response(response, 'upload').msg())
 	}
 	
-	// 从响应头获取 ETag
+	// Get ETag from response header
 	etag := response.header.get_custom('ETag') or { c.calculate_etag(data) }
 	
 	return new_storage_result(key, etag, i64(data.len))
 }
 
-// 流式上传文件
+// Streaming upload file
 pub fn (mut c TencentCOS) upload_stream(bucket string, key string, mut reader io.Reader, size i64, content_type string) !StorageResult {
-	// 读取所有数据
+	// read all data
 	mut data := []u8{}
 	mut buf := []u8{len: 8192}
 	for {
@@ -500,7 +500,7 @@ pub fn (mut c TencentCOS) upload_stream(bucket string, key string, mut reader io
 	return c.upload(bucket, key, data, content_type)
 }
 
-// 下载文件
+// Download file
 pub fn (c TencentCOS) download(bucket string, key string) ![]u8 {
 	response := c.do_request(.get, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 	
@@ -515,7 +515,7 @@ pub fn (c TencentCOS) download(bucket string, key string) ![]u8 {
 	return response.body.bytes()
 }
 
-// 流式下载文件
+// Streaming download file
 pub fn (c TencentCOS) download_stream(bucket string, key string, mut writer io.Writer) !i64 {
 	data := c.download(bucket, key)!
 	written := writer.write(data) or {
@@ -524,11 +524,11 @@ pub fn (c TencentCOS) download_stream(bucket string, key string, mut writer io.W
 	return i64(written)
 }
 
-// 删除文件
+// delete file
 pub fn (c TencentCOS) delete(bucket string, key string) ! {
 	response := c.do_request(.delete, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 	
-	// COS 返回 204 或 200 表示成功删除
+	//COS returns 204 or 200 to indicate successful deletion
 	if response.status_code != 204 && response.status_code != 200 {
 		if response.status_code == 404 {
 			return error(new_not_found_error('tencent_cos', bucket, key).msg())
@@ -537,7 +537,7 @@ pub fn (c TencentCOS) delete(bucket string, key string) ! {
 	}
 }
 
-// 检查文件是否存在
+// Check if the file exists
 pub fn (c TencentCOS) exists(bucket string, key string) !bool {
 	response := c.do_request(.head, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 	
@@ -552,10 +552,10 @@ pub fn (c TencentCOS) exists(bucket string, key string) !bool {
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - 元数据操作
+// StorageProvider interface implementation - metadata operation
 // ============================================================================
 
-// 获取文件元数据
+// Get file metadata
 pub fn (c TencentCOS) head(bucket string, key string) !ObjectInfo {
 	response := c.do_request(.head, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 	
@@ -567,22 +567,22 @@ pub fn (c TencentCOS) head(bucket string, key string) !ObjectInfo {
 		return error(c.parse_error_response(response, 'head').msg())
 	}
 	
-	// 解析响应头
+	// Parse response headers
 	content_length := response.header.get_custom('Content-Length') or { '0' }
 	etag := response.header.get_custom('ETag') or { '' }
 	content_type := response.header.get_custom('Content-Type') or { 'application/octet-stream' }
 	last_modified_str := response.header.get_custom('Last-Modified') or { '' }
 	
-	// 解析 Last-Modified 时间
+	// Parse Last-Modified time
 	last_modified := parse_cos_http_date(last_modified_str)
 	
 	return new_object_info(key, content_length.i64(), etag, content_type, last_modified)
 }
 
-// 复制文件
+// copy file
 pub fn (mut c TencentCOS) copy(src_bucket string, src_key string, dst_bucket string, dst_key string) !StorageResult {
 	mut headers := map[string]string{}
-	// COS 复制源格式: /<BucketName-APPID>.cos.<Region>.myqcloud.com/<ObjectKey>
+	// COS copy source format: /<BucketName-APPID>.cos.<Region>.myqcloud.com/<ObjectKey>
 	copy_source := '${src_bucket}.cos.${c.config.region}.myqcloud.com/${src_key}'
 	headers['x-cos-copy-source'] = copy_source
 	
@@ -592,10 +592,10 @@ pub fn (mut c TencentCOS) copy(src_bucket string, src_key string, dst_bucket str
 		return error(c.parse_error_response(response, 'copy').msg())
 	}
 	
-	// 从响应解析 ETag
+	// Parse ETag from response
 	etag := c.extract_copy_result_etag(response.body)
 	
-	// 获取复制后文件的大小
+	// Get the size of the copied file
 	head_info := c.head(dst_bucket, dst_key) or {
 		return new_storage_result(dst_key, etag, 0)
 	}
@@ -603,7 +603,7 @@ pub fn (mut c TencentCOS) copy(src_bucket string, src_key string, dst_bucket str
 	return new_storage_result(dst_key, etag, head_info.size)
 }
 
-// 从复制结果 XML 中提取 ETag
+// Extract ETag from copy result XML
 fn (c TencentCOS) extract_copy_result_etag(body string) string {
 	if etag_start := body.index('<ETag>') {
 		if etag_end := body.index('</ETag>') {
@@ -614,10 +614,10 @@ fn (c TencentCOS) extract_copy_result_etag(body string) string {
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - 列表操作
+// StorageProvider interface implementation - list operation
 // ============================================================================
 
-// 列出文件
+// List files
 pub fn (c TencentCOS) list(bucket string, options ListOptions) !ListResult {
 	mut query_params := map[string]string{}
 	
@@ -644,18 +644,18 @@ pub fn (c TencentCOS) list(bucket string, options ListOptions) !ListResult {
 		return error(c.parse_error_response(response, 'list').msg())
 	}
 	
-	// 解析 XML 响应
+	// Parse the XML response
 	return c.parse_list_objects_response(response.body)
 }
 
-// 解析 ListObjects 响应
+// Parse ListObjects response
 fn (c TencentCOS) parse_list_objects_response(body string) !ListResult {
 	mut objects := []ObjectInfo{}
 	mut common_prefixes := []string{}
 	mut is_truncated := false
 	mut next_marker := ''
 	
-	// 解析 IsTruncated
+	// Parse IsTruncated
 	if truncated_start := body.index('<IsTruncated>') {
 		if truncated_end := body.index('</IsTruncated>') {
 			truncated_str := body[truncated_start + 13..truncated_end]
@@ -663,14 +663,14 @@ fn (c TencentCOS) parse_list_objects_response(body string) !ListResult {
 		}
 	}
 	
-	// 解析 NextMarker
+	// Parse NextMarker
 	if marker_start := body.index('<NextMarker>') {
 		if marker_end := body.index('</NextMarker>') {
 			next_marker = body[marker_start + 12..marker_end]
 		}
 	}
 	
-	// 解析 Contents
+	// Parse Contents
 	mut search_pos := 0
 	for {
 		content_start := body.index_after('<Contents>', search_pos) or { break }
@@ -683,7 +683,7 @@ fn (c TencentCOS) parse_list_objects_response(body string) !ListResult {
 		search_pos = content_end + 11
 	}
 	
-	// 解析 CommonPrefixes
+	// Parse CommonPrefixes
 	search_pos = 0
 	for {
 		prefix_start := body.index_after('<CommonPrefixes>', search_pos) or { break }
@@ -702,7 +702,7 @@ fn (c TencentCOS) parse_list_objects_response(body string) !ListResult {
 	return new_list_result(objects, common_prefixes, is_truncated, next_marker)
 }
 
-// 从 XML 解析单个对象信息
+// Parse single object information from XML
 fn (c TencentCOS) parse_object_from_xml(xml string) ObjectInfo {
 	mut key := ''
 	mut size := i64(0)
@@ -740,23 +740,23 @@ fn (c TencentCOS) parse_object_from_xml(xml string) ObjectInfo {
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - Bucket 操作
+//StorageProvider interface implementation - Bucket operation
 // ============================================================================
 
-// 创建 bucket
+//Create bucket
 pub fn (c TencentCOS) create_bucket(bucket string) ! {
 	mut headers := map[string]string{}
 	headers['Content-Type'] = 'application/xml'
 	
 	response := c.do_request(.put, bucket, '', map[string]string{}, headers, []u8{})!
 	
-	// 200 或 409 (BucketAlreadyExists) 都算成功
+	// 200 or 409 (BucketAlreadyExists) is considered successful
 	if response.status_code != 200 && response.status_code != 409 {
 		return error(c.parse_error_response(response, 'create_bucket').msg())
 	}
 }
 
-// 删除 bucket
+// delete bucket
 pub fn (c TencentCOS) delete_bucket(bucket string) ! {
 	response := c.do_request(.delete, bucket, '', map[string]string{}, map[string]string{}, []u8{})!
 	
@@ -768,7 +768,7 @@ pub fn (c TencentCOS) delete_bucket(bucket string) ! {
 	}
 }
 
-// 检查 bucket 是否存在
+// Check if bucket exists
 pub fn (c TencentCOS) bucket_exists(bucket string) !bool {
 	response := c.do_request(.head, bucket, '', map[string]string{}, map[string]string{}, []u8{})!
 	
@@ -782,17 +782,17 @@ pub fn (c TencentCOS) bucket_exists(bucket string) !bool {
 	return error(c.parse_error_response(response, 'bucket_exists').msg())
 }
 
-// 获取提供者名称
+// Get provider name
 pub fn (c TencentCOS) provider_name() string {
 	return 'tencent_cos'
 }
 
 
 // ============================================================================
-// StorageProvider 接口实现 - 分片上传
+//StorageProvider interface implementation - multipart upload
 // ============================================================================
 
-// 初始化分片上传
+//Initialize multipart upload
 pub fn (mut c TencentCOS) init_multipart(bucket string, key string, content_type string) !string {
 	mut query_params := map[string]string{}
 	query_params['uploads'] = ''
@@ -808,13 +808,13 @@ pub fn (mut c TencentCOS) init_multipart(bucket string, key string, content_type
 		return error(c.parse_error_response(response, 'init_multipart').msg())
 	}
 	
-	// 从 XML 响应中提取 UploadId
+	//Extract the UploadId from the XML response
 	upload_id := c.extract_upload_id(response.body)
 	if upload_id == '' {
 		return error(new_storage_error(.unknown, 'Failed to parse UploadId from response', 'tencent_cos', 'init_multipart').msg())
 	}
 	
-	// 记录上传状态
+	//Record upload status
 	c.multipart_uploads[upload_id] = COSMultipartUploadState{
 		bucket: bucket
 		key: key
@@ -827,7 +827,7 @@ pub fn (mut c TencentCOS) init_multipart(bucket string, key string, content_type
 	return upload_id
 }
 
-// 从 InitiateMultipartUploadResult XML 中提取 UploadId
+// Extract UploadId from InitiateMultipartUploadResult XML
 fn (c TencentCOS) extract_upload_id(body string) string {
 	if id_start := body.index('<UploadId>') {
 		if id_end := body.index('</UploadId>') {
@@ -837,7 +837,7 @@ fn (c TencentCOS) extract_upload_id(body string) string {
 	return ''
 }
 
-// 上传分片
+//Upload fragments
 pub fn (mut c TencentCOS) upload_part(bucket string, key string, upload_id string, part_number int, data []u8) !string {
 	mut query_params := map[string]string{}
 	query_params['partNumber'] = part_number.str()
@@ -852,10 +852,10 @@ pub fn (mut c TencentCOS) upload_part(bucket string, key string, upload_id strin
 		return error(c.parse_error_response(response, 'upload_part').msg())
 	}
 	
-	// 从响应头获取 ETag
+	// Get ETag from response header
 	etag := response.header.get_custom('ETag') or { c.calculate_etag(data) }
 	
-	// 更新上传状态
+	//Update upload status
 	if upload_id in c.multipart_uploads {
 		mut upload_state := c.multipart_uploads[upload_id]
 		upload_state.parts[part_number] = new_part_info(part_number, etag, i64(data.len))
@@ -865,12 +865,12 @@ pub fn (mut c TencentCOS) upload_part(bucket string, key string, upload_id strin
 	return etag
 }
 
-// 完成分片上传
+//Complete multipart upload
 pub fn (mut c TencentCOS) complete_multipart(bucket string, key string, upload_id string, parts []PartInfo) !StorageResult {
 	mut query_params := map[string]string{}
 	query_params['uploadId'] = upload_id
 	
-	// 构建 CompleteMultipartUpload XML
+	// Build CompleteMultipartUpload XML
 	mut xml_parts := '<CompleteMultipartUpload>'
 	for part in parts {
 		xml_parts += '<Part>'
@@ -890,22 +890,22 @@ pub fn (mut c TencentCOS) complete_multipart(bucket string, key string, upload_i
 		return error(c.parse_error_response(response, 'complete_multipart').msg())
 	}
 	
-	// 从响应解析 ETag
+	// Parse ETag from response
 	etag := c.extract_complete_multipart_etag(response.body)
 	
-	// 计算总大小
+	// Calculate total size
 	mut total_size := i64(0)
 	for part in parts {
 		total_size += part.size
 	}
 	
-	// 清理上传状态
+	// Clear upload status
 	c.multipart_uploads.delete(upload_id)
 	
 	return new_storage_result(key, etag, total_size)
 }
 
-// 从 CompleteMultipartUploadResult XML 中提取 ETag
+// Extract ETag from CompleteMultipartUploadResult XML
 fn (c TencentCOS) extract_complete_multipart_etag(body string) string {
 	if etag_start := body.index('<ETag>') {
 		if etag_end := body.index('</ETag>') {
@@ -915,7 +915,7 @@ fn (c TencentCOS) extract_complete_multipart_etag(body string) string {
 	return ''
 }
 
-// 取消分片上传
+//Cancel multipart upload
 pub fn (mut c TencentCOS) abort_multipart(bucket string, key string, upload_id string) ! {
 	mut query_params := map[string]string{}
 	query_params['uploadId'] = upload_id
@@ -926,46 +926,46 @@ pub fn (mut c TencentCOS) abort_multipart(bucket string, key string, upload_id s
 		return error(c.parse_error_response(response, 'abort_multipart').msg())
 	}
 	
-	// 清理上传状态
+	// Clear upload status
 	c.multipart_uploads.delete(upload_id)
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - 预签名 URL
+// StorageProvider interface implementation - pre-signed URL
 // ============================================================================
 
-// 生成预签名 URL
+// Generate pre-signed URL
 pub fn (c TencentCOS) presign_url(bucket string, key string, options PresignOptions) !string {
 	now := time.utc()
 	timestamp := now.unix()
 	
-	// 计算签名有效期
+	// Calculate signature validity period
 	start_time := timestamp - 60
 	end_time := timestamp + i64(options.expires_in)
 	key_time := '${start_time};${end_time}'
 	
-	// 构建 URI
+	// Build URI
 	uri := c.get_uri_path(key)
 	
-	// 构建待签名字符串
+	//Construct the string to be signed
 	// HttpString = [HttpMethod]\n[HttpURI]\n[HttpParameters]\n[HttpHeaders]\n
 	http_string := '${options.method.to_lower()}\n${uri}\n\n\n'
 	
-	// 计算 SHA1 哈希
+	// Calculate SHA1 hash
 	request_hash := sha1.sum(http_string.bytes())
 	hashed_request := hex.encode(request_hash).to_lower()
 	
 	// StringToSign = q-sign-algorithm\nq-sign-time\nSha1Digest\n
 	string_to_sign := 'sha1\n${key_time}\n${hashed_request}\n'
 	
-	// 计算签名密钥
+	// Calculate signature key
 	signing_key := cos_hmac_sha1(c.config.secret_key.bytes(), key_time.bytes())
 	
-	// 计算签名
+	// Calculate signature
 	signature := cos_hmac_sha1(signing_key, string_to_sign.bytes())
 	signature_hex := hex.encode(signature).to_lower()
 	
-	// 构建 URL
+	// Build URL
 	host := c.get_host(bucket)
 	encoded_key := c.encode_key(key)
 	
@@ -982,25 +982,25 @@ pub fn (c TencentCOS) presign_url(bucket string, key string, options PresignOpti
 }
 
 // ============================================================================
-// 辅助函数
+// helper function
 // ============================================================================
 
-// 解析 COS HTTP 日期格式
+// Parse COS HTTP date format
 fn parse_cos_http_date(date_str string) i64 {
 	if date_str == '' {
 		return 0
 	}
-	// HTTP 日期格式: "Mon, 02 Jan 2006 15:04:05 GMT"
-	// 简化处理，返回当前时间
+	// HTTP translated comment: "Mon, 02 Jan 2006 15:04:05 GMT"
+	// Simplify processing and return the current time
 	return time.now().unix()
 }
 
-// 解析 COS ISO8601 日期格式
+// Parse COS ISO8601 date format
 fn parse_cos_iso8601_date(date_str string) i64 {
 	if date_str == '' {
 		return 0
 	}
-	// ISO8601 格式: "2006-01-02T15:04:05.000Z"
-	// 简化处理，返回当前时间
+	// ISO8601 format: "2006-01-02T15:04:05.000Z"
+	// Simplify processing and return the current time
 	return time.now().unix()
 }

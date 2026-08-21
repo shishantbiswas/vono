@@ -1,4 +1,4 @@
-// test_openapi_serialization.v - 测试 OpenAPI 序列化和反序列化
+// test_openapi_serialization.v - Test OpenAPI serialization and deserialization
 // **Feature: swagger-ui, Property 1: OpenAPI Document Round-Trip Serialization**
 // **Validates: Requirements 3.1, 3.2, 3.4**
 module main
@@ -39,7 +39,7 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 测试 1: OpenAPIDocument to_json_str 基本功能
+// Test 1: OpenAPIDocument to_json_str basic function
 fn test_document_to_json_str() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -68,7 +68,7 @@ fn test_document_to_json_str() bool {
 	return has_openapi && has_title && has_users
 }
 
-// 测试 2: 字段名映射 (schema_type -> type, in_location -> in)
+// Test 2: Field name mapping (schema_type -> type, in_location -> in)
 fn test_field_name_mapping() bool {
 	param := hono.OpenAPIParameter{
 		name: 'id'
@@ -89,7 +89,7 @@ fn test_field_name_mapping() bool {
 	return has_in && has_type && no_in_location && no_schema_type
 }
 
-// 测试 3: ref 字段映射
+//Test 3: ref field mapping
 fn test_ref_field_mapping() bool {
 	schema := hono.OpenAPISchema{
 		ref: '#/components/schemas/User'
@@ -101,7 +101,7 @@ fn test_ref_field_mapping() bool {
 	return json_str.contains(r'"$ref":"#/components/schemas/User"')
 }
 
-// 测试 4: 可选字段省略 - 空字符串不应出现
+// Test 4: Optional fields omitted - empty string should not be present
 fn test_optional_fields_omission_strings() bool {
 	info := hono.OpenAPIInfo{
 		title: 'Test'
@@ -118,7 +118,7 @@ fn test_optional_fields_omission_strings() bool {
 	return no_desc && has_title && has_version
 }
 
-// 测试 5: 可选字段省略 - 空数组不应出现
+// Test 5: Optional fields omitted - empty array should not be present
 fn test_optional_fields_omission_arrays() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -138,7 +138,7 @@ fn test_optional_fields_omission_arrays() bool {
 	return no_servers && no_tags
 }
 
-// 测试 6: 可选字段省略 - 空 map 不应出现
+// Test 6: Optional fields omitted - empty map should not appear
 fn test_optional_fields_omission_maps() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -155,7 +155,7 @@ fn test_optional_fields_omission_maps() bool {
 	return !json_str.contains('"components"')
 }
 
-// 测试 7: 布尔值 false 不应出现 (除非必需)
+// Test 7: boolean false should not appear (unless required)
 fn test_optional_boolean_omission() bool {
 	param := hono.OpenAPIParameter{
 		name: 'test'
@@ -172,7 +172,7 @@ fn test_optional_boolean_omission() bool {
 	return no_required && no_deprecated
 }
 
-// 测试 8: 布尔值 true 应该出现
+// Test 8: boolean true should appear
 fn test_boolean_true_included() bool {
 	param := hono.OpenAPIParameter{
 		name: 'test'
@@ -189,7 +189,7 @@ fn test_boolean_true_included() bool {
 	return has_required && has_deprecated
 }
 
-// 测试 9: 嵌套结构序列化
+// Test 9: Nested structure serialization
 fn test_nested_structure_serialization() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -241,7 +241,7 @@ fn test_nested_structure_serialization() bool {
 	return has_contact && has_email && has_params && has_content && has_json
 }
 
-// 测试 10: to_json_pretty 格式化输出
+//Test 10: to_json_pretty formatted output
 fn test_to_json_pretty() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -260,7 +260,7 @@ fn test_to_json_pretty() bool {
 	return has_newline && has_indent
 }
 
-// 测试 11: 反序列化基本功能
+// Test 11: Deserialization basic functionality
 fn test_from_json_basic() bool {
 	json_str := '{"openapi":"3.0.0","info":{"title":"Test API","version":"1.0.0"},"paths":{}}'
 	
@@ -275,7 +275,7 @@ fn test_from_json_basic() bool {
 	return ok_openapi && ok_title && ok_version
 }
 
-// 测试 12: 反序列化嵌套结构
+// Test 12: Deserialize nested structure
 fn test_from_json_nested() bool {
 	json_str := '{"openapi":"3.0.0","info":{"title":"Test","version":"1.0.0","contact":{"name":"Support","email":"test@example.com"}},"paths":{"/users":{"get":{"summary":"Get users","responses":{"200":{"description":"OK"}}}}}}'
 	
@@ -292,7 +292,7 @@ fn test_from_json_nested() bool {
 	return ok_contact_name && ok_contact_email && ok_has_users && ok_summary
 }
 
-// 测试 13: 反序列化字段名映射 (in -> in_location, type -> schema_type)
+// Test 13: Deserialize field name mapping (in -> in_location, type -> schema_type)
 fn test_from_json_field_mapping() bool {
 	json_str := '{"name":"id","in":"path","schema":{"type":"integer"}}'
 	
@@ -308,7 +308,7 @@ fn test_from_json_field_mapping() bool {
 	return ok_name && ok_in && ok_type
 }
 
-// 测试 14: 往返序列化 - 简单文档
+// Test 14: Round trip serialization - simple documentation
 fn test_round_trip_simple() bool {
 	original := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -352,7 +352,7 @@ fn test_round_trip_simple() bool {
 	return ok_openapi && ok_title && ok_version && ok_desc && ok_has_health && ok_summary
 }
 
-// 测试 15: 往返序列化 - 复杂文档
+// Test 15: Round trip serialization - complex documents
 fn test_round_trip_complex() bool {
 	original := hono.OpenAPIDocument{
 		openapi: '3.1.0'
@@ -478,7 +478,7 @@ fn main() {
 
 	mut stats := TestStats{}
 
-	// 序列化测试
+	// Serialization test
 	stats.run_test('to_json_str 基本功能', test_document_to_json_str)
 	stats.run_test('字段名映射 (schema_type->type, in_location->in)', test_field_name_mapping)
 	stats.run_test('ref 字段映射', test_ref_field_mapping)
@@ -490,15 +490,15 @@ fn main() {
 	stats.run_test('嵌套结构序列化', test_nested_structure_serialization)
 	stats.run_test('to_json_pretty 格式化', test_to_json_pretty)
 	
-	// 反序列化测试
+	//Deserialization test
 	stats.run_test('from_json 基本功能', test_from_json_basic)
 	stats.run_test('from_json 嵌套结构', test_from_json_nested)
 	stats.run_test('from_json 字段名映射', test_from_json_field_mapping)
 	
-	// 往返测试
+	// round trip test
 	stats.run_test('往返序列化 - 简单文档', test_round_trip_simple)
 	stats.run_test('往返序列化 - 复杂文档', test_round_trip_complex)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

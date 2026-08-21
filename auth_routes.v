@@ -3,14 +3,14 @@ module hono
 import x.json2
 import net.http
 
-// 登录请求结构
+//Login request structure
 pub struct LoginRequest {
 pub:
 	username string
 	password string
 }
 
-// 注册请求结构
+//Register request structure
 pub struct RegisterRequest {
 pub:
 	username string
@@ -19,7 +19,7 @@ pub:
 	role     string
 }
 
-// 菜单创建请求结构
+//Menu creation request structure
 pub struct MenuCreateRequest {
 pub:
 	name        string
@@ -30,7 +30,7 @@ pub:
 	permissions []string
 }
 
-// 响应结构体
+// response structure
 struct ErrorResponseBody {
 	error string
 }
@@ -74,7 +74,7 @@ struct MenuCreateResponseBody {
 	active      string
 }
 
-// 认证中间件（只做校验，不注入 user）
+// Authentication middleware (only verification, no user injection)
 pub fn auth_middleware(auth_manager AuthManager) ContextMiddleware {
 	return fn [auth_manager] (mut c Context, next fn (mut Context) http.Response) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
@@ -94,7 +94,7 @@ pub fn auth_middleware(auth_manager AuthManager) ContextMiddleware {
 	}
 }
 
-// 权限检查中间件（直接校验 token 权限）
+// Permission checking middleware (directly verify token permissions)
 pub fn permission_middleware(auth_manager AuthManager, required_permission string) ContextMiddleware {
 	return fn [auth_manager, required_permission] (mut c Context, next fn (mut Context) http.Response) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
@@ -114,9 +114,9 @@ pub fn permission_middleware(auth_manager AuthManager, required_permission strin
 	}
 }
 
-// 注册认证路由
+//Register authentication route
 pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
-	// 登录路由
+	//Login route
 	app.post('/api/auth/login', fn [mut auth_manager] (mut c Context) http.Response {
 		body := c.body
 		login_req := json2.decode[LoginRequest](body) or {
@@ -137,7 +137,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 注册路由
+	//Register route
 	app.post('/api/auth/register', fn [mut auth_manager] (mut c Context) http.Response {
 		body := c.body
 		register_req := json2.decode[RegisterRequest](body) or {
@@ -167,7 +167,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 注销路由
+	//Logout routing
 	app.post('/api/auth/logout', fn [mut auth_manager] (mut c Context) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
 		if token == '' {
@@ -187,7 +187,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 获取用户信息路由
+	// Get user information routing
 	app.get('/api/auth/profile', fn [auth_manager] (mut c Context) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
 		user := auth_manager.verify_token(token) or {
@@ -205,7 +205,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 获取用户菜单路由
+	// Get user menu route
 	app.get('/api/auth/menus', fn [auth_manager] (mut c Context) http.Response {
 		token := c.req.header.get_custom('Authorization') or { '' }
 		user := auth_manager.verify_token(token) or {
@@ -225,7 +225,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 创建菜单项路由 (需要管理员权限)
+	//Create menu item routing (requires administrator privileges)
 	app.post('/api/auth/menus', fn [mut auth_manager] (mut c Context) http.Response {
 		body := c.body
 		menu_req := json2.decode[MenuCreateRequest](body) or {
@@ -252,7 +252,7 @@ pub fn register_auth_routes(mut app Hono, mut auth_manager AuthManager) {
 		}))
 	})
 
-	// 获取所有菜单项路由 (需要管理员权限)
+	// Get all menu item routes (requires administrator privileges)
 	app.get('/api/auth/menus/all', fn [auth_manager] (mut c Context) http.Response {
 		menus := auth_manager.get_all_menu_items() or {
 			c.status(500)

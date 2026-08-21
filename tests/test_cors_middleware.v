@@ -3,7 +3,7 @@ import net.http
 import rand
 import time
 
-// CORS Middleware 属性测试
+// CORS Middleware property test
 // Property-Based Testing for CORS functionality
 
 const test_iterations = 100
@@ -41,7 +41,7 @@ fn (stats CorsTestStats) print_summary() {
 	}
 }
 
-// 创建带 Origin 头的测试 Context
+//Create a test Context with Origin header
 fn create_cors_context_with_origin(origin string, method http.Method) hono.Context {
 	mut headers := http.new_header()
 	if origin.len > 0 {
@@ -56,7 +56,7 @@ fn create_cors_context_with_origin(origin string, method http.Method) hono.Conte
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 创建带 Origin 和 Access-Control-Request-Headers 的预检请求 Context
+// Create a preflight request Context with Origin and Access-Control-Request-Headers
 fn create_cors_preflight_context(origin string, request_headers string) hono.Context {
 	mut headers := http.new_header()
 	if origin.len > 0 {
@@ -74,7 +74,7 @@ fn create_cors_preflight_context(origin string, request_headers string) hono.Con
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 生成随机的域名
+// Generate a random domain name
 fn generate_cors_random_origin() string {
 	protocols := ['http', 'https']
 	domains := ['example', 'test', 'api', 'app', 'web', 'service', 'backend', 'frontend']
@@ -84,7 +84,7 @@ fn generate_cors_random_origin() string {
 	domain := domains[rand.int_in_range(0, domains.len) or { 0 }]
 	tld := tlds[rand.int_in_range(0, tlds.len) or { 0 }]
 	
-	// 有时添加端口
+	// Sometimes add ports
 	port := if rand.int_in_range(0, 3) or { 0 } == 0 {
 		':${rand.int_in_range(3000, 9000) or { 8080 }}'
 	} else {
@@ -94,13 +94,13 @@ fn generate_cors_random_origin() string {
 	return '${protocol}://${domain}.${tld}${port}'
 }
 
-// 生成随机的 HTTP 方法
+// Generate a random HTTP method
 fn generate_cors_random_method() http.Method {
 	methods := [http.Method.get, http.Method.post, http.Method.put, http.Method.delete, http.Method.patch]
 	return methods[rand.int_in_range(0, methods.len) or { 0 }]
 }
 
-// 生成随机的请求头列表
+// Generate a random request header list
 fn generate_cors_random_headers() []string {
 	all_headers := ['Content-Type', 'Authorization', 'X-Custom-Header', 'X-Request-ID', 'Accept', 'Cache-Control']
 	count := rand.int_in_range(1, all_headers.len) or { 2 }
@@ -111,7 +111,7 @@ fn generate_cors_random_headers() []string {
 	return result
 }
 
-// 模拟 next 函数，返回一个简单的响应
+// Simulate the next function and return a simple response
 fn cors_mock_next(mut c hono.Context) http.Response {
 	return c.text('OK')
 }
@@ -327,7 +327,7 @@ fn main() {
 
 	mut stats := CorsTestStats{}
 
-	// 运行属性测试
+	//Run property tests
 	// Feature: builtin-middleware, Property 1: CORS Origin Header Consistency
 	// Validates: Requirements 1.1, 1.3, 1.4, 1.5, 1.6
 	stats.run_property_test('Property 1: CORS Origin Header Consistency', test_property_1_cors_origin_header_consistency)
@@ -336,6 +336,6 @@ fn main() {
 	// Validates: Requirements 1.2, 1.7, 1.8, 1.9, 1.10, 1.11
 	stats.run_property_test('Property 2: CORS Preflight Response', test_property_2_cors_preflight_response)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

@@ -3,10 +3,10 @@ import meiseayoung.hono
 fn main() {
 	println('=== 测试缓存内存泄漏修复 ===')
 	
-	// 创建缓存
+	//Create cache
 	mut cache := hono.ContextLRUCache.new(5)
 	
-	// 创建测试数据
+	//Create test data
 	test_route_match := hono.ContextRouteMatch{
 		handler: hono.ContextHandler{
 			path: '/test'
@@ -18,7 +18,7 @@ fn main() {
 	
 	println('1. 基本功能测试')
 	
-	// 添加缓存项
+	//Add cache item
 	cache.put('key1', test_route_match)
 	cache.put('key2', test_route_match)
 	cache.put('key3', test_route_match)
@@ -26,7 +26,7 @@ fn main() {
 	size, capacity := cache.get_stats()
 	println('   添加3个项后: ${size}/${capacity}')
 	
-	// 测试获取
+	//Test acquisition
 	if _ := cache.get('key1') {
 		println('   ✅ 成功获取key1')
 	} else {
@@ -35,24 +35,24 @@ fn main() {
 	
 	println('2. 容量溢出测试')
 	
-	// 注意：上面的 get('key1') 会把 key1 移到头部（最近使用）
-	// 所以 LRU 顺序变为: key1(头) -> key3 -> key2(尾)
-	// 添加更多项，触发LRU移除
+	// Note: the above get('key1') will move key1 to the head (most recently used)
+	// So the LRU order becomes: key1 (head) -> key3 -> key2 (tail)
+	// Add more items to trigger LRU removal
 	cache.put('key4', test_route_match)  // size=4
-	cache.put('key5', test_route_match)  // size=5 (达到容量)
-	cache.put('key6', test_route_match)  // 移除 key2 (最久未使用)
+	cache.put('key5', test_route_match)  // size=5 (capacity reached)
+	cache.put('key6', test_route_match)  // Remove key2 (most unused)
 	
 	size2, _ := cache.get_stats()
 	println('   添加到容量上限后: ${size2}/${capacity}')
 	
-	// key2 应该被移除（因为 key1 在 get 后被移到了头部）
+	// key2 should be removed (because key1 was moved to the head after get)
 	if _ := cache.get('key2') {
 		println('   ❌ key2仍然存在（应该被移除）')
 	} else {
 		println('   ✅ key2正确被移除（LRU淘汰）')
 	}
 	
-	// key1 应该仍然存在（因为它是最近访问的）
+	// key1 should still exist (since it was most recently accessed)
 	if _ := cache.get('key1') {
 		println('   ✅ key1仍然存在（最近访问过）')
 	} else {
@@ -61,18 +61,18 @@ fn main() {
 	
 	println('3. 健康检查测试')
 	
-	// 健康检查
+	// health check
 	is_healthy := cache.is_healthy()
 	println('   缓存健康状态: ${is_healthy}')
 	
 	println('4. 清理测试')
 	
-	// 清理所有缓存
+	// Clear all caches
 	cache.clear()
 	size3, _ := cache.get_stats()
 	println('   清理后大小: ${size3}')
 	
-	// 清理后健康检查
+	// Health check after cleaning
 	is_healthy2 := cache.is_healthy()
 	println('   清理后健康状态: ${is_healthy2}')
 	

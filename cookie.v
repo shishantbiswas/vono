@@ -4,27 +4,27 @@ import time
 import crypto.sha256
 import encoding.base64
 
-// SameSite 枚举 - Cookie 的 SameSite 属性
+// SameSite enum - Cookie's SameSite property
 pub enum SameSite {
 	strict
 	lax
 	none_
 }
 
-// CookieOptions 结构体 - Cookie 配置选项
+// CookieOptions structure - Cookie configuration options
 pub struct CookieOptions {
 pub:
 	path      string    = '/'
 	domain    string
-	max_age   int                    // 秒
+	max_age   int                    // Second
 	expires   ?time.Time
 	http_only bool
 	secure    bool
 	same_site SameSite  = .lax
 }
 
-// get_cookie - 从请求中获取指定名称的 Cookie 值
-// 返回 Cookie 值，如果不存在则返回 none
+// get_cookie - Gets the cookie value of the specified name from the request
+// Return the Cookie value, or none if it does not exist
 pub fn get_cookie(c Context, name string) ?string {
 	cookie_header := c.req.header.get_custom('Cookie') or { return none }
 	
@@ -32,7 +32,7 @@ pub fn get_cookie(c Context, name string) ?string {
 		return none
 	}
 	
-	// 解析 Cookie 头
+	// Parse Cookie header
 	cookies := parse_cookie_header(cookie_header)
 	
 	if name in cookies {
@@ -42,8 +42,8 @@ pub fn get_cookie(c Context, name string) ?string {
 	return none
 }
 
-// get_all_cookies - 获取请求中的所有 Cookie
-// 返回一个 map，包含所有 Cookie 的名称和值
+// get_all_cookies - Get all cookies in the request
+// Return a map containing the names and values ​​of all cookies
 pub fn get_all_cookies(c Context) map[string]string {
 	cookie_header := c.req.header.get_custom('Cookie') or { return map[string]string{} }
 	
@@ -55,15 +55,15 @@ pub fn get_all_cookies(c Context) map[string]string {
 }
 
 
-// set_cookie - 设置 Cookie
-// 将 Cookie 添加到响应的 Set-Cookie 头中
+// set_cookie - Set Cookie
+// Add the cookie to the response's Set-Cookie header
 pub fn set_cookie(mut c Context, name string, value string, options ...CookieOptions) {
 	opts := if options.len > 0 { options[0] } else { CookieOptions{} }
 	
 	cookie_str := build_cookie_string(name, value, opts)
 	
-	// 添加到响应头
-	// 如果已经有 Set-Cookie 头，需要追加
+	//Add to response header
+	// If there is already a Set-Cookie header, it needs to be appended
 	if existing := c.headers['Set-Cookie'] {
 		c.headers['Set-Cookie'] = '${existing}, ${cookie_str}'
 	} else {
@@ -71,15 +71,15 @@ pub fn set_cookie(mut c Context, name string, value string, options ...CookieOpt
 	}
 }
 
-// delete_cookie - 删除 Cookie
-// 通过设置过期时间为过去的时间来删除 Cookie
+//delete_cookie - Delete Cookie
+// Delete the cookie by setting the expiration time to the past
 pub fn delete_cookie(mut c Context, name string, options ...CookieOptions) {
 	mut opts := if options.len > 0 { options[0] } else { CookieOptions{} }
 	
-	// 设置 max_age 为 0 或负数，并设置过期时间为过去
+	//Set max_age to 0 or a negative number, and set the expiration time to the past
 	expired_time := time.unix(0)
 	
-	// 创建新的选项，保留 path 和 domain，但设置过期
+	//Create a new option, retain path and domain, but set expiration
 	delete_opts := CookieOptions{
 		path: opts.path
 		domain: opts.domain
@@ -99,12 +99,12 @@ pub fn delete_cookie(mut c Context, name string, options ...CookieOptions) {
 	}
 }
 
-// parse_cookie_header - 解析 Cookie 请求头
-// 将 "name1=value1; name2=value2" 格式解析为 map
+// parse_cookie_header - Parse Cookie request header
+// Parse the "name1=value1; name2=value2" format into map
 fn parse_cookie_header(header string) map[string]string {
 	mut cookies := map[string]string{}
 	
-	// 按分号分割
+	// Split by semicolon
 	pairs := header.split(';')
 	
 	for pair in pairs {
@@ -113,7 +113,7 @@ fn parse_cookie_header(header string) map[string]string {
 			continue
 		}
 		
-		// 找到第一个等号的位置
+		// Find the position of the first equal sign
 		eq_pos := trimmed.index('=') or { continue }
 		
 		if eq_pos == 0 {
@@ -127,7 +127,7 @@ fn parse_cookie_header(header string) map[string]string {
 			''
 		}
 		
-		// 移除值两端的引号（如果有）
+		// Remove quotes from both sides of the value (if any)
 		cleaned_value := if value.len >= 2 && value[0] == `"` && value[value.len - 1] == `"` {
 			value[1..value.len - 1]
 		} else {
@@ -141,11 +141,11 @@ fn parse_cookie_header(header string) map[string]string {
 }
 
 
-// build_cookie_string - 构建 Set-Cookie 头的值
+// build_cookie_string - build the value of the Set-Cookie header
 fn build_cookie_string(name string, value string, opts CookieOptions) string {
 	mut parts := []string{}
 	
-	// 基本的 name=value
+	//Basic name=value
 	parts << '${name}=${value}'
 	
 	// Path
@@ -165,7 +165,7 @@ fn build_cookie_string(name string, value string, opts CookieOptions) string {
 	
 	// Expires
 	if expires := opts.expires {
-		// 格式化为 HTTP 日期格式: Wed, 09 Jun 2021 10:18:14 GMT
+		// Format to HTTP date format: Wed, 09 Jun 2021 10:18:14 GMT
 		expires_str := format_cookie_date(expires)
 		parts << 'Expires=${expires_str}'
 	}
@@ -190,8 +190,8 @@ fn build_cookie_string(name string, value string, opts CookieOptions) string {
 	return parts.join('; ')
 }
 
-// format_cookie_date - 格式化时间为 Cookie 日期格式
-// 格式: Wed, 09 Jun 2021 10:18:14 GMT
+// format_cookie_date - Format time in Cookie date format
+// Format: Wed, 09 Jun 2021 10:18:14 GMT
 fn format_cookie_date(t time.Time) string {
 	days := ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 	months := ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -202,36 +202,36 @@ fn format_cookie_date(t time.Time) string {
 	return '${day_name}, ${t.day:02} ${month_name} ${t.year} ${t.hour:02}:${t.minute:02}:${t.second:02} GMT'
 }
 
-// set_signed_cookie - 设置签名 Cookie
-// 使用 HMAC-SHA256 对 Cookie 值进行签名
+// set_signed_cookie - Set signed cookie
+// Sign the cookie value using HMAC-SHA256
 pub fn set_signed_cookie(mut c Context, name string, value string, secret string, options ...CookieOptions) ! {
 	if secret.len == 0 {
 		return error('Secret is required for signed cookies')
 	}
 	
-	// 生成签名
+	// Generate signature
 	signature := generate_hmac_signature(value, secret)
 	
-	// 将值和签名组合: value.signature
+	// Combine value and signature: value.signature
 	signed_value := '${value}.${signature}'
 	
 	opts := if options.len > 0 { options[0] } else { CookieOptions{} }
 	set_cookie(mut c, name, signed_value, opts)
 }
 
-// get_signed_cookie - 获取并验证签名 Cookie
-// 验证签名，如果有效则返回原始值，否则返回错误
+// get_signed_cookie - Get and verify signed cookies
+// Verify the signature and return the original value if valid, otherwise return an error
 pub fn get_signed_cookie(c Context, name string, secret string) !string {
 	if secret.len == 0 {
 		return error('Secret is required for signed cookies')
 	}
 	
-	// 获取 Cookie 值
+	// Get cookie value
 	signed_value := get_cookie(c, name) or {
 		return error('Cookie not found: ${name}')
 	}
 	
-	// 分离值和签名
+	// Separate value and signature
 	dot_pos := signed_value.last_index('.') or {
 		return error('Invalid signed cookie format')
 	}
@@ -243,7 +243,7 @@ pub fn get_signed_cookie(c Context, name string, secret string) !string {
 	value := signed_value[..dot_pos]
 	signature := signed_value[dot_pos + 1..]
 	
-	// 验证签名
+	//Verify signature
 	expected_signature := generate_hmac_signature(value, secret)
 	
 	if !constant_time_compare(signature, expected_signature) {
@@ -254,42 +254,42 @@ pub fn get_signed_cookie(c Context, name string, secret string) !string {
 }
 
 
-// generate_hmac_signature - 使用 HMAC-SHA256 生成签名
+// generate_hmac_signature - Generate a signature using HMAC-SHA256
 fn generate_hmac_signature(value string, secret string) string {
-	// 手动实现 HMAC-SHA256
+	// Manually implement HMAC-SHA256
 	// HMAC(K, m) = H((K' ⊕ opad) || H((K' ⊕ ipad) || m))
-	// 其中 K' 是处理后的密钥，ipad = 0x36, opad = 0x5c
+	// Where K' is the processed key, ipad = 0x36, opad = 0x5c
 	
-	block_size := 64 // SHA256 块大小
+	block_size := 64 // SHA256 block size
 	
-	// 处理密钥
+	// handle the key
 	mut key := secret.bytes()
 	if key.len > block_size {
-		// 如果密钥太长，先哈希
+		// If the key is too long, hash it first
 		hash_result := sha256.sum(key)
 		key = []u8{len: 32}
 		for i := 0; i < 32; i++ {
 			key[i] = hash_result[i]
 		}
 	}
-	// 填充到块大小
+	// Pad to block size
 	for key.len < block_size {
 		key << u8(0)
 	}
 	
-	// 计算 K' ⊕ ipad
+	// Calculate K' ⊕ ipad
 	mut i_key_pad := []u8{len: block_size}
 	for i := 0; i < block_size; i++ {
 		i_key_pad[i] = key[i] ^ u8(0x36)
 	}
 	
-	// 计算 K' ⊕ opad
+	// Calculate K' ⊕ opad
 	mut o_key_pad := []u8{len: block_size}
 	for i := 0; i < block_size; i++ {
 		o_key_pad[i] = key[i] ^ u8(0x5c)
 	}
 	
-	// 计算内部哈希: H((K' ⊕ ipad) || m)
+	// Calculate internal hash: H((K' ⊕ ipad) || m)
 	mut inner_data := i_key_pad.clone()
 	inner_data << value.bytes()
 	inner_hash_result := sha256.sum(inner_data)
@@ -298,7 +298,7 @@ fn generate_hmac_signature(value string, secret string) string {
 		inner_hash[i] = inner_hash_result[i]
 	}
 	
-	// 计算外部哈希: H((K' ⊕ opad) || inner_hash)
+	// Calculate outer hash: H((K' ⊕ opad) || inner_hash)
 	mut outer_data := o_key_pad.clone()
 	outer_data << inner_hash
 	outer_hash_result := sha256.sum(outer_data)
@@ -307,11 +307,11 @@ fn generate_hmac_signature(value string, secret string) string {
 		outer_hash[i] = outer_hash_result[i]
 	}
 	
-	// Base64URL 编码（不带填充）
+	// Base64URL encoding (without padding)
 	return base64.url_encode(outer_hash).replace('=', '')
 }
 
-// constant_time_compare - 常量时间比较，防止时序攻击
+// constant_time_compare - constant time comparison to prevent timing attacks
 fn constant_time_compare(a string, b string) bool {
 	if a.len != b.len {
 		return false

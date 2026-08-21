@@ -5,7 +5,7 @@ import net.http
 fn main() {
 	println('=== 简化FastRouter性能测试 ===')
 	
-	// 测试FastRouter vs HybridRouter的基本性能
+	//Test the basic performance of FastRouter vs HybridRouter
 	test_basic_performance()
 	
 	println('✅ 简化FastRouter性能测试完成')
@@ -17,7 +17,7 @@ fn test_basic_performance() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// 创建FastRouter
+	//Create FastRouter
 	mut fast_router := hono.FastRouter.new()
 	fast_handler := hono.ContextHandler{
 		path: route_path
@@ -30,7 +30,7 @@ fn test_basic_performance() {
 		return
 	}
 	
-	// 创建HybridRouter
+	//Create HybridRouter
 	mut hybrid_router := hono.ContextHybridRouter.new()
 	hybrid_handler := hono.ContextHandler{
 		path: route_path
@@ -42,7 +42,7 @@ fn test_basic_performance() {
 	
 	iterations := 10000
 	
-	// 测试FastRouter（第一次匹配）
+	//Test FastRouter (first match)
 	fast_router.clear_cache()
 	
 	start_time1 := time.now()
@@ -55,7 +55,7 @@ fn test_basic_performance() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter（第一次匹配）
+	//Test HybridRouter (first match)
 	hybrid_router.clear_cache()
 	hybrid_router.clear_regex_cache()
 	
@@ -89,7 +89,7 @@ fn test_basic_performance() {
 		}
 	}
 	
-	// 测试缓存匹配性能
+	//Test cache matching performance
 	start_time3 := time.now()
 	mut fast_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -127,7 +127,7 @@ fn test_basic_performance() {
 		}
 	}
 	
-	// 显示统计信息
+	// Display statistics
 	fast_static, fast_dynamic, fast_cache := fast_router.get_stats()
 	hybrid_static, hybrid_dynamic := hybrid_router.get_all_routes()
 	hybrid_cache_size, _ := hybrid_router.get_cache_stats()
@@ -136,7 +136,7 @@ fn test_basic_performance() {
 	println('    FastRouter - 静态: ${fast_static}, 动态: ${fast_dynamic}, 缓存: ${fast_cache}')
 	println('    HybridRouter - 静态: ${hybrid_static.len}, 动态: ${hybrid_dynamic.len}, 缓存: ${hybrid_cache_size}')
 	
-	// 性能分析
+	//Performance analysis
 	println('\n  性能分析:')
 	fast_router.analyze_performance()
 	hybrid_router.analyze_router_performance()

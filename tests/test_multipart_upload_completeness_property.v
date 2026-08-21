@@ -9,7 +9,7 @@ import crypto.rand as crand
 
 // ============================================================================
 // Property 5: Multipart Upload Completeness
-// Feature: v-hono-upload-integration, Property 5: Multipart Upload Completeness
+// Feature: vono-upload-integration, Property 5: Multipart Upload Completeness
 // Validates: Requirements 7.1, 7.3, 7.5
 //
 // *For any* file split into chunks, initiating a multipart upload, uploading
@@ -1398,7 +1398,7 @@ fn test_property_5_5_out_of_order_upload() bool {
 
 fn main() {
 	println('🚀 开始 Multipart Upload Completeness 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 5: Multipart Upload Completeness')
+	println('Feature: vono-upload-integration, Property 5: Multipart Upload Completeness')
 	println('Validates: Requirements 7.1, 7.3, 7.5')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

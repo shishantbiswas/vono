@@ -1,8 +1,8 @@
-# V-Hono 文件流式传输性能优化
+# vono 文件流式传输性能优化
 
 ## 🚨 原始问题
 
-V-Hono项目的文件服务实现存在以下性能问题：
+vono项目的文件服务实现存在以下性能问题：
 
 1. **内存使用过高**：所有文件都被完整读取到内存中，大文件会导致内存溢出
 2. **缺少Range请求支持**：不支持断点续传和部分内容请求
@@ -255,7 +255,7 @@ app.get('/custom/:filename', fn (mut c hono.Context) http.Response {
         enable_range: true                  // 启用Range请求
         max_age: 86400                      // 24小时缓存
         headers: {
-            'X-Served-By': 'V-Hono-Streaming'
+            'X-Served-By': 'vono-Streaming'
             'X-Performance': 'optimized'
         }
     }
@@ -312,7 +312,7 @@ options := hono.FileOptions{
 
 ## 📋 总结
 
-这次优化完全解决了V-Hono项目中文件服务的性能问题，新增了企业级应用所需的Range请求、智能传输选择和流式传输功能。
+这次优化完全解决了vono项目中文件服务的性能问题，新增了企业级应用所需的Range请求、智能传输选择和流式传输功能。
 
 **关键改进**：
 - ✅ 解决大文件内存溢出问题
@@ -328,4 +328,4 @@ options := hono.FileOptions{
 - 📈 **用户体验改善**：智能选择确保小文件快速加载，大文件稳定传输
 - 📈 **系统稳定性**：消除内存溢出风险，支持长期运行
 
-这些优化使V-Hono框架能够处理各种规模的文件服务需求，从小型Web应用到大型文件分发系统都能提供卓越的性能表现。
+这些优化使vono框架能够处理各种规模的文件服务需求，从小型Web应用到大型文件分发系统都能提供卓越的性能表现。

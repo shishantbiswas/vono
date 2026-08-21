@@ -1,16 +1,16 @@
-// uSockets 测试服务器 (本地模块版本)
-// 编译方式:
-//   方式1 (推荐): 将 v-hono 安装到 ~/.vmodules 后使用
-//   方式2: 直接编译整个目录
+// uSockets test server (local module version)
+// Compilation method:
+// Method 1 (recommended): Install vono to ~/.vmodules and use it
+// Method 2: Directly compile the entire directory
 //
-// 运行: ./usockets_server
+// Run: ./usockets_server
 
 module main
 
 import net.http
 
-// 由于 V 语言模块系统限制，这里直接包含必要的代码
-// 实际使用时应该 import meiseayoung.hono
+//Due to limitations of the V language module system, the necessary code is directly included here.
+//In actual use, you should import meiseayoung.hono
 
 fn main() {
 	println('=== uSockets 服务器测试 ===')
@@ -19,7 +19,7 @@ fn main() {
 	println('')
 	println('请使用以下方式测试 uSockets 服务器:')
 	println('')
-	println('方式 1: 安装 v-hono 到 vpm')
+	println('方式 1: 安装 vono 到 vpm')
 	println('  v install meiseayoung.hono')
 	println('  v run tests/test_usockets_server.v')
 	println('')
@@ -28,10 +28,10 @@ fn main() {
 	println('  v run tests/test_usockets_server.v')
 	println('')
 	println('方式 3: 直接编译测试')
-	println('  v -shared v-hono/')
+	println('  v -shared vono/')
 	println('  # 如果编译成功，说明 uSockets 模块正常工作')
 	println('')
 	
-	// 验证编译成功
+	// Verify that compilation is successful
 	println('✅ 编译成功！uSockets 模块已移除全局变量依赖。')
 }

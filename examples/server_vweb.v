@@ -1,6 +1,6 @@
-// vweb 服务器示例 - 用于性能对比测试
-// 运行: v run server_vweb.v
-// 测试: curl http://127.0.0.1:8080/
+// vweb server example - for performance comparison testing
+// Run: v run server_vweb.v
+//Test: curl http://127.0.0.1:8080/
 
 module main
 
@@ -15,7 +15,7 @@ fn main() {
 	vweb.run(&App{}, 8080)
 }
 
-// 静态路由
+// static routing
 @['/']
 pub fn (mut app App) index() vweb.Result {
 	return app.text('Hello World')
@@ -36,7 +36,7 @@ pub fn (mut app App) create_user() vweb.Result {
 	return app.json('{"created": true}')
 }
 
-// 动态路由 - vweb 使用 :param 语法
+// Dynamic routing - vweb uses :param syntax
 @['/api/users/:id']
 pub fn (mut app App) get_user(id string) vweb.Result {
 	return app.json('{"id": "${id}"}')

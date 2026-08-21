@@ -1,6 +1,6 @@
 # Redirect 功能文档
 
-v-hono 现在支持 HTTP 重定向功能，与 Hono.js 的 `c.redirect()` API 兼容。
+vono 现在支持 HTTP 重定向功能，与 Hono.js 的 `c.redirect()` API 兼容。
 
 ## 基本用法
 
@@ -136,7 +136,7 @@ app.get('/external', fn (mut c hono.Context) hono.Response {
 
 ## 与 Hono.js 的兼容性
 
-v-hono 的 `c.redirect()` 方法与 Hono.js 的 API 完全兼容：
+vono 的 `c.redirect()` 方法与 Hono.js 的 API 完全兼容：
 
 ```javascript
 // Hono.js
@@ -145,7 +145,7 @@ c.redirect('https://example.com', 301)
 ```
 
 ```v
-// v-hono
+// vono
 c.redirect('https://example.com')
 c.redirect('https://example.com', 301)
 ```

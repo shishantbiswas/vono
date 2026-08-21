@@ -4,56 +4,56 @@ import net.http
 import time
 import sync
 
-// RateLimitEntry 结构体 - 限流条目
+// RateLimitEntry structure - rate limiting entry
 pub struct RateLimitEntry {
 pub mut:
-	count    int   // 当前请求计数
-	reset_at i64   // 重置时间（Unix 毫秒时间戳）
+	count    int   //Current request count
+	reset_at i64   // Reset time (Unix millisecond timestamp)
 }
 
-// RateLimitStore 接口 - 限流存储后端
+// RateLimitStore interface - current limiting storage backend
 pub interface RateLimitStore {
 mut:
-	// increment - 增加计数并返回当前计数和重置时间
-	// 参数: key - 客户端标识, window_ms - 时间窗口（毫秒）
-	// 返回: (当前计数, 重置时间戳)
+	// increment - increment the count and return the current count and reset time
+	// Parameters: key - client identification, window_ms - time window (milliseconds)
+	// Return: (current count, reset timestamp)
 	increment(key string, window_ms i64) (int, i64)
-	// reset - 重置指定 key 的计数
+	// reset - resets the count for the specified key
 	reset(key string)
 }
 
-// MemoryStore 结构体 - 内存存储实现
+// MemoryStore structure - memory storage implementation
 pub struct MemoryStore {
 mut:
 	data map[string]RateLimitEntry
-	mtx  sync.Mutex  // 线程安全锁
+	mtx  sync.Mutex  // Thread safety lock
 }
 
-// MemoryStore.new - 创建新的内存存储
+// MemoryStore.new - Create a new memory store
 pub fn MemoryStore.new() &MemoryStore {
 	return &MemoryStore{
 		data: map[string]RateLimitEntry{}
 	}
 }
 
-// increment - 增加计数并返回当前计数和重置时间
+// increment - increment the count and return the current count and reset time
 pub fn (mut s MemoryStore) increment(key string, window_ms i64) (int, i64) {
 	s.mtx.@lock()
 	defer { s.mtx.unlock() }
 	
 	now := time.now().unix_milli()
 	
-	// 检查是否存在条目
+	// Check if entry exists
 	if key in s.data {
 		mut entry := s.data[key]
 		
-		// 检查是否需要重置（窗口已过期）
+		// Check if reset is required (window has expired)
 		if now >= entry.reset_at {
-			// 窗口已过期，重置计数
+			// Window has expired, reset count
 			entry.count = 1
 			entry.reset_at = now + window_ms
 		} else {
-			// 窗口内，增加计数
+			//In the window, increase the count
 			entry.count++
 		}
 		
@@ -61,7 +61,7 @@ pub fn (mut s MemoryStore) increment(key string, window_ms i64) (int, i64) {
 		return entry.count, entry.reset_at
 	}
 	
-	// 新条目
+	// new item
 	new_entry := RateLimitEntry{
 		count: 1
 		reset_at: now + window_ms
@@ -71,7 +71,7 @@ pub fn (mut s MemoryStore) increment(key string, window_ms i64) (int, i64) {
 	return new_entry.count, new_entry.reset_at
 }
 
-// reset - 重置指定 key 的计数
+// reset - resets the count for the specified key
 pub fn (mut s MemoryStore) reset(key string) {
 	s.mtx.@lock()
 	defer { s.mtx.unlock() }
@@ -79,7 +79,7 @@ pub fn (mut s MemoryStore) reset(key string) {
 	s.data.delete(key)
 }
 
-// get_entry - 获取指定 key 的条目（用于测试）
+// get_entry - Get the entry for the specified key (for testing)
 pub fn (s MemoryStore) get_entry(key string) ?RateLimitEntry {
 	if key in s.data {
 		return s.data[key]
@@ -87,7 +87,7 @@ pub fn (s MemoryStore) get_entry(key string) ?RateLimitEntry {
 	return none
 }
 
-// cleanup_expired - 清理过期条目（可选的维护方法）
+// cleanup_expired - clean up expired entries (optional maintenance method)
 pub fn (mut s MemoryStore) cleanup_expired() {
 	s.mtx.@lock()
 	defer { s.mtx.unlock() }
@@ -107,64 +107,64 @@ pub fn (mut s MemoryStore) cleanup_expired() {
 }
 
 
-// RateLimitOptions 结构体 - 限流配置选项
+// RateLimitOptions structure - current limiting configuration options
 pub struct RateLimitOptions {
 pub:
-	window_ms     i64 = 60000                           // 时间窗口（毫秒），默认 1 分钟
-	limit         int = 100                             // 窗口内最大请求数，默认 100
-	key_generator ?fn (Context) string                  // 客户端标识生成器
-	skip          ?fn (Context) bool                    // 跳过限流条件
-	handler       ?fn (mut Context, RateLimitInfo) http.Response  // 自定义限流响应
-	store         &MemoryStore                          // 存储后端（必需）
-	headers       bool = true                           // 是否添加限流头，默认 true
+	window_ms     i64 = 60000                           //Time window (milliseconds), default 1 minute
+	limit         int = 100                             //Maximum number of requests within the window, default 100
+	key_generator ?fn (Context) string                  // Client ID generator
+	skip          ?fn (Context) bool                    // Skip the current limiting condition
+	handler       ?fn (mut Context, RateLimitInfo) http.Response  // Customized current limiting response
+	store         &MemoryStore                          // Storage backend (required)
+	headers       bool = true                           // Whether to add a current limiting header, the default is true
 }
 
-// RateLimitInfo 结构体 - 限流信息（传递给自定义 handler）
+// RateLimitInfo structure - rate limiting information (passed to custom handler)
 pub struct RateLimitInfo {
 pub:
-	limit     int   // 最大请求数
-	remaining int   // 剩余请求数
-	reset_at  i64   // 重置时间戳（毫秒）
+	limit     int   //Maximum number of requests
+	remaining int   //Number of remaining requests
+	reset_at  i64   //Reset timestamp (milliseconds)
 }
 
-// rate_limit - 限流中间件工厂函数
-// 返回一个 ContextMiddleware，用于限制请求频率
-// 注意：必须提供 store 参数
+// rate_limit - rate limiting middleware factory function
+// Return a ContextMiddleware for limiting request frequency
+// Note: store parameter must be provided
 pub fn rate_limit(options RateLimitOptions) ContextMiddleware {
 	mut store := options.store
 	
 	return fn [options, mut store] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 检查是否跳过限流
+		// Check whether the current limit is skipped
 		if skip_fn := options.skip {
 			if skip_fn(c) {
 				return next(mut c)
 			}
 		}
 		
-		// 生成客户端标识 key
+		// Generate client identification key
 		key := generate_rate_limit_key(c, options.key_generator)
 		
-		// 增加计数
+		//increment count
 		count, reset_at := store.increment(key, options.window_ms)
 		
-		// 计算剩余请求数
+		// Calculate the number of remaining requests
 		remaining := if count > options.limit { 0 } else { options.limit - count }
 		
-		// 设置限流响应头
+		//Set the current limiting response header
 		if options.headers {
 			set_rate_limit_headers(mut c, options.limit, remaining, reset_at)
 		}
 		
-		// 检查是否超过限制
+		// Check if the limit is exceeded
 		if count > options.limit {
-			// 创建限流信息
+			//Create current limiting information
 			info := RateLimitInfo{
 				limit: options.limit
 				remaining: 0
 				reset_at: reset_at
 			}
 			
-			// 使用自定义 handler 或默认响应
+			// Use custom handler or default response
 			if custom_handler := options.handler {
 				return custom_handler(mut c, info)
 			}
@@ -172,35 +172,35 @@ pub fn rate_limit(options RateLimitOptions) ContextMiddleware {
 			return rate_limit_exceeded_response(mut c, reset_at)
 		}
 		
-		// 继续处理请求
+		// Continue processing the request
 		return next(mut c)
 	}
 }
 
-// generate_rate_limit_key - 生成客户端标识 key
+// generate_rate_limit_key - generate client identification key
 fn generate_rate_limit_key(c Context, key_generator ?fn (Context) string) string {
-	// 使用自定义 key 生成器
+	// Use custom key generator
 	if gen_fn := key_generator {
 		return gen_fn(c)
 	}
 	
-	// 默认使用客户端 IP
+	//Use client IP by default
 	return c.get_client_ip()
 }
 
-// set_rate_limit_headers - 设置限流响应头
+// set_rate_limit_headers - Set rate limit response headers
 fn set_rate_limit_headers(mut c Context, limit int, remaining int, reset_at i64) {
 	c.headers['X-RateLimit-Limit'] = limit.str()
 	c.headers['X-RateLimit-Remaining'] = remaining.str()
-	// 将毫秒时间戳转换为秒（HTTP 标准）
+	// Convert millisecond timestamp to seconds (HTTP standard)
 	c.headers['X-RateLimit-Reset'] = (reset_at / 1000).str()
 }
 
-// rate_limit_exceeded_response - 返回 429 限流响应
+// rate_limit_exceeded_response - returns 429 rate limit response
 fn rate_limit_exceeded_response(mut c Context, reset_at i64) http.Response {
 	c.status(429)
 	
-	// 计算 Retry-After（秒）
+	// Calculate Retry-After (seconds)
 	now := time.now().unix_milli()
 	retry_after := if reset_at > now { (reset_at - now) / 1000 } else { i64(0) }
 	if retry_after > 0 {
@@ -210,8 +210,8 @@ fn rate_limit_exceeded_response(mut c Context, reset_at i64) http.Response {
 	return c.json('{"error":"Too Many Requests","message":"Rate limit exceeded. Please try again later."}')
 }
 
-// get_rate_limit_info - 从 Context 获取限流信息
-// 这是一个便捷方法，用于在 handler 中获取当前请求的限流状态
+// get_rate_limit_info - Get rate limit information from Context
+// This is a convenience method for getting the current request's current request status in the handler.
 pub fn get_rate_limit_info(c Context) ?RateLimitInfo {
 	limit_str := c.headers['X-RateLimit-Limit'] or { return none }
 	remaining_str := c.headers['X-RateLimit-Remaining'] or { return none }
@@ -220,6 +220,6 @@ pub fn get_rate_limit_info(c Context) ?RateLimitInfo {
 	return RateLimitInfo{
 		limit: limit_str.int()
 		remaining: remaining_str.int()
-		reset_at: reset_str.i64() * 1000  // 转换回毫秒
+		reset_at: reset_str.i64() * 1000  // Convert back to milliseconds
 	}
 }

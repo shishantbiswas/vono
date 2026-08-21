@@ -5,19 +5,19 @@ import net.http
 fn main() {
 	println('=== 增强版 FastRouter vs 原始 Router 性能对比 ===')
 	
-	// 测试1: 小规模路由性能对比
+	//Test 1: Small-scale routing performance comparison
 	test_small_scale_comparison()
 	
-	// 测试2: 大规模路由性能对比
+	//Test 2: Large-scale routing performance comparison
 	test_large_scale_comparison()
 	
-	// 测试3: 复杂路由模式对比
+	//Test 3: Comparison of complex routing modes
 	test_complex_patterns_comparison()
 	
-	// 测试4: 缓存效率对比
+	//Test 4: Cache efficiency comparison
 	test_cache_efficiency_comparison()
 	
-	// 测试5: 内存使用对比
+	//Test 5: Memory usage comparison
 	test_memory_usage_comparison()
 	
 	println('\n🎯 性能对比测试完成')
@@ -26,13 +26,13 @@ fn main() {
 fn test_small_scale_comparison() {
 	println('\n📊 小规模路由性能对比 (10个路由)...')
 	
-	// 创建增强版 FastRouter
+	//Create an enhanced version of FastRouter
 	mut enhanced_router := hono.FastRouter.new()
 	
-	// 创建原始 HybridRouter
+	//Create original HybridRouter
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加相同的路由
+	//Add the same route
 	test_routes := [
 		'/users/:id',
 		'/posts/:post_id/comments/:comment_id',
@@ -66,7 +66,7 @@ fn test_small_scale_comparison() {
 		original_router.add_route('GET', original_handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/users/123',
 		'/posts/456/comments/789',
@@ -82,7 +82,7 @@ fn test_small_scale_comparison() {
 	
 	iterations := 5000
 	
-	// 测试增强版 FastRouter（冷启动）
+	// Test the enhanced version of FastRouter (cold start)
 	enhanced_router.clear_cache()
 	start_time1 := time.now()
 	mut enhanced_cold_matches := 0
@@ -96,7 +96,7 @@ fn test_small_scale_comparison() {
 	}
 	enhanced_cold_time := time.since(start_time1)
 	
-	// 测试原始 HybridRouter（冷启动）
+	// Test original HybridRouter (cold start)
 	original_router.clear_cache()
 	original_router.clear_regex_cache()
 	start_time2 := time.now()
@@ -131,7 +131,7 @@ fn test_small_scale_comparison() {
 		}
 	}
 	
-	// 测试热缓存性能
+	//Test hot cache performance
 	start_time3 := time.now()
 	mut enhanced_hot_matches := 0
 	for _ in 0 .. iterations {
@@ -180,7 +180,7 @@ fn test_large_scale_comparison() {
 	mut enhanced_router := hono.FastRouter.new()
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加大量路由
+	//Add a lot of routes
 	for i in 0 .. 100 {
 		route := '/api/v${i}/resources/:id/items/:item_id'
 		
@@ -203,18 +203,18 @@ fn test_large_scale_comparison() {
 		original_router.add_route('GET', original_handler, '')
 	}
 	
-	// 测试路径（匹配不同位置的路由）
+	// Test path (match routes in different locations)
 	test_paths := [
-		'/api/v1/resources/123/items/456',    // 早期匹配
-		'/api/v25/resources/789/items/101',   // 中期匹配
-		'/api/v50/resources/111/items/222',   // 中期匹配
-		'/api/v75/resources/333/items/444',   // 后期匹配
-		'/api/v99/resources/555/items/666'    // 最后匹配
+		'/api/v1/resources/123/items/456',    // early match
+		'/api/v25/resources/789/items/101',   // mid-term matching
+		'/api/v50/resources/111/items/222',   // mid-term matching
+		'/api/v75/resources/333/items/444',   // late match
+		'/api/v99/resources/555/items/666'    //Final match
 	]
 	
 	iterations := 2000
 	
-	// 测试增强版 FastRouter
+	// Test the enhanced version of FastRouter
 	start_time1 := time.now()
 	mut enhanced_matches := 0
 	for _ in 0 .. iterations {
@@ -226,7 +226,7 @@ fn test_large_scale_comparison() {
 	}
 	enhanced_time := time.since(start_time1)
 	
-	// 测试原始 HybridRouter
+	// Test the original HybridRouter
 	start_time2 := time.now()
 	mut original_matches := 0
 	for _ in 0 .. iterations {
@@ -257,7 +257,7 @@ fn test_large_scale_comparison() {
 		}
 	}
 	
-	// 显示路由分布统计
+	// Display route distribution statistics
 	enhanced_simple, enhanced_complex := enhanced_router.get_routes_by_complexity()
 	println('\n  增强版路由复杂度分布:')
 	println('    简单路由: ${enhanced_simple.len}')
@@ -270,7 +270,7 @@ fn test_complex_patterns_comparison() {
 	mut enhanced_router := hono.FastRouter.new()
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加复杂的动态路由
+	//Add complex dynamic routing
 	complex_routes := [
 		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',
 		'/shop/:category/:subcategory/products/:product_id/reviews/:review_id',
@@ -299,7 +299,7 @@ fn test_complex_patterns_comparison() {
 		original_router.add_route('GET', original_handler, '')
 	}
 	
-	// 复杂测试路径
+	//Complex test path
 	test_paths := [
 		'/api/v1/users/123/posts/456/comments/789',
 		'/shop/electronics/phones/products/999/reviews/111',
@@ -310,7 +310,7 @@ fn test_complex_patterns_comparison() {
 	
 	iterations := 3000
 	
-	// 测试增强版 FastRouter
+	// Test the enhanced version of FastRouter
 	start_time1 := time.now()
 	mut enhanced_matches := 0
 	for _ in 0 .. iterations {
@@ -322,7 +322,7 @@ fn test_complex_patterns_comparison() {
 	}
 	enhanced_time := time.since(start_time1)
 	
-	// 测试原始 HybridRouter
+	// Test the original HybridRouter
 	start_time2 := time.now()
 	mut original_matches := 0
 	for _ in 0 .. iterations {
@@ -360,7 +360,7 @@ fn test_cache_efficiency_comparison() {
 	mut enhanced_router := hono.FastRouter.new_with_cache_size(100)
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加测试路由
+	//Add test route
 	for i in 0 .. 20 {
 		route := '/test${i}/:id'
 		
@@ -383,13 +383,13 @@ fn test_cache_efficiency_comparison() {
 		original_router.add_route('GET', original_handler, '')
 	}
 	
-	// 重复访问相同路径（测试缓存命中率）
+	// Repeat access to the same path (test cache hit rate)
 	mut repeated_paths := []string{}
 	for i in 0 .. 10 {
 		repeated_paths << '/test${i}/123'
 	}
 	
-	// 执行多次匹配以填充缓存
+	// Perform multiple matches to fill the cache
 	for _ in 0 .. 100 {
 		for path in repeated_paths {
 			enhanced_router.match_route('GET', path)
@@ -397,7 +397,7 @@ fn test_cache_efficiency_comparison() {
 		}
 	}
 	
-	// 测试缓存命中性能
+	//Test cache hit performance
 	iterations := 5000
 	
 	start_time1 := time.now()
@@ -425,7 +425,7 @@ fn test_cache_efficiency_comparison() {
 		println('    🚀 增强版缓存提升: ${improvement:.2f}x')
 	}
 	
-	// 显示缓存统计
+	// Display cache statistics
 	enhanced_cache_size, enhanced_cache_capacity := enhanced_router.get_cache_stats()
 	original_cache_size, original_cache_capacity := original_router.get_cache_stats()
 	
@@ -433,7 +433,7 @@ fn test_cache_efficiency_comparison() {
 	println('    增强版: ${enhanced_cache_size}/${enhanced_cache_capacity} (LRU)')
 	println('    原始版: ${original_cache_size}/${original_cache_capacity} (LRU)')
 	
-	// 显示详细统计
+	// Show detailed statistics
 	enhanced_stats := enhanced_router.get_detailed_stats()
 	println('\n  增强版详细统计:')
 	for key, value in enhanced_stats {
@@ -449,7 +449,7 @@ fn test_memory_usage_comparison() {
 	mut enhanced_router := hono.FastRouter.new()
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加大量路由来测试内存使用
+	//Add a large number of routes to test memory usage
 	route_count := 200
 	
 	for i in 0 .. route_count {
@@ -474,14 +474,14 @@ fn test_memory_usage_comparison() {
 		original_router.add_route('GET', original_handler, '')
 	}
 	
-	// 填充缓存
+	//Fill cache
 	for i in 0 .. 50 {
 		path := '/api/v${i}/category/electronics/items/123/details/456'
 		enhanced_router.match_route('GET', path)
 		original_router.match_route('GET', path)
 	}
 	
-	// 获取统计信息
+	// Get statistics
 	enhanced_static, enhanced_dynamic, enhanced_cache := enhanced_router.get_stats()
 	original_static, original_dynamic := original_router.get_all_routes()
 	original_cache_size, _ := original_router.get_cache_stats()
@@ -492,13 +492,13 @@ fn test_memory_usage_comparison() {
 	println('    原始版 - 静态: ${original_static.len}, 动态: ${original_dynamic.len}, 缓存: ${original_cache_size}')
 	println('    原始版 - 正则缓存: ${original_regex_compiled}/${original_regex_total}')
 	
-	// 估算内存使用
+	// Estimate memory usage
 	enhanced_stats := enhanced_router.get_detailed_stats()
 	if memory_estimate := enhanced_stats['lru_memory_usage_estimate'] {
 		println('  增强版内存估算: ${memory_estimate} 字节')
 	}
 	
-	// 显示健康状态
+	//Display health status
 	if enhanced_router.is_healthy() {
 		println('  增强版健康状态: ✅ 正常')
 	} else {

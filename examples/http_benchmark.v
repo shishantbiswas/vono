@@ -1,21 +1,21 @@
-// HTTP 压测工具 - veb vs v-hono 性能对比
-// 运行: v run http_benchmark.v
+// HTTP stress testing tool - veb vs vono performance comparison
+// Run: v run http_benchmark.v
 //
-// 使用前请先启动服务器:
-//   终端1: v run server_veb.v   (端口 8080)
-//   终端2: v run server_hono.v  (端口 8081)
+// Please start the server before using:
+// Terminal 1: v run server_veb.v (port 8080)
+// Terminal 2: v run server_hono.v (port 8081)
 
 module main
 
 import net.http
 import time
 
-// 测试配置
+// test configuration
 const veb_base_url = 'http://127.0.0.1:8080'
 const hono_base_url = 'http://127.0.0.1:8081'
 const requests_per_endpoint = 200
 
-// 测试端点
+// test endpoint
 struct Endpoint {
 	path string
 	name string
@@ -44,15 +44,15 @@ struct BenchmarkResult {
 fn main() {
 	println('')
 	println('╔═══════════════════════════════════════════════════════════════╗')
-	println('║           HTTP 压测工具 - veb vs v-hono 性能对比              ║')
+	println('║           HTTP 压测工具 - veb vs vono 性能对比              ║')
 	println('╠═══════════════════════════════════════════════════════════════╣')
 	println('║ 请确保已启动以下服务器:                                       ║')
 	println('║   - veb:    v run server_veb.v   (端口 8080)                  ║')
-	println('║   - v-hono: v run server_hono.v  (端口 8081)                  ║')
+	println('║   - vono: v run server_hono.v  (端口 8081)                  ║')
 	println('╚═══════════════════════════════════════════════════════════════╝')
 	println('')
 	
-	// 检查服务器是否可用
+	// Check if the server is available
 	println('检查服务器状态...')
 	veb_available := check_server(veb_base_url)
 	hono_available := check_server(hono_base_url)
@@ -64,9 +64,9 @@ fn main() {
 	}
 	
 	if !hono_available {
-		println('⚠️  v-hono 服务器 (${hono_base_url}) 不可用')
+		println('⚠️  vono 服务器 (${hono_base_url}) 不可用')
 	} else {
-		println('✅ v-hono 服务器 (${hono_base_url}) 已就绪')
+		println('✅ vono 服务器 (${hono_base_url}) 已就绪')
 	}
 	
 	if !veb_available && !hono_available {
@@ -93,18 +93,18 @@ fn main() {
 		}
 		
 		if hono_available {
-			result := run_benchmark('v-hono', hono_base_url, endpoint)
+			result := run_benchmark('vono', hono_base_url, endpoint)
 			hono_results << result
-			print_single_result('v-hono', result)
+			print_single_result('vono', result)
 		}
 	}
 	
-	// 打印对比结果
+	//Print comparison results
 	if veb_available && hono_available {
 		print_comparison_table(veb_results, hono_results)
 	}
 	
-	// 打印总结
+	// print summary
 	print_summary(veb_results, hono_results, veb_available, hono_available)
 }
 
@@ -177,7 +177,7 @@ fn print_comparison_table(veb_results []BenchmarkResult, hono_results []Benchmar
 	println('╔═══════════════════════════════════════════════════════════════════════════════════════╗')
 	println('║                              性能对比表                                               ║')
 	println('╠═══════════════════════════════════════════════════════════════════════════════════════╣')
-	println('║ 端点                    │ veb (req/s)  │ v-hono (req/s) │ 差异      │ 胜出           ║')
+	println('║ 端点                    │ veb (req/s)  │ vono (req/s) │ 差异      │ 胜出           ║')
 	println('╠═══════════════════════════════════════════════════════════════════════════════════════╣')
 	
 	for i, veb_r in veb_results {
@@ -188,7 +188,7 @@ fn print_comparison_table(veb_results []BenchmarkResult, hono_results []Benchmar
 		
 		diff := hono_r.rps - veb_r.rps
 		diff_pct := if veb_r.rps > 0 { (diff / veb_r.rps) * 100.0 } else { 0.0 }
-		winner := if hono_r.rps > veb_r.rps { 'v-hono' } else { 'veb' }
+		winner := if hono_r.rps > veb_r.rps { 'vono' } else { 'veb' }
 		
 		name := veb_r.endpoint
 		veb_rps := '${veb_r.rps:.0}'
@@ -222,7 +222,7 @@ fn print_summary(veb_results []BenchmarkResult, hono_results []BenchmarkResult, 
 			total_rps += r.rps
 		}
 		avg_rps := total_rps / f64(hono_results.len)
-		println('║ v-hono 平均吞吐量: ${avg_rps:-40.0} req/s ║')
+		println('║ vono 平均吞吐量: ${avg_rps:-40.0} req/s ║')
 	}
 	
 	println('╠═══════════════════════════════════════════════════════════════╣')

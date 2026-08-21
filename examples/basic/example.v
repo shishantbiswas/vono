@@ -1,4 +1,4 @@
-// Basic example of using v-hono web framework
+// Basic example of using vono web framework
 // Run with: v run examples/basic/example.v
 // Or after installing: v install your-username.hono
 module main

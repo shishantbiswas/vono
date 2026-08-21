@@ -1,4 +1,4 @@
-// streaming.v - SSE Streaming Helper for v-hono
+// streaming.v - SSE Streaming Helper for vono
 // Provides Server-Sent Events (SSE) and streaming response support
 // Reference: Hono.js Streaming Helper API
 module hono

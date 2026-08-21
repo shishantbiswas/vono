@@ -4,7 +4,7 @@ import time
 import strings
 import net.http
 
-// 简化的测试统计
+// Simplified test statistics
 struct TestStats {
 mut:
 	total_tests  int
@@ -38,24 +38,24 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 1. 测试缓存系统
+// 1. Test cache system
 fn test_cache_system() bool {
 	mut cache := hono.ContextLRUCache.new(3)
 
-	// 创建一个简单的 handler 用于测试
+	//Create a simple handler for testing
 	mut app := hono.Hono.new()
 	app.get('/test', fn (mut c hono.Context) http.Response {
 		return c.text('test')
 	})
 
-	// 获取一个真实的 handler
+	// Get a real handler
 	test_handler := app.fast_router.static_route_results['GET:/test'] or {
 		return false
 	}
 
 	cache.put('key1', test_handler)
 
-	// 验证获取
+	// Verify acquisition
 	if val := cache.get('key1') {
 		if val.path != '/test' {
 			return false
@@ -64,13 +64,13 @@ fn test_cache_system() bool {
 		return false
 	}
 
-	// 测试健康检查
+	//Test health check
 	return cache.is_healthy()
 }
 
-// 2. 测试安全验证
+// 2. Test security verification
 fn test_security_validation() bool {
-	// 测试危险路径
+	// Test dangerous paths
 	dangerous_paths := [
 		'../../../etc/passwd',
 		'..\\..\\windows\\system32',
@@ -81,19 +81,19 @@ fn test_security_validation() bool {
 	for path in dangerous_paths {
 		result := hono.validate_file_path(path, options) or { '' }
 		if result != '' {
-			return false // 危险路径应该被拒绝
+			return false // Dangerous paths should be rejected
 		}
 	}
 
-	// 测试安全路径
+	//Test safe path
 	safe_path := 'documents/file.txt'
 	result := hono.validate_file_path(safe_path, options) or { '' }
-	return result != '' // 安全路径应该通过验证
+	return result != '' // The safe path should pass verification
 }
 
-// 3. 测试配置管理
+// 3. Test configuration management
 fn test_config_management() bool {
-	// 测试默认配置
+	//Test default configuration
 	config := hono.default_config()
 
 	if config.server.host != '127.0.0.1' {
@@ -104,15 +104,15 @@ fn test_config_management() bool {
 		return false
 	}
 
-	// 测试配置验证
+	//Test configuration verification
 	hono.validate_config(config) or { return false }
 
 	return true
 }
 
-// 4. 测试日志系统
+// 4. Test log system
 fn test_logging_system() bool {
-	// 创建测试日志器
+	//Create test logger
 	config := hono.LoggerConfig{
 		level:         .debug
 		output:        .console
@@ -121,12 +121,12 @@ fn test_logging_system() bool {
 
 	mut logger := hono.new_logger(config)
 
-	// 测试基本日志方法
+	//Test basic logging method
 	logger.info('测试信息日志')
 	logger.warn('测试警告日志')
 	logger.error('测试错误日志')
 
-	// 测试日志级别转换
+	//Test log level conversion
 	if hono.parse_log_level('info') != .info {
 		return false
 	}
@@ -138,9 +138,9 @@ fn test_logging_system() bool {
 	return true
 }
 
-// 5. 测试字符串优化
+// 5. Test string optimization
 fn test_string_optimization() bool {
-	// 测试StringBuilder性能
+	//Test StringBuilder performance
 	start_time := time.now()
 
 	mut builder := strings.new_builder(1000)
@@ -151,15 +151,15 @@ fn test_string_optimization() bool {
 
 	duration := time.since(start_time)
 
-	// 验证结果和性能
+	// Verify results and performance
 	return result.len > 0 && duration.milliseconds() < 100
 }
 
-// 6. 测试FastRouter路由匹配
+// 6. Test FastRouter route matching
 fn test_fast_router_matching() bool {
 	mut app := hono.Hono.new()
 
-	// 添加测试路由
+	//Add test route
 	app.get('/users', fn (mut c hono.Context) http.Response {
 		return c.text('get_users')
 	})
@@ -167,14 +167,14 @@ fn test_fast_router_matching() bool {
 		return c.text('get_user')
 	})
 
-	// 测试静态路由匹配
+	//Test static route matching
 	if _ := app.fast_router.match_route('GET', '/users') {
-		// 匹配成功
+		// Match successful
 	} else {
 		return false
 	}
 
-	// 测试动态路由匹配
+	//Test dynamic route matching
 	if route := app.fast_router.match_route('GET', '/users/123') {
 		if route.params['id'] != '123' {
 			return false
@@ -186,11 +186,11 @@ fn test_fast_router_matching() bool {
 	return true
 }
 
-// 7. 测试内存管理
+// 7. Test memory management
 fn test_memory_management() bool {
 	mut cache := hono.ContextLRUCache.new(5)
 
-	// 创建测试应用
+	//Create test application
 	mut app := hono.Hono.new()
 	app.get('/test', fn (mut c hono.Context) http.Response {
 		return c.text('test')
@@ -200,19 +200,19 @@ fn test_memory_management() bool {
 		return false
 	}
 
-	// 填充缓存
+	//Fill cache
 	for i in 0 .. 10 {
 		mut route := test_handler
 		cache.put('key${i}', route)
 	}
 
-	// 验证大小限制
+	// Verify size limit
 	size, capacity := cache.get_stats()
 	if size > capacity {
 		return false
 	}
 
-	// 清理缓存
+	// clear cache
 	cache.clear()
 
 	size_after, _ := cache.get_stats()
@@ -220,15 +220,15 @@ fn test_memory_management() bool {
 		return false
 	}
 
-	// 验证健康状态
+	//Verify health status
 	return cache.is_healthy()
 }
 
-// 8. 测试HybridRouter路由匹配
+// 8. Test HybridRouter route matching
 fn test_hybrid_router_matching() bool {
 	mut router := hono.ContextHybridRouter.new()
 
-	// 创建测试 handler
+	//Create test handler
 	handler := hono.ContextHandler{
 		path:    '/users/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -238,7 +238,7 @@ fn test_hybrid_router_matching() bool {
 
 	router.add_route('GET', handler, '')
 
-	// 测试动态路由匹配
+	//Test dynamic route matching
 	if route := router.match_route('GET', '/users/123') {
 		if route.params['id'] != '123' {
 			return false
@@ -250,44 +250,44 @@ fn test_hybrid_router_matching() bool {
 	return true
 }
 
-// 9. 测试配置文件操作
+// 9. Test configuration file operation
 fn test_config_file_operations() bool {
 	config_path := './test_config.json'
 
-	// 清理可能存在的测试文件
+	// Clean up any test files that may exist
 	if os.exists(config_path) {
 		os.rm(config_path) or { return false }
 	}
 
-	// 创建和保存配置
+	//Create and save configuration
 	config := hono.default_config()
 	hono.save_config(config, config_path) or { return false }
 
-	// 加载配置
+	//Load configuration
 	loaded_config := hono.load_config(config_path) or { return false }
 
-	// 验证配置内容
+	//Verify configuration content
 	success := loaded_config.server.host == config.server.host &&
 		loaded_config.server.port == config.server.port
 
-	// 清理测试文件
+	// Clean test files
 	os.rm(config_path) or {}
 
 	return success
 }
 
-// 10. 测试路由器性能
+// 10. Test router performance
 fn test_router_performance() bool {
 	mut app := hono.Hono.new()
 
-	// 添加多个路由
+	//Add multiple routes
 	for i in 0 .. 100 {
 		app.get('/api/v1/resource${i}/:id', fn (mut c hono.Context) http.Response {
 			return c.text('response')
 		})
 	}
 
-	// 性能测试
+	//Performance test
 	start_time := time.now()
 	mut matches := 0
 
@@ -299,16 +299,16 @@ fn test_router_performance() bool {
 
 	duration := time.since(start_time)
 
-	// 验证性能（1000次匹配应该在100ms内完成）
+	// Verify performance (1000 matches should be completed within 100ms)
 	return matches == 1000 && duration.milliseconds() < 100
 }
 
 fn main() {
-	println('🚀 开始V-Hono单元测试套件...\n')
+	println('🚀 开始vono单元测试套件...\n')
 
 	mut stats := TestStats{}
 
-	// 运行所有测试
+	//Run all tests
 	stats.run_test('缓存系统', test_cache_system)
 	stats.run_test('安全验证', test_security_validation)
 	stats.run_test('配置管理', test_config_management)
@@ -320,6 +320,6 @@ fn main() {
 	stats.run_test('配置文件操作', test_config_file_operations)
 	stats.run_test('路由器性能', test_router_performance)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

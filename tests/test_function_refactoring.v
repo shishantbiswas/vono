@@ -3,10 +3,10 @@ import os
 fn main() {
 	println('=== 函数重构可读性测试 ===')
 	
-	// 测试1: 检查example.v的函数数量和长度
+	//Test 1: Check the number and length of functions in example.v
 	test_example_function_structure()
 	
-	// 测试2: 验证功能完整性
+	//Test 2: Verify functional integrity
 	test_functionality_completeness()
 	
 	println('✅ 所有函数重构测试完成')
@@ -15,7 +15,7 @@ fn main() {
 fn test_example_function_structure() {
 	println('\n📊 测试example.v函数结构...')
 	
-	// 尝试多个可能的路径
+	//try multiple possible paths
 	possible_paths := [
 		'examples/basic/example.v',
 		'example.v',
@@ -51,7 +51,7 @@ fn test_example_function_structure() {
 	for _, line in lines {
 		trimmed := line.trim_space()
 		
-		// 统计函数数量
+		//Number of statistical functions
 		if trimmed.starts_with('fn ') {
 			function_count++
 			if trimmed.starts_with('fn main()') {
@@ -61,7 +61,7 @@ fn test_example_function_structure() {
 			}
 		}
 		
-		// 统计main函数长度
+		// Count main function length
 		if in_main_function {
 			if trimmed.contains('{') {
 				brace_count += trimmed.count('{')
@@ -81,7 +81,7 @@ fn test_example_function_structure() {
 	println('  函数总数: $function_count')
 	println('  main函数行数: $main_function_lines')
 	
-	// 验证重构效果
+	//Verify the reconstruction effect
 	if function_count >= 1 {
 		println('  ✅ 函数数量正常 (${function_count}个)')
 	} else {
@@ -98,7 +98,7 @@ fn test_example_function_structure() {
 fn test_functionality_completeness() {
 	println('\n📊 测试功能完整性...')
 	
-	// 尝试多个可能的路径
+	//try multiple possible paths
 	possible_paths := [
 		'examples/basic/example.v',
 		'example.v',
@@ -121,11 +121,11 @@ fn test_functionality_completeness() {
 		return
 	}
 	
-	// 检查关键功能是否保留
+	// Check whether key functions are retained
 	key_features := [
-		'hono.Hono.new()',           // 应用创建
-		'app.get(',                   // GET路由
-		'app.listen(',                // 服务器启动
+		'hono.Hono.new()',           // Application creation
+		'app.get(',                   // GET route
+		'app.listen(',                // Server starts
 	]
 	
 	mut found_features := 0
@@ -143,7 +143,7 @@ fn test_functionality_completeness() {
 		println('  ⚠️  部分核心功能可能缺失')
 	}
 	
-	// 检查代码是否包含基本结构
+	// Check if the code contains basic structure
 	basic_checks := [
 		'import',
 		'fn main()',

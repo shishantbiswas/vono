@@ -4,13 +4,13 @@ import os
 fn main() {
 	println('=== 测试大文件处理内存优化 ===')
 	
-	// 创建测试配置，使用较小的缓冲区便于测试
+	//Create a test configuration and use a smaller buffer to facilitate testing
 	config := hono.ChunkUploadConfig{
 		chunk_size: 1024 * 1024  // 1MB
 		max_file_size: 100 * 1024 * 1024  // 100MB
 		temp_dir: './test_uploads/chunks'
 		upload_dir: './test_uploads/files'
-		merge_buffer_size: 4096  // 4KB 缓冲区用于测试
+		merge_buffer_size: 4096  // 4KB buffer for testing
 	}
 	
 	mut manager := hono.new_chunk_upload_manager(config)
@@ -20,25 +20,25 @@ fn main() {
 	println('   临时目录: ${config.temp_dir}')
 	println('   上传目录: ${config.upload_dir}')
 	
-	// 创建测试分片文件
+	//Create test shard file
 	test_file_hash := 'test_large_file_hash'
 	chunk_size := 1024 * 1024  // 1MB
-	test_chunks := 3  // 创建3个测试分片
+	test_chunks := 3  //Create 3 test shards
 	
 	println('2. 创建测试分片文件')
 	
-	// 确保测试目录存在
+	// Make sure the test directory exists
 	chunk_dir := os.join_path(config.temp_dir, test_file_hash, chunk_size.str())
 	os.mkdir_all(chunk_dir) or {
 		println('   ❌ 创建测试目录失败: $err')
 		return
 	}
 	
-	// 创建测试分片文件
+	//Create test shard file
 	for i in 0 .. test_chunks {
 		chunk_path := os.join_path(chunk_dir, 'chunk_${i}.part')
 		
-		// 创建1KB的测试数据
+		//Create 1KB test data
 		test_data := 'A'.repeat(1024)
 		os.write_file(chunk_path, test_data) or {
 			println('   ❌ 创建测试分片 $i 失败: $err')
@@ -49,11 +49,11 @@ fn main() {
 	
 	println('3. 测试流式文件合并')
 	
-	// 测试合并
+	// test merge
 	final_filename := 'test_merged_file.txt'
 	final_path := os.join_path(config.upload_dir, final_filename)
 	
-	// 调用内部合并方法进行测试
+	//Call the internal merge method for testing
 	manager.handle_chunk_merge_internal(test_file_hash, final_filename, test_chunks, final_path, chunk_size, test_chunks * 1024, '.txt') or {
 		println('   ❌ 文件合并失败: $err')
 		cleanup_test_files(config)
@@ -62,7 +62,7 @@ fn main() {
 	
 	println('   ✅ 文件合并成功')
 	
-	// 验证合并结果
+	//Verify merge results
 	if os.exists(final_path) {
 		file_info := os.stat(final_path) or {
 			println('   ❌ 获取文件信息失败: $err')
@@ -91,7 +91,7 @@ fn main() {
 }
 
 fn cleanup_test_files(config hono.ChunkUploadConfig) {
-	// 清理测试文件
+	// Clean test files
 	if os.exists('./test_uploads') {
 		os.rmdir_all('./test_uploads') or {
 			println('   ⚠️  清理测试目录失败: $err')

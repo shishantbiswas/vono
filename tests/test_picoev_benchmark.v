@@ -1,4 +1,4 @@
-// Keep-Alive HTTP 基准测试
+// Keep-Alive HTTP benchmark
 module main
 
 import net
@@ -13,31 +13,31 @@ fn main() {
 	println('请求数: ${requests}')
 	println('')
 	
-	// 建立连接
+	// Establish connection
 	mut conn := net.dial_tcp(addr) or {
 		println('连接失败: ${err}')
 		return
 	}
 	defer { conn.close() or {} }
 	
-	// 预热
+	// preheat
 	println('预热中...')
 	for _ in 0 .. 100 {
 		send_keepalive_request(mut conn, addr) or {
-			// 重连
+			//Reconnect
 			conn = net.dial_tcp(addr) or { continue }
 			continue
 		}
 	}
 	
-	// 正式测试
+	//Formal testing
 	println('开始测试...')
 	sw := time.new_stopwatch()
 	mut success := 0
 	
 	for _ in 0 .. requests {
 		send_keepalive_request(mut conn, addr) or {
-			// 重连
+			//Reconnect
 			conn = net.dial_tcp(addr) or { continue }
 			continue
 		}
@@ -58,11 +58,11 @@ fn main() {
 }
 
 fn send_keepalive_request(mut conn net.TcpConn, addr string) ! {
-	// 发送 HTTP 请求 (Keep-Alive)
+	//Send HTTP request (Keep-Alive)
 	request := 'GET /api/health HTTP/1.1\r\nHost: ${addr}\r\nConnection: keep-alive\r\n\r\n'
 	conn.write_string(request)!
 	
-	// 读取响应头和体
+	//Read response headers and body
 	mut buf := []u8{len: 256}
 	conn.read(mut buf) or {}
 }

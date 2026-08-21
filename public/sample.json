@@ -1,5 +1,5 @@
 {
-  "message": "Hello from v-hono Context.file!",
+  "message": "Hello from vono Context.file!",
   "features": [
     "File serving with automatic Content-Type detection",
     "Security validation against path traversal",

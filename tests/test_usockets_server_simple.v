@@ -1,11 +1,11 @@
-// uSockets 简化测试服务器 - 与外层 main.v 配置一致
+// uSockets simplified test server - consistent with the outer main.v configuration
 module main
 
 import meiseayoung.hono
 import net.http
 import x.json2
 
-// JSON 响应结构体
+// JSON response structure
 struct JsonResponse {
 	message string
 }
@@ -17,7 +17,7 @@ struct UserResponse {
 fn main() {
 	mut app := hono.Hono.new()
 
-	// 与外层 main.v 完全一致的路由配置（无中间件）
+	// Routing configuration exactly the same as outer main.v (no middleware)
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello, World!')
 	})

@@ -6,7 +6,7 @@
 
 ### 路由分组 (Route Grouping)
 
-参考 [Hono.js 路由分组](https://hono.dev/docs/api/routing#grouping) 实现了 V-Hono 的路由分组功能。
+参考 [Hono.js 路由分组](https://hono.dev/docs/api/routing#grouping) 实现了 vono 的路由分组功能。
 
 #### 使用方式
 

@@ -7,7 +7,7 @@ import crypto.md5
 
 // ============================================================================
 // Property 6: File Existence Consistency
-// Feature: v-hono-upload-integration, Property 6: File Existence Consistency
+// Feature: vono-upload-integration, Property 6: File Existence Consistency
 // Validates: Requirements 2.2, 8.4
 //
 // *For any* file, after upload the `exists()` method should return true,
@@ -56,7 +56,7 @@ pub:
 }
 
 
-// LocalStorage 本地存储提供者
+// LocalStorage local storage provider
 struct LocalStorage {
 	config LocalStorageConfig
 mut:
@@ -606,7 +606,7 @@ fn test_property_6_5_bucket_existence_consistency() bool {
 
 fn main() {
 	println('🚀 开始 File Existence Consistency 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 6: File Existence Consistency')
+	println('Feature: vono-upload-integration, Property 6: File Existence Consistency')
 	println('Validates: Requirements 2.2, 8.4')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

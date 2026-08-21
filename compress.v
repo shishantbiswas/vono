@@ -4,93 +4,93 @@ import net.http
 import compress.gzip
 import compress.zlib
 
-// CompressEncoding 枚举 - 支持的压缩编码类型
+// CompressEncoding enum - supported compression encoding types
 pub enum CompressEncoding {
 	gzip
 	deflate
 }
 
-// CompressOptions 结构体 - 压缩配置选项
+// CompressOptions structure - compression configuration options
 pub struct CompressOptions {
 pub:
-	encoding  ?CompressEncoding  // 指定编码，none 表示自动选择
-	threshold int = 1024         // 最小压缩大小（字节），默认 1KB
-	level     int = 128          // 压缩级别 (0-4095 for gzip)
+	encoding  ?CompressEncoding  //Specify the encoding, none means automatic selection
+	threshold int = 1024         // Minimum compression size (bytes), default 1KB
+	level     int = 128          // Compression level (0-4095 for gzip)
 }
 
-// compress - 压缩中间件工厂函数
-// 返回一个 ContextMiddleware，用于压缩响应体
+// compress - compression middleware factory function
+// Return a ContextMiddleware for compressing the response body
 pub fn compress(options ...CompressOptions) ContextMiddleware {
 	opts := if options.len > 0 { options[0] } else { CompressOptions{} }
 	
 	return fn [opts] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 先执行后续处理器获取响应
+		// Execute the subsequent processor first to get the response
 		mut response := next(mut c)
 		
-		// 检查 Cache-Control: no-transform
+		// Check Cache-Control: no-transform
 		if has_no_transform(response) {
 			return response
 		}
 		
-		// 检查响应体大小是否达到阈值
+		// Check whether the response body size reaches the threshold
 		if response.body.len < opts.threshold {
 			return response
 		}
 		
-		// 检查 Content-Type 是否可压缩
+		// Check if Content-Type is compressible
 		content_type := get_response_content_type(response)
 		if !is_compressible_content_type(content_type) {
 			return response
 		}
 		
-		// 检查响应是否已经被压缩
+		// Check if the response has been compressed
 		if is_already_compressed(response) {
 			return response
 		}
 		
-		// 获取客户端支持的编码
+		// Get the encoding supported by the client
 		accept_encoding := c.req.header.get_custom('Accept-Encoding') or { '' }
 		if accept_encoding.len == 0 {
 			return response
 		}
 		
-		// 选择压缩编码
+		//Select compression encoding
 		encoding := select_encoding(accept_encoding, opts.encoding)
 		
-		// 执行压缩
+		//Perform compression
 		selected_encoding := encoding or { return response }
 		compressed_body := compress_body(response.body, selected_encoding, opts.level) or {
-			// 压缩失败，返回原始响应
+			// Compression failed, return original response
 			return response
 		}
 		
-		// 如果压缩后更大，返回原始响应
+		// If it is larger after compression, return the original response
 		if compressed_body.len >= response.body.len {
 			return response
 		}
 		
-		// 构建新的响应头
+		//Construct new response header
 		mut new_header := http.new_header()
 		
-		// 复制原有头部
+		//Copy the original header
 		for key in response.header.keys() {
 			values := response.header.custom_values(key)
 			for value in values {
-				// 跳过 Content-Length，稍后重新设置
+				// Skip Content-Length and reset later
 				if key.to_lower() != 'content-length' {
 					new_header.add_custom(key, value) or { continue }
 				}
 			}
 		}
 		
-		// 设置 Content-Encoding
+		//Set Content-Encoding
 		encoding_str := if selected_encoding == .gzip { 'gzip' } else { 'deflate' }
 		new_header.add_custom('Content-Encoding', encoding_str) or {}
 		
-		// 设置新的 Content-Length
+		// Set new Content-Length
 		new_header.add_custom('Content-Length', compressed_body.len.str()) or {}
 		
-		// 添加 Vary 头，表示响应根据 Accept-Encoding 变化
+		// Add Vary header to indicate that the response changes according to Accept-Encoding
 		new_header.add_custom('Vary', 'Accept-Encoding') or {}
 		
 		return http.Response{
@@ -101,26 +101,26 @@ pub fn compress(options ...CompressOptions) ContextMiddleware {
 	}
 }
 
-// has_no_transform - 检查响应是否包含 Cache-Control: no-transform
+// has_no_transform - Check if the response contains Cache-Control: no-transform
 fn has_no_transform(response http.Response) bool {
 	cache_control := response.header.get_custom('Cache-Control') or { '' }
 	return cache_control.contains('no-transform')
 }
 
-// get_response_content_type - 获取响应的 Content-Type
+// get_response_content_type - Get the Content-Type of the response
 fn get_response_content_type(response http.Response) string {
 	return response.header.get_custom('Content-Type') or { '' }
 }
 
-// is_compressible_content_type - 检查 Content-Type 是否可压缩
+// is_compressible_content_type - Check if the Content-Type is compressible
 fn is_compressible_content_type(content_type string) bool {
 	if content_type.len == 0 {
-		return true  // 默认可压缩
+		return true  //Compressible by default
 	}
 	
 	ct_lower := content_type.to_lower()
 	
-	// 可压缩的 MIME 类型
+	// Compressible MIME type
 	compressible_types := [
 		'text/',
 		'application/json',
@@ -145,7 +145,7 @@ fn is_compressible_content_type(content_type string) bool {
 		}
 	}
 	
-	// 不可压缩的类型（已压缩的格式）
+	// Incompressible type (compressed format)
 	non_compressible_types := [
 		'image/png',
 		'image/jpeg',
@@ -173,15 +173,15 @@ fn is_compressible_content_type(content_type string) bool {
 	return true
 }
 
-// is_already_compressed - 检查响应是否已经被压缩
+// is_already_compressed - Check if the response has been compressed
 fn is_already_compressed(response http.Response) bool {
 	content_encoding := response.header.get_custom('Content-Encoding') or { '' }
 	return content_encoding.len > 0
 }
 
-// select_encoding - 选择最佳压缩编码
+// select_encoding - select the best compression encoding
 fn select_encoding(accept_encoding string, preferred ?CompressEncoding) ?CompressEncoding {
-	// 如果指定了首选编码，检查客户端是否支持
+	// If a preferred encoding is specified, check if the client supports it
 	if pref := preferred {
 		match pref {
 			.gzip {
@@ -198,7 +198,7 @@ fn select_encoding(accept_encoding string, preferred ?CompressEncoding) ?Compres
 		return none
 	}
 	
-	// 自动选择：优先 gzip，其次 deflate
+	// Automatic selection: gzip first, deflate second
 	if accepts_gzip(accept_encoding) {
 		return .gzip
 	}
@@ -209,17 +209,17 @@ fn select_encoding(accept_encoding string, preferred ?CompressEncoding) ?Compres
 	return none
 }
 
-// accepts_gzip - 检查是否接受 gzip 编码
+// accepts_gzip - Check if gzip encoding is accepted
 fn accepts_gzip(accept_encoding string) bool {
 	return accept_encoding.contains('gzip') || accept_encoding.contains('*')
 }
 
-// accepts_deflate - 检查是否接受 deflate 编码
+// accepts_deflate - Check if deflate encoding is accepted
 fn accepts_deflate(accept_encoding string) bool {
 	return accept_encoding.contains('deflate') || accept_encoding.contains('*')
 }
 
-// compress_body - 压缩响应体
+// compress_body - Compress response body
 fn compress_body(body string, encoding CompressEncoding, level int) ![]u8 {
 	data := body.bytes()
 	
@@ -233,12 +233,12 @@ fn compress_body(body string, encoding CompressEncoding, level int) ![]u8 {
 	}
 }
 
-// decompress_gzip - 解压 gzip 数据（用于测试）
+// decompress_gzip - decompress gzip data (for testing)
 pub fn decompress_gzip(data []u8) ![]u8 {
 	return gzip.decompress(data)
 }
 
-// decompress_deflate - 解压 deflate 数据（用于测试）
+// decompress_deflate - decompress deflate data (for testing)
 pub fn decompress_deflate(data []u8) ![]u8 {
 	return zlib.decompress(data)
 }

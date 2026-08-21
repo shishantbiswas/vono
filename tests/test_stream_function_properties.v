@@ -1,8 +1,8 @@
 // test_stream_function_properties.v
 // Property-Based Testing for stream() function
 // Feature: sse-streaming-helper
-// Property 1: stream() 设置正确的 Transfer-Encoding 头
-// Property 2: write() 正确输出数据
+// Property 1: stream() sets the correct Transfer-Encoding header
+// Property 2: write() correctly outputs data
 // Validates: Requirements 1.1, 1.2
 module main
 
@@ -230,7 +230,7 @@ fn parse_all_chunks(chunked string) !([][]u8, bool) {
 }
 
 // ============================================================================
-// Property 1: stream() 设置正确的 Transfer-Encoding 头
+// Property 1: stream() sets the correct Transfer-Encoding header
 // Feature: sse-streaming-helper, Property 1
 // Validates: Requirements 1.1
 //
@@ -298,7 +298,7 @@ fn test_property_1c_headers_consistency() bool {
 }
 
 // ============================================================================
-// Property 2: write() 正确输出数据
+// Property 2: write() correctly outputs data
 // Feature: sse-streaming-helper, Property 2
 // Validates: Requirements 1.2
 //
@@ -560,7 +560,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 1 tests
-	// Feature: sse-streaming-helper, Property 1: stream() 设置正确的 Transfer-Encoding 头
+	// Feature: sse-streaming-helper, Property 1: stream() sets the correct Transfer-Encoding header
 	// Validates: Requirements 1.1
 	println('--- Property 1: stream() 设置正确的 Transfer-Encoding 头 ---')
 	stats.run_property_test('Property 1a: Transfer-Encoding header', test_property_1a_transfer_encoding_header)
@@ -570,7 +570,7 @@ fn main() {
 	println('')
 
 	// Run Property 2 tests
-	// Feature: sse-streaming-helper, Property 2: write() 正确输出数据
+	// Feature: sse-streaming-helper, Property 2: write() correctly outputs data
 	// Validates: Requirements 1.2
 	println('--- Property 2: write() 正确输出数据 ---')
 	stats.run_property_test('Property 2a: write() bytes chunked format', test_property_2a_write_bytes_chunked)

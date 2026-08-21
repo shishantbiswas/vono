@@ -1,40 +1,34 @@
-# v-hono
+# vono
 
 A high-performance V language web framework inspired by [Hono.js](https://hono.dev/).
 
 ## Features
 
-- 🚀 **High Performance** - Hybrid routing with LRU cache for optimal speed
-- 🎯 **Simple API** - Clean and intuitive API design inspired by Hono.js
-- 🔧 **Middleware Support** - Flexible middleware system with onion model
-- 🌐 **CORS** - Built-in CORS middleware with full configuration
-- 🍪 **Cookie Helper** - Easy cookie management with signed cookie support
-- 🔐 **JWT Authentication** - JWT middleware with HS256/384/512 support
-- 🎫 **Bearer Auth** - Simple Bearer token authentication
-- 📦 **Compression** - Gzip and deflate response compression
-- ⏱️ **Rate Limiting** - Request rate limiting with customizable stores
-- ✅ **Validation** - Schema-based request validation
-- 📁 **Static File Serving** - Built-in static file server with caching
-- 🛡️ **Security** - Path validation and security utilities
-- 📤 **File Upload** - Chunked file upload support
-- ☁️ **Multi-Cloud Storage** - Built-in support for Local, S3, Aliyun OSS, Tencent COS
-- 🗄️ **Database** - SQLite integration for data persistence
-- 🔌 **WebSocket** - RFC 6455 compliant WebSocket support with event-based API
-- 📡 **SSE Streaming** - Server-Sent Events and streaming response support
-- 📖 **Swagger UI** - Interactive API documentation with OpenAPI 3.0/3.1 support
+-  **High Performance** - Hybrid routing with LRU cache for optimal speed
+-  **Simple API** - Clean and intuitive API design inspired by Hono.js
+-  **Middleware Support** - Flexible middleware system with onion model
+-  **CORS** - Built-in CORS middleware with full configuration
+-  **Cookie Helper** - Easy cookie management with signed cookie support
+-  **JWT Authentication** - JWT middleware with HS256/384/512 support
+-  **Bearer Auth** - Simple Bearer token authentication
+-  **Compression** - Gzip and deflate response compression
+-  **Rate Limiting** - Request rate limiting with customizable stores
+-  **Validation** - Schema-based request validation
+-  **Static File Serving** - Built-in static file server with caching
+-  **Security** - Path validation and security utilities
+-  **File Upload** - Chunked file upload support
+-  **Multi-Cloud Storage** - Built-in support for Local, S3, Aliyun OSS, Tencent COS
+-  **Database** - SQLite integration for data persistence
+-  **WebSocket** - RFC 6455 compliant WebSocket support with event-based API
+-  **SSE Streaming** - Server-Sent Events and streaming response support
+-  **Swagger UI** - Interactive API documentation with OpenAPI 3.0/3.1 support
 
 ## Installation
-
-### From VPM
-
-```bash
-v install meiseayoung.hono
-```
 
 ### From GitHub
 
 ```bash
-v install --git https://github.com/meiseayoung/v-hono
+v install --git https://github.com/shishantbiswas/vono
 ```
 
 ### Local Development
@@ -42,8 +36,8 @@ v install --git https://github.com/meiseayoung/v-hono
 Clone the repository and the module will be available for import:
 
 ```bash
-git clone https://github.com/meiseayoung/v-hono.git
-cd v-hono
+git clone https://github.com/shishantbiswas/vono.git
+cd vono
 ```
 
 
@@ -106,7 +100,7 @@ See [benchmark/README.md](benchmark/README.md) for performance benchmarks and [u
 
 ## High Concurrency Support
 
-v-hono with uSockets backend supports **10,000+ concurrent connections** out of the box.
+vono with uSockets backend supports **10,000+ concurrent connections** out of the box.
 
 ### Performance Results
 
@@ -193,7 +187,7 @@ fn main() {
 
 ## Built-in Middleware
 
-v-hono provides 7 built-in middleware components inspired by Hono.js:
+vono provides 7 built-in middleware components inspired by Hono.js:
 
 ### 1. CORS Middleware
 
@@ -890,7 +884,7 @@ fn main() {
     app.get('/sse-json', fn (mut c hono.Context) http.Response {
         return hono.c_stream_sse(mut c, fn (mut stream hono.StreamContext) ! {
             // Send JSON data (multi-line formatted)
-            json_data := '{\n  "name": "v-hono",\n  "version": "1.0.0"\n}'
+            json_data := '{\n  "name": "vono",\n  "version": "1.0.0"\n}'
             stream.write_sse(hono.SSEEvent{
                 data: json_data
                 event: 'json'
@@ -1638,7 +1632,7 @@ fn main() {
 ## Project Structure
 
 ```
-v-hono/
+vono/
 ├── app.v              # Main application and routing
 ├── router.v           # Hybrid router implementation
 ├── fast_router.v      # Fast router with precompiled regex

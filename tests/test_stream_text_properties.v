@@ -1,9 +1,9 @@
 // test_stream_text_properties.v
 // Property-Based Testing for stream_text() function
 // Feature: sse-streaming-helper
-// Property 3: streamText() 设置正确的 HTTP 头
-// Property 4: writeln() 添加换行符
-// Property 5: sleep() 暂停正确的时间
+// Property 3: streamText() sets the correct HTTP headers
+// Property 4: writeln() adds newline character
+// Property 5: sleep() pauses for the correct amount of time
 // Validates: Requirements 2.1, 2.2, 2.3, 2.5, 2.6
 module main
 
@@ -268,7 +268,7 @@ fn parse_all_chunks(chunked string) !([]string, bool) {
 }
 
 // ============================================================================
-// Property 3: streamText() 设置正确的 HTTP 头
+// Property 3: streamText() sets the correct HTTP headers
 // Feature: sse-streaming-helper, Property 3
 // Validates: Requirements 2.1, 2.2, 2.3
 //
@@ -362,7 +362,7 @@ fn test_property_3d_headers_consistency() bool {
 }
 
 // ============================================================================
-// Property 4: writeln() 添加换行符
+// Property 4: writeln() adds newline character
 // Feature: sse-streaming-helper, Property 4
 // Validates: Requirements 2.5
 //
@@ -518,7 +518,7 @@ fn test_property_4c_multiple_writeln() bool {
 }
 
 // ============================================================================
-// Property 5: sleep() 暂停正确的时间
+// Property 5: sleep() pauses for the correct amount of time
 // Feature: sse-streaming-helper, Property 5
 // Validates: Requirements 2.6
 //
@@ -615,7 +615,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 3 tests
-	// Feature: sse-streaming-helper, Property 3: streamText() 设置正确的 HTTP 头
+	// Feature: sse-streaming-helper, Property 3: streamText() sets the correct HTTP header
 	// Validates: Requirements 2.1, 2.2, 2.3
 	println('--- Property 3: streamText() 设置正确的 HTTP 头 ---')
 	stats.run_property_test('Property 3a: Content-Type header', test_property_3a_content_type_header)
@@ -626,7 +626,7 @@ fn main() {
 	println('')
 
 	// Run Property 4 tests
-	// Feature: sse-streaming-helper, Property 4: writeln() 添加换行符
+	// Feature: sse-streaming-helper, Property 4: writeln() adds newline character
 	// Validates: Requirements 2.5
 	println('--- Property 4: writeln() 添加换行符 ---')
 	stats.run_property_test('Property 4a: writeln() appends newline', test_property_4a_writeln_appends_newline)
@@ -636,7 +636,7 @@ fn main() {
 	println('')
 
 	// Run Property 5 tests
-	// Feature: sse-streaming-helper, Property 5: sleep() 暂停正确的时间
+	// Feature: sse-streaming-helper, Property 5: sleep() pauses for the correct amount of time
 	// Validates: Requirements 2.6
 	println('--- Property 5: sleep() 暂停正确的时间 ---')
 	stats.run_property_test('Property 5a: sleep() duration', test_property_5a_sleep_duration)

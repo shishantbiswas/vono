@@ -5,8 +5,8 @@ import os
 fn main() {
 	println('=== 基础文件流式传输测试 ===')
 	
-	// 直接创建测试文件
-	test_content := 'Hello World from V-Hono streaming test! '.repeat(1000)
+	//Create test file directly
+	test_content := 'Hello World from vono streaming test! '.repeat(1000)
 	os.write_file('stream_test.txt', test_content) or {
 		println('❌ 无法创建测试文件: $err')
 		return
@@ -17,7 +17,7 @@ fn main() {
 	
 	println('✅ 创建测试文件: stream_test.txt (${test_content.len} bytes)')
 	
-	// 创建模拟请求
+	//Create a mock request
 	test_req := http.Request{
 		method: http.Method.get
 		url: '/test'
@@ -25,7 +25,7 @@ fn main() {
 		header: http.new_header()
 	}
 	
-	// 测试传统文件服务
+	// Test traditional file service
 	println('\n--- 传统文件服务测试 ---')
 	mut ctx1 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response1 := ctx1.file('stream_test.txt')
@@ -36,7 +36,7 @@ fn main() {
 		println('❌ 传统文件服务: 失败 (状态码: ${response1.status_code}, 大小: ${response1.body.len})')
 	}
 	
-	// 测试流式文件服务
+	//Test streaming file service
 	println('\n--- 流式文件服务测试 ---')
 	mut ctx2 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response2 := ctx2.file_stream('stream_test.txt')
@@ -47,7 +47,7 @@ fn main() {
 		println('❌ 流式文件服务: 失败 (状态码: ${response2.status_code}, 大小: ${response2.body.len})')
 	}
 	
-	// 测试智能文件服务
+	// Test smart file service
 	println('\n--- 智能文件服务测试 ---')
 	mut ctx3 := hono.Context.new(test_req, map[string]string{}, map[string]string{}, '')
 	response3 := ctx3.file_smart('stream_test.txt')
@@ -58,10 +58,10 @@ fn main() {
 		println('❌ 智能文件服务: 失败 (状态码: ${response3.status_code}, 大小: ${response3.body.len})')
 	}
 	
-	// 测试自定义选项
+	//Test custom options
 	println('\n--- 自定义选项测试 ---')
 	custom_options := hono.FileOptions{
-		stream_threshold: 1024  // 1KB阈值，强制流式传输
+		stream_threshold: 1024  // 1KB threshold, force streaming
 		buffer_size: 2048
 		enable_range: true
 		max_age: 3600
@@ -76,7 +76,7 @@ fn main() {
 	if response4.status_code == 200 && response4.body.len == test_content.len {
 		println('✅ 自定义选项: 成功 (${response4.body.len} bytes)')
 		
-		// 检查自定义头部
+		// Check for custom headers
 		if test_header := response4.header.get_custom('X-Test') {
 			println('  📋 自定义头部: $test_header')
 		}
@@ -92,7 +92,7 @@ fn main() {
 		println('❌ 自定义选项: 失败 (状态码: ${response4.status_code}, 大小: ${response4.body.len})')
 	}
 	
-	// 测试Range请求
+	//Test Range request
 	println('\n--- Range请求测试 ---')
 	mut range_header := http.new_header()
 	range_header.add_custom('Range', 'bytes=0-99') or { }
@@ -106,7 +106,7 @@ fn main() {
 	
 	range_options := hono.FileOptions{
 		enable_range: true
-		stream_threshold: 0  // 强制流式传输
+		stream_threshold: 0  // force streaming
 	}
 	
 	mut ctx5 := hono.Context.new(range_req, map[string]string{}, map[string]string{}, '')

@@ -1,10 +1,10 @@
-// veb 服务器示例 - 用于性能对比测试
-// veb 是 V 语言官方的新版 web 框架（替代旧的 vweb）
+// veb server example - for performance comparison testing
+// veb is the official new version of the V language web framework (replacing the old vweb)
 // 
-// 运行: v run server_veb.v
-// 测试: curl http://127.0.0.1:8080/
+// Run: v run server_veb.v
+//Test: curl http://127.0.0.1:8080/
 //
-// 压测命令:
+// Stress test command:
 //   wrk -t4 -c100 -d10s http://127.0.0.1:8080/
 //   wrk -t4 -c100 -d10s http://127.0.0.1:8080/api/users/123
 
@@ -13,13 +13,13 @@ module main
 import veb
 import time
 
-// 应用状态
+// application status
 pub struct App {
 pub:
 	start_time time.Time = time.now()
 }
 
-// Context 类型
+//Context type
 pub struct Context {
 	veb.Context
 }
@@ -45,24 +45,24 @@ fn main() {
 }
 
 // ============================================
-// 静态路由
+// static routing
 // ============================================
 
-// 首页
+// front page
 @['/']
 pub fn (app &App) index(mut ctx Context) veb.Result {
 	ctx.set_header(.connection, 'close')
 	return ctx.text('Hello World')
 }
 
-// 健康检查
+// health check
 @['/api/health']
 pub fn (app &App) health(mut ctx Context) veb.Result {
 	ctx.set_header(.connection, 'close')
 	return ctx.text('OK')
 }
 
-// 获取用户列表
+// Get user list
 @['/api/users'; get]
 pub fn (app &App) get_users(mut ctx Context) veb.Result {
 	ctx.set_header(.connection, 'close')
@@ -72,7 +72,7 @@ pub fn (app &App) get_users(mut ctx Context) veb.Result {
 	])
 }
 
-// 创建用户
+//Create user
 @['/api/users'; post]
 pub fn (app &App) create_user(mut ctx Context) veb.Result {
 	ctx.set_header(.connection, 'close')
@@ -80,17 +80,17 @@ pub fn (app &App) create_user(mut ctx Context) veb.Result {
 }
 
 // ============================================
-// 动态路由
+// dynamic routing
 // ============================================
 
-// 获取单个用户
+// Get a single user
 @['/api/users/:id']
 pub fn (app &App) get_user(mut ctx Context, id string) veb.Result {
 	ctx.set_header(.connection, 'close')
 	return ctx.json[User](User{id: id, name: 'User ${id}', email: 'user${id}@example.com'})
 }
 
-// 获取用户的帖子
+// Get the user's posts
 @['/api/users/:id/posts']
 pub fn (app &App) get_user_posts(mut ctx Context, id string) veb.Result {
 	ctx.set_header(.connection, 'close')
@@ -103,7 +103,7 @@ pub fn (app &App) get_user_posts(mut ctx Context, id string) veb.Result {
 	})
 }
 
-// 获取特定帖子
+// Get specific posts
 @['/api/users/:user_id/posts/:post_id']
 pub fn (app &App) get_user_post(mut ctx Context, user_id string, post_id string) veb.Result {
 	ctx.set_header(.connection, 'close')
@@ -114,7 +114,7 @@ pub fn (app &App) get_user_post(mut ctx Context, user_id string, post_id string)
 	})
 }
 
-// 获取分类商品
+// Get classified products
 @['/api/categories/:cat/items/:item']
 pub fn (app &App) get_category_item(mut ctx Context, cat string, item string) veb.Result {
 	ctx.set_header(.connection, 'close')
@@ -126,7 +126,7 @@ pub fn (app &App) get_category_item(mut ctx Context, cat string, item string) ve
 }
 
 // ============================================
-// 数据结构
+//data structure
 // ============================================
 
 struct User {

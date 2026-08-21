@@ -4,19 +4,19 @@ import net.http
 fn main() {
 	println('=== 统一错误处理系统测试 ===')
 	
-	// 测试1: 错误响应格式一致性
+	//Test 1: Error response format consistency
 	test_error_response_format()
 	
-	// 测试2: 错误处理便捷方法
+	//Test 2: Error handling convenience method
 	test_error_convenience_methods()
 	
-	// 测试3: 参数验证错误处理
+	//Test 3: Parameter validation error handling
 	test_parameter_validation_errors()
 	
-	// 测试4: 资源相关错误处理
+	//Test 4: Resource related error handling
 	test_resource_errors()
 	
-	// 测试5: 文件操作错误处理
+	//Test 5: File operation error handling
 	test_file_operation_errors()
 	
 	println('✅ 所有错误处理测试完成')
@@ -25,27 +25,27 @@ fn main() {
 fn test_error_response_format() {
 	println('\n📊 测试错误响应格式一致性...')
 	
-	// 创建模拟Context
+	//Create simulation Context
 	mut ctx := create_mock_context()
 	
-	// 测试标准错误响应
+	//Test standard error response
 	response := ctx.bad_request('Test error message')
 	
-	// 验证响应状态码
+	// Verify response status code
 	if response.status_code == 400 {
 		println('  ✅ 状态码正确: 400')
 	} else {
 		println('  ❌ 状态码错误: ${response.status_code}')
 	}
 	
-	// 验证响应格式
+	//Verify response format
 	if response.body.contains('"error"') && response.body.contains('"message"') {
 		println('  ✅ 响应格式包含必要字段')
 	} else {
 		println('  ❌ 响应格式缺少必要字段')
 	}
 	
-	// 验证Content-Type
+	//Verify Content-Type
 	content_type := response.header.get_custom('Content-Type') or { '' }
 	if content_type.contains('application/json') {
 		println('  ✅ Content-Type正确: ${content_type}')
@@ -59,7 +59,7 @@ fn test_error_convenience_methods() {
 	
 	mut ctx := create_mock_context()
 	
-	// 测试各种错误类型
+	//Test various error types
 	error_tests := [
 		['bad_request', '400'],
 		['unauthorized', '401'],
@@ -98,7 +98,7 @@ fn test_parameter_validation_errors() {
 	
 	mut ctx := create_mock_context()
 	
-	// 测试缺失参数错误
+	// Test for missing parameter errors
 	response1 := ctx.missing_parameter('user_id')
 	if response1.status_code == 400 && response1.body.contains('user_id') {
 		println('  ✅ 缺失参数错误处理正确')
@@ -106,7 +106,7 @@ fn test_parameter_validation_errors() {
 		println('  ❌ 缺失参数错误处理失败')
 	}
 	
-	// 测试无效参数错误
+	// Test for invalid parameter errors
 	response2 := ctx.invalid_parameter('email', 'Invalid email format')
 	if response2.status_code == 400 && response2.body.contains('email') {
 		println('  ✅ 无效参数错误处理正确')
@@ -114,7 +114,7 @@ fn test_parameter_validation_errors() {
 		println('  ❌ 无效参数错误处理失败')
 	}
 	
-	// 测试验证错误
+	//Test verification errors
 	field_errors := {
 		'email': 'Invalid format'
 		'age': 'Must be positive'
@@ -132,7 +132,7 @@ fn test_resource_errors() {
 	
 	mut ctx := create_mock_context()
 	
-	// 测试资源未找到错误
+	//Test resource not found error
 	response1 := ctx.resource_not_found('user', '123')
 	if response1.status_code == 404 && response1.body.contains('user') {
 		println('  ✅ 资源未找到错误处理正确')
@@ -140,7 +140,7 @@ fn test_resource_errors() {
 		println('  ❌ 资源未找到错误处理失败')
 	}
 	
-	// 测试资源冲突错误
+	//Test for resource conflict errors
 	response2 := ctx.resource_conflict('user', 'Email already exists')
 	if response2.status_code == 409 && response2.body.contains('conflict') {
 		println('  ✅ 资源冲突错误处理正确')
@@ -154,7 +154,7 @@ fn test_file_operation_errors() {
 	
 	mut ctx := create_mock_context()
 	
-	// 测试文件操作错误
+	// Test file operation error
 	response1 := ctx.file_operation_error('read', 'test.txt', 'File not found')
 	if response1.status_code == 500 && response1.body.contains('File operation failed') {
 		println('  ✅ 文件操作错误处理正确')
@@ -162,7 +162,7 @@ fn test_file_operation_errors() {
 		println('  ❌ 文件操作错误处理失败')
 	}
 	
-	// 测试数据库操作错误
+	// Test database operation error
 	response2 := ctx.database_error('insert', 'Connection timeout')
 	if response2.status_code == 500 && response2.body.contains('Database operation failed') {
 		println('  ✅ 数据库操作错误处理正确')
@@ -171,9 +171,9 @@ fn test_file_operation_errors() {
 	}
 }
 
-// 创建模拟Context用于测试
+//Create a mock Context for testing
 fn create_mock_context() hono.Context {
-	// 创建模拟请求
+	//Create a mock request
 	req := http.Request{
 		method: .get
 		url: '/test'
@@ -181,6 +181,6 @@ fn create_mock_context() hono.Context {
 		data: ''
 	}
 	
-	// 创建Context
+	// Create Context
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }

@@ -4,7 +4,7 @@ import net.urllib
 import net.http
 import time
 
-// Context 路由器
+// Context router
 struct ContextRouter {
 mut:
 	handlers struct {
@@ -19,44 +19,44 @@ mut:
 	}
 }
 
-// NotFound 处理器类型
+// NotFound processor type
 pub type NotFoundHandler = fn (mut c Context) http.Response
 
-// Error 处理器类型 - 使用简单的错误信息和状态码
+// Error handler type - use simple error messages and status codes
 pub type ErrorHandler = fn (error_msg string, status_code int, mut c Context) http.Response
 
 pub struct Hono {
 mut:
-	server http.Server = http.Server{}
-	routes map[string] Hono = {}
-	base_path string
-	not_found_handler ?NotFoundHandler  // 自定义 404 处理器
-	error_handler ?ErrorHandler         // 自定义错误处理器
+	server            http.Server     = http.Server{}
+	routes            map[string]Hono = {}
+	base_path         string
+	not_found_handler ?NotFoundHandler // Custom 404 handler
+	error_handler     ?ErrorHandler    // Custom error handler
 pub mut:
-	context_router ContextRouter = ContextRouter{}
+	context_router        ContextRouter = ContextRouter{}
 	context_hybrid_router ContextHybridRouter
-	context_trie_router ContextTrieRouter
-	fast_router FastRouter  // 新增：快速路由器
-	use_fast_router bool = true  // 新增：是否使用快速路由器
-	context_middlewares []ContextMiddleware
-	route_middlewares map[string][]ContextMiddleware  // 路由前缀对应的中间件
-	// 优化：预排序的中间件前缀列表（启动时计算一次）
+	context_trie_router   ContextTrieRouter
+	fast_router           FastRouter // New: Fast Router
+	use_fast_router       bool = true // New: whether to use fast router
+	context_middlewares   []ContextMiddleware
+	route_middlewares     map[string][]ContextMiddleware // Middleware corresponding to the routing prefix
+	// Optimization: Pre-sorted middleware prefix list (calculated once at startup)
 	sorted_middleware_prefixes []string
-	// 优化：标记是否有中间件（用于零中间件快速路径）
+	// Optimization: Mark whether there is middleware (for zero middleware fast path)
 	has_middlewares bool
 }
 
-// Context 中间件类型
+// Context middleware type
 type ContextMiddleware = fn (mut c Context, next fn (mut Context) http.Response) http.Response
 
-// Context 接口方法
+// Context interface method
 pub fn (mut app Hono) get(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{
-		path: path
+		path:    path
 		handler: handler
 	}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('GET', h, '') or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -65,18 +65,18 @@ pub fn (mut app Hono) get(path string, handler fn (mut Context) http.Response) {
 	} else {
 		app.context_hybrid_router.add_route('GET', h, '')
 	}
-	
+
 	app.context_trie_router.add_route('GET', path, h)
 	app.context_router.handlers.get << h
 }
 
 pub fn (mut app Hono) post(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{
-		path: path
+		path:    path
 		handler: handler
 	}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('POST', h, '') or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -85,15 +85,15 @@ pub fn (mut app Hono) post(path string, handler fn (mut Context) http.Response) 
 	} else {
 		app.context_hybrid_router.add_route('POST', h, '')
 	}
-	
+
 	app.context_trie_router.add_route('POST', path, h)
 	app.context_router.handlers.post << h
 }
 
 pub fn (mut app Hono) put(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('PUT', h, app.base_path) or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -102,15 +102,15 @@ pub fn (mut app Hono) put(path string, handler fn (mut Context) http.Response) {
 	} else {
 		app.context_hybrid_router.add_route('PUT', h, app.base_path)
 	}
-	
+
 	app.context_router.handlers.put << h
 	app.context_trie_router.add_route('PUT', path, h)
 }
 
 pub fn (mut app Hono) delete(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('DELETE', h, app.base_path) or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -119,15 +119,15 @@ pub fn (mut app Hono) delete(path string, handler fn (mut Context) http.Response
 	} else {
 		app.context_hybrid_router.add_route('DELETE', h, app.base_path)
 	}
-	
+
 	app.context_router.handlers.delete << h
 	app.context_trie_router.add_route('DELETE', path, h)
 }
 
 pub fn (mut app Hono) patch(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('PATCH', h, app.base_path) or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -136,15 +136,15 @@ pub fn (mut app Hono) patch(path string, handler fn (mut Context) http.Response)
 	} else {
 		app.context_hybrid_router.add_route('PATCH', h, app.base_path)
 	}
-	
+
 	app.context_router.handlers.patch << h
 	app.context_trie_router.add_route('PATCH', path, h)
 }
 
 pub fn (mut app Hono) head(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('HEAD', h, app.base_path) or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -153,15 +153,15 @@ pub fn (mut app Hono) head(path string, handler fn (mut Context) http.Response) 
 	} else {
 		app.context_hybrid_router.add_route('HEAD', h, app.base_path)
 	}
-	
+
 	app.context_router.handlers.head << h
 	app.context_trie_router.add_route('HEAD', path, h)
 }
 
 pub fn (mut app Hono) options(path string, handler fn (mut Context) http.Response) {
 	h := ContextHandler{path, handler}
-	
-	// 添加到快速路由器
+
+	// Add to fast router
 	if app.use_fast_router {
 		app.fast_router.add_route('OPTIONS', h, app.base_path) or {
 			println('[WARNING] FastRouter failed to add route ${path}, falling back to hybrid router')
@@ -170,7 +170,7 @@ pub fn (mut app Hono) options(path string, handler fn (mut Context) http.Respons
 	} else {
 		app.context_hybrid_router.add_route('OPTIONS', h, app.base_path)
 	}
-	
+
 	app.context_router.handlers.options << h
 	app.context_trie_router.add_route('OPTIONS', path, h)
 }
@@ -199,12 +199,12 @@ pub fn (mut app Hono) options(path string, handler fn (mut Context) http.Respons
 pub fn (mut app Hono) ws(path string, factory WSHandlerFactory, options ...WebSocketOptions) {
 	// Create the WebSocket upgrade handler
 	ws_handler := upgrade_websocket(factory, ...options)
-	
+
 	// Register as a GET route (WebSocket upgrades use GET method)
 	app.get(path, ws_handler)
 }
 
-// all() 方法 - 为所有 HTTP 方法注册同一个处理器
+// all() method - registers the same handler for all HTTP methods
 pub fn (mut app Hono) all(path string, handler fn (mut Context) http.Response) {
 	app.get(path, handler)
 	app.post(path, handler)
@@ -215,25 +215,25 @@ pub fn (mut app Hono) all(path string, handler fn (mut Context) http.Response) {
 	app.options(path, handler)
 }
 
-// Context 中间件
+// Context middleware
 pub fn (mut app Hono) use(mw ContextMiddleware) {
 	app.context_middlewares << mw
 	app.has_middlewares = true
 }
 
-// 预计算中间件前缀排序（在服务器启动前调用）
+// Precomputed middleware prefix sorting (called before server startup)
 pub fn (mut app Hono) precompute_middleware_prefixes() {
 	app.sorted_middleware_prefixes = app.route_middlewares.keys()
 	app.sorted_middleware_prefixes.sort(a.len < b.len)
 	app.has_middlewares = app.context_middlewares.len > 0 || app.route_middlewares.len > 0
 }
 
-// notFound() - 自定义 404 处理器
+// notFound() - Custom 404 handler
 pub fn (mut app Hono) not_found(handler NotFoundHandler) {
 	app.not_found_handler = handler
 }
 
-// onError() - 自定义错误处理器
+// onError() - custom error handler
 pub fn (mut app Hono) on_error(handler ErrorHandler) {
 	app.error_handler = handler
 }
@@ -255,111 +255,111 @@ fn (mut s ServerHanler) handle(req http.Request) http.Response {
 			path: '/'
 		}
 	}
-	
-	// 解析 query - 优化：直接使用 url.raw_query 避免额外解析
+
+	// Parse query - Optimization: Use url.raw_query directly to avoid additional parsing
 	mut query_map := map[string]string{}
 	if url.raw_query.len > 0 {
 		query_map = parse_query_string_app(url.raw_query)
 	}
-	
-	// 缓存 method 字符串，避免多次调用 .str()
+
+	// Cache method string to avoid multiple calls to .str()
 	method_str := req.method.str()
-	
-	// 尝试 Context 路由
-	// 优先使用快速路由器
+
+	// Try Context routing
+	// Prioritize using fast routers
 	if s.app.use_fast_router {
 		if route_match := s.app.fast_router.match_route(method_str, url.path) {
-			// param 由路由匹配结果提供
+			// param is provided by route matching results
 			param_map := route_match.params.clone()
 			// body
 			body := req.data
-			// 构造 Context
+			// Construct Context
 			mut ctx := Context.new(req, param_map, query_map, body)
-			
-			// 优化：零中间件快速路径
+
+			// Optimization: Zero middleware fast path
 			if !s.app.has_middlewares {
 				return route_match.handler.handle(mut ctx)
 			}
-			
-			// 获取该路径对应的中间件
+
+			// Get the middleware corresponding to the path
 			middlewares := s.get_middlewares_for_path(url.path)
-			// 洋葱模型递归执行中间件
+			// Onion model recursively executes middleware
 			return s.exec_context_middlewares_with_list(0, middlewares, mut ctx, fn [route_match] (mut c Context) http.Response {
 				return route_match.handler.handle(mut c)
-		})
+			})
 		}
-		
-		// 如果快速路由器没有匹配，回退到混合路由器
+
+		// If there is no match for the fast router, fall back to the hybrid router
 		if route_match := s.app.context_hybrid_router.match_route(method_str, url.path) {
-			// param 由路由匹配结果提供
+			// param is provided by route matching results
 			param_map := route_match.params.clone()
 			// body
 			body := req.data
-			// 构造 Context
+			// Construct Context
 			mut ctx := Context.new(req, param_map, query_map, body)
-			
-			// 优化：零中间件快速路径
+
+			// Optimization: Zero middleware fast path
 			if !s.app.has_middlewares {
 				return route_match.handler.handle(mut ctx)
 			}
-			
-			// 获取该路径对应的中间件
+
+			// Get the middleware corresponding to the path
 			middlewares := s.get_middlewares_for_path(url.path)
-			// 洋葱模型递归执行中间件
+			// Onion model recursively executes middleware
 			return s.exec_context_middlewares_with_list(0, middlewares, mut ctx, fn [route_match] (mut c Context) http.Response {
 				return route_match.handler.handle(mut c)
 			})
 		}
 	} else {
 		if route_match := s.app.context_hybrid_router.match_route(method_str, url.path) {
-			// param 由路由匹配结果提供
+			// param is provided by route matching results
 			param_map := route_match.params.clone()
 			// body
 			body := req.data
-			// 构造 Context
+			// Construct Context
 			mut ctx := Context.new(req, param_map, query_map, body)
-			
-			// 优化：零中间件快速路径
+
+			// Optimization: Zero middleware fast path
 			if !s.app.has_middlewares {
 				return route_match.handler.handle(mut ctx)
 			}
-			
-			// 获取该路径对应的中间件
+
+			// Get the middleware corresponding to the path
 			middlewares := s.get_middlewares_for_path(url.path)
-			// 洋葱模型递归执行中间件
+			// Onion model recursively executes middleware
 			return s.exec_context_middlewares_with_list(0, middlewares, mut ctx, fn [route_match] (mut c Context) http.Response {
 				return route_match.handler.handle(mut c)
 			})
 		}
 	}
-	
-	// 如果没有匹配的路由，使用 notFound 处理器
+
+	// If there is no matching route, use the notFound handler
 	param_map := map[string]string{}
 	body := req.data
 	mut ctx := Context.new(req, param_map, query_map, body)
-	
-	// 使用自定义 notFound 处理器或默认 404 响应
+
+	// Use custom notFound handler or default 404 response
 	if handler := s.app.not_found_handler {
 		return s.exec_context_middlewares(0, mut ctx, handler)
 	}
-	
-	// 默认 404 响应
+
+	// Default 404 response
 	return s.exec_context_middlewares(0, mut ctx, fn (mut c Context) http.Response {
 		c.status(404)
 		return c.text('Not Found')
 	})
 }
 
-// 获取路径对应的所有中间件（全局 + 路由前缀匹配的）- 优化版
+// Get all middleware corresponding to the path (global + routing prefix matching) - optimized version
 fn (s ServerHanler) get_middlewares_for_path(path string) []ContextMiddleware {
-	// 优化：只有全局中间件时，直接返回引用（避免克隆）
+	// Optimization: When there is only global middleware, return the reference directly (avoid cloning)
 	if s.app.route_middlewares.len == 0 {
 		return s.app.context_middlewares
 	}
-	
+
 	mut middlewares := s.app.context_middlewares.clone()
-	
-	// 优化：使用预排序的前缀列表（启动时已排序，不需要每次请求都排序）
+
+	// Optimization: Use pre-sorted prefix list (sorted at startup, no need to sort on every request)
 	for prefix in s.app.sorted_middleware_prefixes {
 		if path.starts_with(prefix) || prefix == '/' {
 			if mws := s.app.route_middlewares[prefix] {
@@ -367,11 +367,11 @@ fn (s ServerHanler) get_middlewares_for_path(path string) []ContextMiddleware {
 			}
 		}
 	}
-	
+
 	return middlewares
 }
 
-// 使用指定中间件列表执行
+// Execute using the specified middleware list
 fn (mut s ServerHanler) exec_context_middlewares_with_list(idx int, middlewares []ContextMiddleware, mut ctx Context, handler fn (mut Context) http.Response) http.Response {
 	if idx < middlewares.len {
 		mw := middlewares[idx]
@@ -383,12 +383,12 @@ fn (mut s ServerHanler) exec_context_middlewares_with_list(idx int, middlewares 
 	}
 }
 
-// Context 版本的中间件执行函数
+// Context version of middleware execution function
 fn (mut s ServerHanler) exec_context_middlewares(idx int, mut ctx Context, handler fn (mut Context) http.Response) http.Response {
 	if idx < s.app.context_middlewares.len {
 		mw := s.app.context_middlewares[idx]
 		return mw(mut ctx, fn [mut s, idx, handler] (mut c Context) http.Response {
-			return s.exec_context_middlewares(idx+1, mut c, handler)
+			return s.exec_context_middlewares(idx + 1, mut c, handler)
 		})
 	} else {
 		return handler(mut ctx)
@@ -396,40 +396,40 @@ fn (mut s ServerHanler) exec_context_middlewares(idx int, mut ctx Context, handl
 }
 
 pub fn (mut app Hono) listen(port string) {
-	// 解析端口号
+	// Parse port number
 	port_num := port.trim(':').int()
 	if port_num <= 0 {
-		eprintln('[v-hono] Invalid port: ${port}')
+		eprintln('[vono] Invalid port: ${port}')
 		return
 	}
-	
-	// 优化：预计算中间件前缀排序
+
+	// Optimization: Precomputed middleware prefix sorting
 	app.precompute_middleware_prefixes()
-	
-	// 使用优化配置的 picoev 高性能服务器（支持高并发）
+
+	// Use optimized configuration of picoev high-performance server (supports high concurrency)
 	app.listen_picoev_with_config(PicoevConfig{
-		port: port_num
-		timeout_secs: 120         // 高并发场景需要更长超时
-		keepalive_timeout: 30     // Keep-Alive 超时 30 秒
-		max_keepalive_req: 10000  // 单连接最大请求数
+		port:              port_num
+		timeout_secs:      120   // High concurrency scenarios require longer timeouts
+		keepalive_timeout: 30    // Keep-Alive timeout 30 seconds
+		max_keepalive_req: 10000 // Maximum number of requests for a single connection
 	})
 }
 
-// 使用传统 http.Server 启动（保留兼容性）
+// Start using traditional http.Server (preserve compatibility)
 pub fn (mut app Hono) listen_http(port string) {
 	app.server.addr = port
 	app.server.handler = server_hanler_new(app)
-	// 增加超时配置以支持更好的 Keep-Alive
+	// Add timeout configuration to support better Keep-Alive
 	app.server.read_timeout = 60 * time.second
 	app.server.write_timeout = 60 * time.second
 	app.server.listen_and_serve()
 }
 
 pub fn (mut app Hono) route(prefix string, mut subapp Hono) {
-	// 保存子应用引用
+	// Save sub-application reference
 	app.routes[prefix] = subapp
-	
-	// 合并子应用的中间件到路由前缀
+
+	// Merge the middleware of the sub-application into the route prefix
 	if subapp.context_middlewares.len > 0 {
 		if prefix in app.route_middlewares {
 			app.route_middlewares[prefix] << subapp.context_middlewares
@@ -438,15 +438,15 @@ pub fn (mut app Hono) route(prefix string, mut subapp Hono) {
 		}
 		app.has_middlewares = true
 	}
-	
-	// 继承子应用的 notFound 和 onError 处理器（如果主应用没有设置）
+
+	// Inherit the notFound and onError handlers of the child application (if the main application does not set them)
 	if app.not_found_handler == none && subapp.not_found_handler != none {
-		// 子应用的 notFound 只对该前缀生效，这里不继承到主应用
-		// 如果需要，可以在子应用路由匹配失败时单独处理
+		// The notFound of the sub-application only takes effect on this prefix and is not inherited from the main application.
+		// If necessary, you can handle it separately when the sub-application route matching fails.
 	}
-	
-	// 合并子应用的路由到主应用的所有路由器
-	// 使用辅助函数来处理每种 HTTP 方法
+
+	// Merge the routes of the sub-application to all routers of the main application
+	// Use helper functions to handle each HTTP method
 	app.merge_routes_for_method('GET', prefix, subapp.context_router.handlers.get)
 	app.merge_routes_for_method('POST', prefix, subapp.context_router.handlers.post)
 	app.merge_routes_for_method('PUT', prefix, subapp.context_router.handlers.put)
@@ -456,35 +456,35 @@ pub fn (mut app Hono) route(prefix string, mut subapp Hono) {
 	app.merge_routes_for_method('OPTIONS', prefix, subapp.context_router.handlers.options)
 }
 
-// 辅助函数：合并指定 HTTP 方法的路由
+// Auxiliary function: merge routes for specified HTTP methods
 fn (mut app Hono) merge_routes_for_method(method string, prefix string, handlers []IHandler) {
 	for handler in handlers {
-		// 创建带前缀的新路径
+		// Create new path with prefix
 		mut new_path := ''
 		if handler.path == '/' || handler.path == '' {
-			// 如果子路由是根路径，直接使用前缀
+			// If the sub-route is the root path, use the prefix directly
 			new_path = prefix
 		} else if handler.path.starts_with('/') {
 			new_path = '${prefix}${handler.path}'
 		} else {
 			new_path = '${prefix}/${handler.path}'
 		}
-		
-		// 创建带新路径的包装 handler（实现 IHandler 接口）
+
+		// Create a wrapper handler with a new path (implements the IHandler interface)
 		new_handler := PrefixedHandler{
-			path: new_path
+			path:  new_path
 			inner: handler
 		}
-		
-		// 为 trie_router 创建 ContextHandler
+
+		// Create ContextHandler for trie_router
 		trie_handler := ContextHandler{
-			path: new_path
+			path:    new_path
 			handler: fn [handler] (mut c Context) http.Response {
 				return handler.handle(mut c)
 			}
 		}
-		
-		// 添加到对应的 handlers 列表
+
+		// Add to the corresponding handlers list
 		match method {
 			'GET' { app.context_router.handlers.get << new_handler }
 			'POST' { app.context_router.handlers.post << new_handler }
@@ -495,8 +495,8 @@ fn (mut app Hono) merge_routes_for_method(method string, prefix string, handlers
 			'OPTIONS' { app.context_router.handlers.options << new_handler }
 			else {}
 		}
-		
-		// 添加到快速路由器
+
+		// Add to fast router
 		if app.use_fast_router {
 			app.fast_router.add_route(method, new_handler, '') or {
 				app.context_hybrid_router.add_route(method, new_handler, '')
@@ -508,14 +508,14 @@ fn (mut app Hono) merge_routes_for_method(method string, prefix string, handlers
 	}
 }
 
-// 带前缀的 Handler 包装器，实现 IHandler 接口
+// Handler wrapper with prefix, implementing IHandler interface
 pub struct PrefixedHandler {
 pub:
 	path  string
 	inner IHandler
 }
 
-// 实现 IHandler 接口的 handle 方法
+// Implement the handle method of the IHandler interface
 pub fn (h PrefixedHandler) handle(mut c Context) http.Response {
 	return h.inner.handle(mut c)
 }
@@ -524,7 +524,7 @@ pub fn (mut app Hono) set_base_path(base_path string) {
 	app.base_path = base_path
 }
 
-// 路由统计信息
+// Routing statistics
 pub fn (app Hono) get_router_stats() (int, int, int, int) {
 	if app.use_fast_router {
 		static_count, dynamic_count, cache_count := app.fast_router.get_stats()
@@ -536,7 +536,7 @@ pub fn (app Hono) get_router_stats() (int, int, int, int) {
 	}
 }
 
-// 清理缓存
+// clear cache
 pub fn (mut app Hono) clear_cache() {
 	if app.use_fast_router {
 		app.fast_router.clear_cache()
@@ -545,13 +545,13 @@ pub fn (mut app Hono) clear_cache() {
 	}
 }
 
-// 启用/禁用快速路由器
+// Enable/disable fast router
 pub fn (mut app Hono) set_fast_router_enabled(enabled bool) {
 	app.use_fast_router = enabled
 	println('[INFO] FastRouter ${if enabled { 'enabled' } else { 'disabled' }}')
 }
 
-// 获取路由器性能分析
+// Get router performance analysis
 pub fn (mut app Hono) analyze_router_performance() {
 	if app.use_fast_router {
 		app.fast_router.analyze_performance()
@@ -562,30 +562,30 @@ pub fn (mut app Hono) analyze_router_performance() {
 
 pub fn Hono.new() Hono {
 	return Hono{
-		server: http.Server{}
-		routes: map[string]Hono{}
-		base_path: ''
-		not_found_handler: none
-		error_handler: none
-		context_router: ContextRouter{}
-		context_hybrid_router: ContextHybridRouter.new()
-		context_trie_router: ContextTrieRouter.new()
-		fast_router: FastRouter.new()
-		use_fast_router: true
-		route_middlewares: map[string][]ContextMiddleware{}
+		server:                     http.Server{}
+		routes:                     map[string]Hono{}
+		base_path:                  ''
+		not_found_handler:          none
+		error_handler:              none
+		context_router:             ContextRouter{}
+		context_hybrid_router:      ContextHybridRouter.new()
+		context_trie_router:        ContextTrieRouter.new()
+		fast_router:                FastRouter.new()
+		use_fast_router:            true
+		route_middlewares:          map[string][]ContextMiddleware{}
 		sorted_middleware_prefixes: []string{}
-		has_middlewares: false
+		has_middlewares:            false
 	}
 }
 
 // ============================================================================
-// OpenAPI 文档便捷方法 (Task 9.1)
+// OpenAPI documentation convenience methods (Task 9.1)
 // ============================================================================
 
-// doc - 注册 OpenAPI 文档路由
-// 在指定路径注册一个 GET 路由，返回 OpenAPI 文档的 JSON 格式
-// 设置 Content-Type: application/json
-// 使用示例:
+// doc - registers the OpenAPI document route
+// Register a GET route at the specified path and return the JSON format of the OpenAPI document
+// Set Content-Type: application/json
+// Usage example:
 //   spec := OpenAPIBuilder.new()
 //       .openapi('3.0.0')
 //       .title('My API')
@@ -593,22 +593,25 @@ pub fn Hono.new() Hono {
 //       .build()!
 //   app.doc('/doc', spec)
 pub fn (mut app Hono) doc(path string, spec OpenAPIDocument) {
-	// 预序列化 OpenAPI 文档为 JSON 字符串
+	// Pre-serialize OpenAPI documents into JSON strings
 	json_content := spec.to_json_str()
-	
-	// 注册 GET 路由返回 JSON
+
+	// Register GET route to return JSON
 	app.get(path, fn [json_content] (mut c Context) http.Response {
 		return http.Response{
 			status_code: 200
-			header:      http.new_header(key: .content_type, value: 'application/json; charset=utf-8')
+			header:      http.new_header(
+				key:   .content_type
+				value: 'application/json; charset=utf-8'
+			)
 			body:        json_content
 		}
 	})
 }
 
-// doc_fn - 使用构建器函数注册 OpenAPI 文档路由
-// 允许延迟构建 OpenAPI 文档，每次请求时调用构建器函数
-// 使用示例:
+// doc_fn - Register an OpenAPI document route using a builder function
+// Allow lazy construction of OpenAPI documents, calling the builder function on every request
+// Usage example:
 //   app.doc_fn('/doc', fn () OpenAPIDocument {
 //       return OpenAPIBuilder.new()
 //           .openapi('3.0.0')
@@ -618,55 +621,58 @@ pub fn (mut app Hono) doc(path string, spec OpenAPIDocument) {
 //   })
 pub fn (mut app Hono) doc_fn(path string, builder fn () OpenAPIDocument) {
 	app.get(path, fn [builder] (mut c Context) http.Response {
-		// 每次请求时调用构建器函数
+		// Call the builder function on every request
 		spec := builder()
 		json_content := spec.to_json_str()
-		
+
 		return http.Response{
 			status_code: 200
-			header:      http.new_header(key: .content_type, value: 'application/json; charset=utf-8')
+			header:      http.new_header(
+				key:   .content_type
+				value: 'application/json; charset=utf-8'
+			)
 			body:        json_content
 		}
 	})
 }
 
-// 快速解析 query string（单次遍历，避免 split）- app.v 版本
+// Quickly parse query string (single traversal, avoid split) - app.v version
 @[inline]
 fn parse_query_string_app(query_str string) map[string]string {
 	mut query_map := map[string]string{}
 	len := query_str.len
-	
+
 	if len == 0 {
 		return query_map
 	}
-	
+
 	mut key_start := 0
 	mut key_end := -1
 	mut value_start := -1
-	
+
 	for i := 0; i <= len; i++ {
-		ch := if i < len { query_str[i] } else { `&` } // 末尾视为分隔符
-		
+		ch := if i < len { query_str[i] } else { `&` } // The end is treated as a separator
+
 		if ch == `=` && key_end == -1 {
 			key_end = i
 			value_start = i + 1
 		} else if ch == `&` {
-			// 完成一个键值对
+			// Complete a key-value pair
 			if key_end > key_start && value_start > 0 {
 				key := query_str[key_start..key_end]
 				value := if value_start < i { query_str[value_start..i] } else { '' }
 				query_map[key] = value
 			} else if key_end == -1 && i > key_start {
-				// 只有 key 没有 value
+				// Only key without value
 				key := query_str[key_start..i]
 				query_map[key] = ''
 			}
-			// 重置状态
+			// Reset state
 			key_start = i + 1
 			key_end = -1
 			value_start = -1
 		}
 	}
-	
+
 	return query_map
 }

@@ -3,7 +3,7 @@ module hono
 import os
 import x.json2
 
-// 存储类型枚举
+//Storage type enumeration
 pub enum StorageType {
 	local
 	s3
@@ -11,15 +11,15 @@ pub enum StorageType {
 	tencent_cos
 }
 
-// 本地存储配置
+//Local storage configuration
 pub struct LocalStorageConfig {
 pub:
 	base_path   string = './storage'
-	url_prefix  string = '/files' // 用于生成访问URL
+	url_prefix  string = '/files' // Used to generate access URL
 	create_dirs bool   = true
 }
 
-// S3 存储配置
+// S3 storage configuration
 pub struct S3Config {
 pub:
 	endpoint       string
@@ -27,21 +27,21 @@ pub:
 	secret_key     string
 	region         string = 'us-east-1'
 	use_ssl        bool   = true
-	path_style     bool // MinIO 通常需要 true
+	path_style     bool // MinIO usually requires true
 	default_bucket string
 }
 
-// 阿里云 OSS 配置
+//Alibaba Cloud OSS configuration
 pub struct AliyunOSSConfig {
 pub:
 	endpoint          string // oss-cn-hangzhou.aliyuncs.com
 	access_key_id     string
 	access_key_secret string
-	internal_endpoint string // 内网端点（可选）
+	internal_endpoint string // Intranet endpoint (optional)
 	default_bucket    string
 }
 
-// 腾讯云 COS 配置
+// Tencent Cloud COS configuration
 pub struct TencentCOSConfig {
 pub:
 	secret_id      string
@@ -51,7 +51,7 @@ pub:
 }
 
 
-// 统一存储配置
+// Unified storage configuration
 pub struct StorageConfig {
 pub:
 	storage_type  StorageType
@@ -59,13 +59,13 @@ pub:
 	s3            S3Config
 	aliyun_oss    AliyunOSSConfig
 	tencent_cos   TencentCOSConfig
-	// 通用配置
+	//General configuration
 	retry_count    int = 3
 	retry_delay_ms int = 1000
 	timeout_ms     int = 30000
 }
 
-// 配置验证结果
+//Configure verification results
 pub struct ConfigValidationResult {
 pub:
 	valid          bool
@@ -73,7 +73,7 @@ pub:
 	error_message  string
 }
 
-// 验证本地存储配置
+//Verify local storage configuration
 pub fn validate_local_config(config LocalStorageConfig) ConfigValidationResult {
 	mut missing := []string{}
 
@@ -96,7 +96,7 @@ pub fn validate_local_config(config LocalStorageConfig) ConfigValidationResult {
 	}
 }
 
-// 验证 S3 配置
+// Verify S3 configuration
 pub fn validate_s3_config(config S3Config) ConfigValidationResult {
 	mut missing := []string{}
 
@@ -128,7 +128,7 @@ pub fn validate_s3_config(config S3Config) ConfigValidationResult {
 	}
 }
 
-// 验证阿里云 OSS 配置
+//Verify Alibaba Cloud OSS configuration
 pub fn validate_aliyun_oss_config(config AliyunOSSConfig) ConfigValidationResult {
 	mut missing := []string{}
 
@@ -160,7 +160,7 @@ pub fn validate_aliyun_oss_config(config AliyunOSSConfig) ConfigValidationResult
 	}
 }
 
-// 验证腾讯云 COS 配置
+//Verify Tencent Cloud COS configuration
 pub fn validate_tencent_cos_config(config TencentCOSConfig) ConfigValidationResult {
 	mut missing := []string{}
 
@@ -192,7 +192,7 @@ pub fn validate_tencent_cos_config(config TencentCOSConfig) ConfigValidationResu
 	}
 }
 
-// 验证存储配置
+//Verify storage configuration
 pub fn validate_storage_config(config StorageConfig) ConfigValidationResult {
 	match config.storage_type {
 		.local {
@@ -211,7 +211,7 @@ pub fn validate_storage_config(config StorageConfig) ConfigValidationResult {
 }
 
 
-// JSON 配置文件结构（用于解析）
+// JSON configuration file structure (for parsing)
 struct JsonStorageConfig {
 pub:
 	storage_type   string @[json: 'storage_type']
@@ -259,7 +259,7 @@ pub:
 	default_bucket string @[json: 'default_bucket']
 }
 
-// 从 JSON 文件加载存储配置
+//Load storage configuration from JSON file
 pub fn load_storage_config_from_file(file_path string) !StorageConfig {
 	if !os.exists(file_path) {
 		return error('Configuration file not found: ${file_path}')
@@ -272,7 +272,7 @@ pub fn load_storage_config_from_file(file_path string) !StorageConfig {
 	return parse_storage_config_from_json(content)
 }
 
-// 从 JSON 字符串解析存储配置
+// Parse storage configuration from JSON string
 pub fn parse_storage_config_from_json(json_str string) !StorageConfig {
 	json_config := json2.decode[JsonStorageConfig](json_str) or {
 		return error('Failed to parse JSON configuration: ${err}')
@@ -328,7 +328,7 @@ pub fn parse_storage_config_from_json(json_str string) !StorageConfig {
 		timeout_ms: if json_config.timeout_ms > 0 { json_config.timeout_ms } else { 30000 }
 	}
 
-	// 验证配置
+	//Verify configuration
 	validation := validate_storage_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
@@ -337,7 +337,7 @@ pub fn parse_storage_config_from_json(json_str string) !StorageConfig {
 	return config
 }
 
-// 解析存储类型字符串
+// Parse storage type string
 fn parse_storage_type(type_str string) !StorageType {
 	match type_str.to_lower() {
 		'local' { return .local }
@@ -349,7 +349,7 @@ fn parse_storage_type(type_str string) !StorageType {
 }
 
 
-// 从环境变量加载存储配置
+//Load storage configuration from environment variables
 pub fn load_storage_config_from_env() !StorageConfig {
 	storage_type_str := os.getenv('STORAGE_TYPE')
 	if storage_type_str == '' {
@@ -394,7 +394,7 @@ pub fn load_storage_config_from_env() !StorageConfig {
 		timeout_ms: os.getenv_opt('STORAGE_TIMEOUT_MS') or { '30000' }.int()
 	}
 
-	// 验证配置
+	//Verify configuration
 	validation := validate_storage_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
@@ -403,7 +403,7 @@ pub fn load_storage_config_from_env() !StorageConfig {
 	return config
 }
 
-// 创建默认本地存储配置
+//Create default local storage configuration
 pub fn new_local_storage_config(base_path string) StorageConfig {
 	return StorageConfig{
 		storage_type: .local
@@ -415,7 +415,7 @@ pub fn new_local_storage_config(base_path string) StorageConfig {
 	}
 }
 
-// 创建 S3 存储配置
+// Create S3 storage configuration
 pub fn new_s3_storage_config(endpoint string, access_key string, secret_key string, bucket string) StorageConfig {
 	return StorageConfig{
 		storage_type: .s3
@@ -431,7 +431,7 @@ pub fn new_s3_storage_config(endpoint string, access_key string, secret_key stri
 	}
 }
 
-// 创建 MinIO 存储配置（S3 兼容，使用 path_style）
+// Create MinIO storage configuration (S3 compatible, use path_style)
 pub fn new_minio_storage_config(endpoint string, access_key string, secret_key string, bucket string) StorageConfig {
 	return StorageConfig{
 		storage_type: .s3
@@ -447,7 +447,7 @@ pub fn new_minio_storage_config(endpoint string, access_key string, secret_key s
 	}
 }
 
-// 创建阿里云 OSS 存储配置
+// Create Alibaba Cloud OSS storage configuration
 pub fn new_aliyun_oss_storage_config(endpoint string, access_key_id string, access_key_secret string, bucket string) StorageConfig {
 	return StorageConfig{
 		storage_type: .aliyun_oss
@@ -461,7 +461,7 @@ pub fn new_aliyun_oss_storage_config(endpoint string, access_key_id string, acce
 	}
 }
 
-// 创建腾讯云 COS 存储配置
+//Create Tencent Cloud COS storage configuration
 pub fn new_tencent_cos_storage_config(secret_id string, secret_key string, region string, bucket string) StorageConfig {
 	return StorageConfig{
 		storage_type: .tencent_cos
@@ -474,7 +474,7 @@ pub fn new_tencent_cos_storage_config(secret_id string, secret_key string, regio
 	}
 }
 
-// 获取存储类型名称
+// Get the storage type name
 pub fn (t StorageType) str() string {
 	match t {
 		.local { return 'local' }

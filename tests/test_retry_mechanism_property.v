@@ -6,7 +6,7 @@ import math
 
 // ============================================================================
 // Property 9: Retry Mechanism
-// Feature: v-hono-upload-integration, Property 9: Retry Mechanism
+// Feature: vono-upload-integration, Property 9: Retry Mechanism
 // Validates: Requirements 9.1, 9.2, 9.3
 //
 // *For any* retryable error, the system should retry with exponential backoff,
@@ -20,15 +20,15 @@ const test_iterations = 100
 // Type definitions (copied from retry.v and storage_errors.v for standalone testing)
 // ============================================================================
 
-// 存储错误类型枚举
+//Storage error type enumeration
 enum StorageErrorKind {
-	// 可重试错误
+	//retryable error
 	network_timeout
 	service_unavailable
 	rate_limited
 	connection_reset
 	temporary_failure
-	// 不可重试错误
+	// No retry error
 	invalid_credentials
 	access_denied
 	bucket_not_found
@@ -41,11 +41,11 @@ enum StorageErrorKind {
 	object_already_exists
 	invalid_range
 	checksum_mismatch
-	// 其他错误
+	// other errors
 	unknown
 }
 
-// 重试尝试记录
+//Retry attempt record
 struct RetryAttempt {
 pub:
 	attempt_number int
@@ -54,7 +54,7 @@ pub:
 	delay_ms       int
 }
 
-// 存储错误结构
+//Storage error structure
 struct StorageError {
 pub:
 	kind        StorageErrorKind
@@ -69,7 +69,7 @@ pub mut:
 }
 
 
-// 判断错误是否可重试
+// Determine whether the error can be retried
 fn (e StorageError) is_retryable() bool {
 	return e.kind in [
 		.network_timeout,
@@ -80,7 +80,7 @@ fn (e StorageError) is_retryable() bool {
 	]
 }
 
-// 重试配置结构
+//Retry configuration structure
 struct RetryConfig {
 pub:
 	max_retries     int  = 3
@@ -91,7 +91,7 @@ pub:
 	jitter_factor   f64  = 0.25
 }
 
-// 默认重试配置
+//Default retry configuration
 fn default_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 3
@@ -103,7 +103,7 @@ fn default_retry_config() RetryConfig {
 	}
 }
 
-// 激进重试配置
+// Aggressive retry configuration
 fn aggressive_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 5
@@ -115,7 +115,7 @@ fn aggressive_retry_config() RetryConfig {
 	}
 }
 
-// 保守重试配置
+// Conservative retry configuration
 fn conservative_retry_config() RetryConfig {
 	return RetryConfig{
 		max_retries: 2
@@ -127,7 +127,7 @@ fn conservative_retry_config() RetryConfig {
 	}
 }
 
-// 重试执行结果
+//Retry execution results
 struct RetryResult[T] {
 pub:
 	success       bool
@@ -138,19 +138,19 @@ pub:
 	history       []RetryAttempt
 }
 
-// 重试执行器
+//Retry the executor
 struct RetryExecutor {
 	config RetryConfig
 }
 
-// 创建重试执行器
+// Create retry executor
 fn new_retry_executor(config RetryConfig) RetryExecutor {
 	return RetryExecutor{
 		config: config
 	}
 }
 
-// 使用默认配置创建重试执行器
+// Create a retry executor with default configuration
 fn new_default_retry_executor() RetryExecutor {
 	return RetryExecutor{
 		config: default_retry_config()
@@ -158,15 +158,15 @@ fn new_default_retry_executor() RetryExecutor {
 }
 
 
-// 计算下一次重试的延迟时间
+// Calculate the delay time for the next retry
 fn (r RetryExecutor) calculate_delay(attempt int) int {
-	// 指数退避: delay = initial_delay * (multiplier ^ attempt)
+	// Exponential backoff: delay = initial_delay * (multiplier ^ attempt)
 	base_delay := f64(r.config.initial_delay) * math.pow(r.config.multiplier, f64(attempt))
 	
-	// 限制最大延迟
+	//Limit the maximum delay
 	mut delay := int(math.min(base_delay, f64(r.config.max_delay)))
 	
-	// 添加随机抖动
+	//Add random jitter
 	if r.config.jitter && delay > 0 {
 		jitter_range := int(f64(delay) * r.config.jitter_factor)
 		if jitter_range > 0 {
@@ -175,7 +175,7 @@ fn (r RetryExecutor) calculate_delay(attempt int) int {
 		}
 	}
 	
-	// 确保延迟不为负
+	// Make sure the delay is not negative
 	if delay < 0 {
 		delay = 0
 	}
@@ -183,7 +183,7 @@ fn (r RetryExecutor) calculate_delay(attempt int) int {
 	return delay
 }
 
-// 计算不带抖动的基础延迟（用于测试）
+// Calculate base latency without jitter (for testing)
 fn calculate_base_delay(config RetryConfig, attempt int) int {
 	base_delay := f64(config.initial_delay) * math.pow(config.multiplier, f64(attempt))
 	return int(math.min(base_delay, f64(config.max_delay)))
@@ -641,7 +641,7 @@ fn test_property_9_10_first_attempt_delay() bool {
 
 fn main() {
 	println('🚀 开始 Retry Mechanism 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 9: Retry Mechanism')
+	println('Feature: vono-upload-integration, Property 9: Retry Mechanism')
 	println('Validates: Requirements 9.1, 9.2, 9.3')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

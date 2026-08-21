@@ -1,4 +1,4 @@
-// Route grouping example for v-hono web framework
+// Route grouping example for vono web framework
 module main
 
 import net.http
@@ -28,7 +28,7 @@ fn main() {
 
 	// Root route
 	app.get('/', fn (mut c hono.Context) http.Response {
-		return c.html('<h1>Welcome to v-hono!</h1><p>API available at /api</p>')
+		return c.html('<h1>Welcome to vono!</h1><p>API available at /api</p>')
 	})
 
 	println('Server starting on http://127.0.0.1:3000')

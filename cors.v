@@ -2,83 +2,83 @@ module hono
 
 import net.http
 
-// CorsOrigin 类型 - 支持多种来源配置方式
-// 可以是字符串（单域名或 "*"）、字符串数组（多域名）或回调函数
+// CorsOrigin type - supports multiple source configuration methods
+// Can be a string (single domain name or "*"), string array (multiple domain names) or callback function
 pub type CorsOrigin = string | []string | fn (string, Context) string
 
-// CorsOptions 结构体 - CORS 配置选项
+// CorsOptions structure - CORS configuration options
 pub struct CorsOptions {
 pub:
-	origin         CorsOrigin = '*'  // 允许的来源，默认允许所有
+	origin         CorsOrigin = '*'  // Allowed sources, all are allowed by default
 	allow_methods  []string   = ['GET', 'HEAD', 'PUT', 'POST', 'DELETE', 'PATCH']
-	allow_headers  []string   = []   // 允许的请求头
-	expose_headers []string   = []   // 暴露的响应头
-	max_age        int             // 预检请求缓存时间（秒），默认 0
-	credentials    bool            // 是否允许凭证，默认 false
+	allow_headers  []string   = []   // Allowed request headers
+	expose_headers []string   = []   //Exposed response headers
+	max_age        int             // Preflight request cache time (seconds), default 0
+	credentials    bool            // Whether to allow credentials, default false
 }
 
-// cors - CORS 中间件工厂函数
-// 返回一个 ContextMiddleware，用于处理跨域请求
+// cors - CORS middleware factory function
+// Return a ContextMiddleware for handling cross-domain requests
 pub fn cors(options ...CorsOptions) ContextMiddleware {
 	opts := if options.len > 0 { options[0] } else { CorsOptions{} }
 	
 	return fn [opts] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 获取请求的 Origin 头
+		// Get the Origin header of the request
 		origin := c.req.header.get_custom('Origin') or { '' }
 		
-		// 如果没有 Origin 头，直接继续处理
+		// If there is no Origin header, continue processing directly
 		if origin.len == 0 {
 			return next(mut c)
 		}
 		
-		// 计算允许的 Origin
+		// Calculate allowed Origins
 		allowed_origin := get_allowed_origin(origin, opts.origin, c)
 		
-		// 如果 Origin 不被允许，直接继续处理（不设置 CORS 头）
+		// If Origin is not allowed, continue processing directly (without setting CORS header)
 		if allowed_origin.len == 0 {
 			return next(mut c)
 		}
 		
-		// 设置 Access-Control-Allow-Origin
+		// Set Access-Control-Allow-Origin
 		c.headers['Access-Control-Allow-Origin'] = allowed_origin
 		
-		// 设置 Access-Control-Allow-Credentials
+		// Set Access-Control-Allow-Credentials
 		if opts.credentials {
 			c.headers['Access-Control-Allow-Credentials'] = 'true'
 		}
 		
-		// 设置 Access-Control-Expose-Headers
+		// Set Access-Control-Expose-Headers
 		if opts.expose_headers.len > 0 {
 			c.headers['Access-Control-Expose-Headers'] = opts.expose_headers.join(', ')
 		}
 		
-		// 检查是否为预检请求 (OPTIONS)
+		// Check if it is a preflight request (OPTIONS)
 		if c.req.method == http.Method.options {
 			return handle_preflight(mut c, opts)
 		}
 		
-		// 非预检请求，继续处理
+		// Non-preflight request, continue processing
 		return next(mut c)
 	}
 }
 
-// get_allowed_origin - 根据配置计算允许的 Origin
+// get_allowed_origin - calculates the allowed Origin based on configuration
 fn get_allowed_origin(request_origin string, origin_config CorsOrigin, c Context) string {
 	match origin_config {
 		string {
-			// 单个字符串配置
+			//Single string configuration
 			if origin_config == '*' {
-				// 通配符，允许所有来源
+				// Wildcard, allow all sources
 				return '*'
 			}
-			// 特定域名，检查是否匹配
+			//Specific domain name, check whether it matches
 			if origin_config == request_origin {
 				return request_origin
 			}
 			return ''
 		}
 		[]string {
-			// 多域名配置，检查请求来源是否在列表中
+			//Multiple domain name configuration, check whether the request source is in the list
 			for allowed in origin_config {
 				if allowed == '*' {
 					return '*'
@@ -90,35 +90,35 @@ fn get_allowed_origin(request_origin string, origin_config CorsOrigin, c Context
 			return ''
 		}
 		fn (string, Context) string {
-			// 回调函数配置
+			//Callback function configuration
 			return origin_config(request_origin, c)
 		}
 	}
 }
 
-// handle_preflight - 处理 OPTIONS 预检请求
+// handle_preflight - handles OPTIONS preflight requests
 fn handle_preflight(mut c Context, opts CorsOptions) http.Response {
-	// 设置 Access-Control-Allow-Methods
+	// Set Access-Control-Allow-Methods
 	if opts.allow_methods.len > 0 {
 		c.headers['Access-Control-Allow-Methods'] = opts.allow_methods.join(', ')
 	}
 	
-	// 设置 Access-Control-Allow-Headers
+	// Set Access-Control-Allow-Headers
 	if opts.allow_headers.len > 0 {
 		c.headers['Access-Control-Allow-Headers'] = opts.allow_headers.join(', ')
 	} else {
-		// 如果没有配置，尝试使用请求中的 Access-Control-Request-Headers
+		// If not configured, try to use Access-Control-Request-Headers in the request
 		if request_headers := c.req.header.get_custom('Access-Control-Request-Headers') {
 			c.headers['Access-Control-Allow-Headers'] = request_headers
 		}
 	}
 	
-	// 设置 Access-Control-Max-Age
+	// Set Access-Control-Max-Age
 	if opts.max_age > 0 {
 		c.headers['Access-Control-Max-Age'] = opts.max_age.str()
 	}
 	
-	// 返回 204 No Content
+	// Return 204 No Content
 	c.status(204)
 	
 	mut headers := http.new_header()

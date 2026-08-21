@@ -8,7 +8,7 @@ import crypto.rand as crand
 
 // ============================================================================
 // Property 2: Metadata Round Trip
-// Feature: v-hono-upload-integration, Property 2: Metadata Round Trip
+// Feature: vono-upload-integration, Property 2: Metadata Round Trip
 // Validates: Requirements 1.5, 8.1, 8.2
 //
 // *For any* file with metadata, storing the file and then retrieving its metadata
@@ -57,19 +57,19 @@ pub:
 	has_more    bool
 }
 
-// 数据库管理器
+// database manager
 struct DatabaseManager {
 mut:
 	db sqlite.DB
 }
 
-// 创建数据库管理器
+//Create database manager
 fn new_database_manager(db_path string) !DatabaseManager {
 	mut db := sqlite.connect(db_path) or {
 		return error('Failed to connect to database: ${err}')
 	}
 
-	// 创建文件信息表
+	//Create file information table
 	db.exec('CREATE TABLE IF NOT EXISTS file_info (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		file_uuid TEXT UNIQUE NOT NULL,
@@ -85,7 +85,7 @@ fn new_database_manager(db_path string) !DatabaseManager {
 		metadata TEXT
 	);') or { return error('Failed to create file_info table: ${err}') }
 
-	// 创建索引
+	//Create index
 	db.exec('CREATE INDEX IF NOT EXISTS idx_file_hash ON file_info(file_hash);') or {
 		return error('Failed to create idx_file_hash index: ${err}')
 	}
@@ -101,7 +101,7 @@ fn new_database_manager(db_path string) !DatabaseManager {
 	}
 }
 
-// 生成文件UUID
+// Generate file UUID
 fn generate_file_uuid() string {
 	random_bytes := crand.bytes(16) or { return '' }
 	mut uuid := ''
@@ -114,12 +114,12 @@ fn generate_file_uuid() string {
 	return uuid
 }
 
-// SQL 字符串转义
+// SQL string escape
 fn escape_sql(s string) string {
 	return s.replace("'", "''")
 }
 
-// 插入文件信息
+//Insert file information
 fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	now := time.now().unix()
 	file_uuid := if file.file_uuid != '' { file.file_uuid } else { generate_file_uuid() }
@@ -144,7 +144,7 @@ fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	}
 }
 
-// 根据UUID获取文件信息
+// Get file information based on UUID
 fn (dm DatabaseManager) get_file_by_uuid(file_uuid string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE file_uuid = '${file_uuid}'") or {
 		return error('Failed to query file info: ${err}')
@@ -171,7 +171,7 @@ fn (dm DatabaseManager) get_file_by_uuid(file_uuid string) !FileInfo {
 	return error('File not found')
 }
 
-// 根据hash获取文件信息
+// Get file information based on hash
 fn (dm DatabaseManager) get_file_by_hash(file_hash string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE file_hash = '${file_hash}'") or {
 		return error('Failed to query file info: ${err}')
@@ -198,7 +198,7 @@ fn (dm DatabaseManager) get_file_by_hash(file_hash string) !FileInfo {
 	return error('File not found')
 }
 
-// 更新文件信息
+//Update file information
 fn (mut dm DatabaseManager) update_file(file_uuid string, file_name string, file_type string, metadata string) !FileInfo {
 	now := time.now().unix()
 
@@ -209,14 +209,14 @@ fn (mut dm DatabaseManager) update_file(file_uuid string, file_name string, file
 	return dm.get_file_by_uuid(file_uuid)
 }
 
-// 删除文件信息
+//Delete file information
 fn (mut dm DatabaseManager) delete_file(file_uuid string) ! {
 	dm.db.exec("DELETE FROM file_info WHERE file_uuid = '${file_uuid}'") or {
 		return error('Failed to delete file info: ${err}')
 	}
 }
 
-// 检查文件是否存在
+// Check if the file exists
 fn (dm DatabaseManager) file_exists(file_uuid string) bool {
 	rows := dm.db.exec("SELECT 1 FROM file_info WHERE file_uuid = '${file_uuid}' LIMIT 1") or {
 		return false
@@ -224,7 +224,7 @@ fn (dm DatabaseManager) file_exists(file_uuid string) bool {
 	return rows.len > 0
 }
 
-// 根据 bucket 和 object_key 获取文件
+// Get files based on bucket and object_key
 fn (dm DatabaseManager) get_file_by_key(bucket string, object_key string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE bucket = '${bucket}' AND object_key = '${escape_sql(object_key)}'") or {
 		return error('Failed to query file info: ${err}')
@@ -251,7 +251,7 @@ fn (dm DatabaseManager) get_file_by_key(bucket string, object_key string) !FileI
 	return error('File not found')
 }
 
-// 关闭数据库连接
+//Close database connection
 fn (mut dm DatabaseManager) close() {
 	dm.db.close() or {}
 }
@@ -294,7 +294,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机字符串
+// Generate random string
 fn generate_random_string(min_len int, max_len int) string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	len := rand.int_in_range(min_len, max_len) or { min_len }
@@ -306,7 +306,7 @@ fn generate_random_string(min_len int, max_len int) string {
 	return result
 }
 
-// 生成随机文件名
+// Generate random file name
 fn generate_random_filename() string {
 	name := generate_random_string(5, 20)
 	extensions := ['.txt', '.bin', '.dat', '.json', '.xml', '.png', '.jpg']
@@ -314,7 +314,7 @@ fn generate_random_filename() string {
 	return name + extensions[ext_idx]
 }
 
-// 生成随机 hash (模拟 MD5)
+// Generate random hash (simulate MD5)
 fn generate_random_hash() string {
 	mut hash := ''
 	for _ in 0 .. 32 {
@@ -324,7 +324,7 @@ fn generate_random_hash() string {
 	return hash
 }
 
-// 生成随机 content_type
+// Generate random content_type
 fn generate_random_content_type() string {
 	types := [
 		'text/plain',
@@ -339,19 +339,19 @@ fn generate_random_content_type() string {
 	return types[idx]
 }
 
-// 生成随机存储类型
+// Generate random storage type
 fn generate_random_storage_type() string {
 	types := ['local', 's3', 'aliyun_oss', 'tencent_cos']
 	idx := rand.int_in_range(0, types.len) or { 0 }
 	return types[idx]
 }
 
-// 生成随机 bucket 名称
+// Generate random bucket name
 fn generate_random_bucket() string {
 	return 'bucket-' + generate_random_string(5, 10)
 }
 
-// 生成随机 object key
+// Generate random object key
 fn generate_random_object_key() string {
 	depth := rand.int_in_range(0, 4) or { 1 }
 	mut parts := []string{}
@@ -362,24 +362,24 @@ fn generate_random_object_key() string {
 	return parts.join('/')
 }
 
-// 生成随机文件大小
+// Generate random file size
 fn generate_random_file_size() i64 {
 	return rand.i64_in_range(0, 10_000_000) or { 1000 }
 }
 
-// 生成随机 JSON 元数据
+// Generate random JSON metadata
 fn generate_random_metadata() string {
 	key := generate_random_string(3, 10)
 	value := generate_random_string(5, 20)
 	return '{"${key}": "${value}"}'
 }
 
-// 清理测试数据库
+// Clean the test database
 fn cleanup_test_db() {
 	os.rm(test_db_path) or {}
 }
 
-// 创建测试数据库管理器
+//Create a test database manager
 fn create_test_db() !DatabaseManager {
 	return new_database_manager(test_db_path)
 }
@@ -807,7 +807,7 @@ fn test_property_2_5_bucket_key_query_roundtrip() bool {
 
 fn main() {
 	println('🚀 开始 Metadata Round Trip 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 2: Metadata Round Trip')
+	println('Feature: vono-upload-integration, Property 2: Metadata Round Trip')
 	println('Validates: Requirements 1.5, 8.1, 8.2')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

@@ -8,17 +8,17 @@ import crypto.sha1
 import crypto.md5
 import encoding.base64
 
-// AliyunOSS 阿里云 OSS 存储提供者
+// AliyunOSS Alibaba Cloud OSS storage provider
 pub struct AliyunOSS {
 	config AliyunOSSConfig
 mut:
-	// 用于跟踪分片上传的内存存储
+	// Memory storage used to track multipart uploads
 	multipart_uploads map[string]OSSMultipartUploadState
-	// 是否使用内网端点
+	// Whether to use the intranet endpoint
 	use_internal bool
 }
 
-// OSS 分片上传状态
+// OSS fragment upload status
 struct OSSMultipartUploadState {
 mut:
 	bucket       string
@@ -29,9 +29,9 @@ mut:
 	created_at   i64
 }
 
-// 创建阿里云 OSS 存储提供者
+//Create Alibaba Cloud OSS storage provider
 pub fn new_aliyun_oss(config AliyunOSSConfig) !AliyunOSS {
-	// 验证配置
+	//Verify configuration
 	validation := validate_aliyun_oss_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
@@ -44,9 +44,9 @@ pub fn new_aliyun_oss(config AliyunOSSConfig) !AliyunOSS {
 	}
 }
 
-// 创建使用内网端点的阿里云 OSS 存储提供者
+//Create Alibaba Cloud OSS storage provider using intranet endpoint
 pub fn new_aliyun_oss_internal(config AliyunOSSConfig) !AliyunOSS {
-	// 验证配置
+	//Verify configuration
 	validation := validate_aliyun_oss_config(config)
 	if !validation.valid {
 		return error(validation.error_message)
@@ -64,7 +64,7 @@ pub fn new_aliyun_oss_internal(config AliyunOSSConfig) !AliyunOSS {
 }
 
 
-// 切换到内网端点
+//Switch to the intranet endpoint
 pub fn (mut o AliyunOSS) switch_to_internal() ! {
 	if o.config.internal_endpoint == '' {
 		return error('Internal endpoint is not configured')
@@ -72,12 +72,12 @@ pub fn (mut o AliyunOSS) switch_to_internal() ! {
 	o.use_internal = true
 }
 
-// 切换到外网端点
+//Switch to the external network endpoint
 pub fn (mut o AliyunOSS) switch_to_external() {
 	o.use_internal = false
 }
 
-// 获取当前使用的端点
+// Get the currently used endpoint
 pub fn (o AliyunOSS) get_current_endpoint() string {
 	if o.use_internal && o.config.internal_endpoint != '' {
 		return o.config.internal_endpoint
@@ -86,10 +86,10 @@ pub fn (o AliyunOSS) get_current_endpoint() string {
 }
 
 // ============================================================================
-// 阿里云 OSS 签名算法实现 (OSS Signature V1)
+// Alibaba Cloud OSS signature algorithm implementation (OSS Signature V1)
 // ============================================================================
 
-// 签名请求所需的信息
+// Information required to sign the request
 struct OSSSigningInfo {
 	method                    string
 	content_md5               string
@@ -99,21 +99,21 @@ struct OSSSigningInfo {
 	canonicalized_resource    string
 }
 
-// 创建签名信息
+//Create signature information
 fn (o AliyunOSS) create_signing_info(method string, bucket string, key string, headers map[string]string, query_params map[string]string) OSSSigningInfo {
-	// 获取 Content-MD5
+	// Get Content-MD5
 	content_md5 := headers['Content-MD5'] or { '' }
 
-	// 获取 Content-Type
+	// Get Content-Type
 	content_type := headers['Content-Type'] or { '' }
 
-	// 获取日期
+	// Get date
 	date := headers['Date'] or { '' }
 
-	// 构建规范化的 OSS 头
+	//Build a standardized OSS header
 	canonicalized_oss_headers := o.build_canonicalized_oss_headers(headers)
 
-	// 构建规范化的资源
+	// Build standardized resources
 	canonicalized_resource := o.build_canonicalized_resource(bucket, key, query_params)
 
 	return OSSSigningInfo{
@@ -126,9 +126,9 @@ fn (o AliyunOSS) create_signing_info(method string, bucket string, key string, h
 	}
 }
 
-// 构建规范化的 OSS 头
+//Build a standardized OSS header
 fn (o AliyunOSS) build_canonicalized_oss_headers(headers map[string]string) string {
-	// 收集所有以 x-oss- 开头的头
+	// Collect all headers starting with x-oss-
 	mut oss_headers := map[string]string{}
 	for key, value in headers {
 		lower_key := key.to_lower()
@@ -141,11 +141,11 @@ fn (o AliyunOSS) build_canonicalized_oss_headers(headers map[string]string) stri
 		return ''
 	}
 
-	// 按键排序
+	// Sort by key
 	mut keys := oss_headers.keys()
 	keys.sort()
 
-	// 构建规范化字符串
+	//Construct a normalized string
 	mut result := ''
 	for key in keys {
 		result += '${key}:${oss_headers[key]}\n'
@@ -155,16 +155,16 @@ fn (o AliyunOSS) build_canonicalized_oss_headers(headers map[string]string) stri
 }
 
 
-// 构建规范化的资源
+// Build standardized resources
 fn (o AliyunOSS) build_canonicalized_resource(bucket string, key string, query_params map[string]string) string {
 	mut resource := ''
 
-	// 添加 bucket
+	// add bucket
 	if bucket != '' {
 		resource = '/${bucket}'
 	}
 
-	// 添加 key
+	// add key
 	if key != '' {
 		resource += '/${key}'
 	} else if bucket != '' {
@@ -173,7 +173,7 @@ fn (o AliyunOSS) build_canonicalized_resource(bucket string, key string, query_p
 		resource = '/'
 	}
 
-	// 添加子资源参数（需要排序）
+	//Add sub-resource parameters (needs sorting)
 	sub_resources := [
 		'acl', 'uploads', 'location', 'cors', 'logging', 'website', 'referer',
 		'lifecycle', 'delete', 'append', 'tagging', 'objectMeta', 'uploadId',
@@ -204,9 +204,9 @@ fn (o AliyunOSS) build_canonicalized_resource(bucket string, key string, query_p
 	return resource
 }
 
-// 构建待签名字符串
+//Construct the string to be signed
 fn (o AliyunOSS) build_string_to_sign(info OSSSigningInfo) string {
-	// 如果有 OSS 头，需要在它和资源之间加换行
+	// If there is an OSS header, a newline needs to be added between it and the resource.
 	if info.canonicalized_oss_headers != '' {
 		return '${info.method}\n${info.content_md5}\n${info.content_type}\n${info.date}\n${info.canonicalized_oss_headers}${info.canonicalized_resource}'
 	}
@@ -214,30 +214,30 @@ fn (o AliyunOSS) build_string_to_sign(info OSSSigningInfo) string {
 	return '${info.method}\n${info.content_md5}\n${info.content_type}\n${info.date}\n${info.canonicalized_resource}'
 }
 
-// 计算签名
+// Calculate signature
 fn (o AliyunOSS) calculate_signature(string_to_sign string) string {
-	// 使用 HMAC-SHA1 计算签名
+	// Calculate signature using HMAC-SHA1
 	signature := oss_hmac_sha1(o.config.access_key_secret.bytes(), string_to_sign.bytes())
-	// Base64 编码
+	// Base64 encoding
 	return base64.encode(signature)
 }
 
-// HMAC-SHA1 实现
+// HMAC-SHA1 implementation
 fn oss_hmac_sha1(key []u8, data []u8) []u8 {
 	block_size := 64
 	mut k := key.clone()
 
-	// 如果 key 长度大于 block_size，先进行 hash
+	// If the key length is greater than block_size, hash first
 	if k.len > block_size {
 		k = sha1.sum(k)
 	}
 
-	// 如果 key 长度小于 block_size，用 0 填充
+	// If the key length is less than block_size, fill it with 0
 	for k.len < block_size {
 		k << u8(0)
 	}
 
-	// 计算 inner 和 outer padding
+	// Calculate inner and outer padding
 	mut i_pad := []u8{len: block_size}
 	mut o_pad := []u8{len: block_size}
 	for i in 0 .. block_size {
@@ -257,31 +257,31 @@ fn oss_hmac_sha1(key []u8, data []u8) []u8 {
 }
 
 
-// 签名请求并返回完整的请求头
+// Sign the request and return the complete request headers
 pub fn (o AliyunOSS) sign_request(method string, bucket string, key string, mut headers map[string]string, query_params map[string]string) map[string]string {
-	// 添加日期头
+	//Add date header
 	now := time.utc()
 	date := o.format_http_date(now)
 	headers['Date'] = date
 
-	// 创建签名信息
+	//Create signature information
 	info := o.create_signing_info(method, bucket, key, headers, query_params)
 
-	// 构建待签名字符串
+	//Construct the string to be signed
 	string_to_sign := o.build_string_to_sign(info)
 
-	// 计算签名
+	// Calculate signature
 	signature := o.calculate_signature(string_to_sign)
 
-	// 构建 Authorization 头
+	//Build the Authorization header
 	headers['Authorization'] = 'OSS ${o.config.access_key_id}:${signature}'
 
 	return headers
 }
 
-// 格式化 HTTP 日期
+// Format HTTP date
 fn (o AliyunOSS) format_http_date(t time.Time) string {
-	// HTTP 日期格式: "Mon, 02 Jan 2006 15:04:05 GMT"
+	// HTTP translated comment: "Mon, 02 Jan 2006 15:04:05 GMT"
 	days := ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 	months := ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -292,10 +292,10 @@ fn (o AliyunOSS) format_http_date(t time.Time) string {
 }
 
 // ============================================================================
-// HTTP 请求辅助方法
+// HTTP request helper method
 // ============================================================================
 
-// 获取主机名
+// Get the host name
 fn (o AliyunOSS) get_host(bucket string) string {
 	endpoint := o.get_current_endpoint()
 	if bucket != '' {
@@ -304,13 +304,13 @@ fn (o AliyunOSS) get_host(bucket string) string {
 	return endpoint
 }
 
-// 获取完整 URL
+// Get the full URL
 fn (o AliyunOSS) get_url(bucket string, key string, query_params map[string]string) string {
 	host := o.get_host(bucket)
 
 	mut path := ''
 	if key != '' {
-		// URL 编码 key，但保留 /
+		// URL encode key, but keep /
 		path = '/' + o.encode_key(key)
 	} else {
 		path = '/'
@@ -326,7 +326,7 @@ fn (o AliyunOSS) get_url(bucket string, key string, query_params map[string]stri
 	return url
 }
 
-// URL 编码 key（保留 /）
+// URL encoding key (reserved /)
 fn (o AliyunOSS) encode_key(key string) string {
 	parts := key.split('/')
 	mut encoded_parts := []string{}
@@ -336,7 +336,7 @@ fn (o AliyunOSS) encode_key(key string) string {
 	return encoded_parts.join('/')
 }
 
-// 构建查询字符串
+// Build query string
 fn (o AliyunOSS) build_query_string(params map[string]string) string {
 	if params.len == 0 {
 		return ''
@@ -359,31 +359,31 @@ fn (o AliyunOSS) build_query_string(params map[string]string) string {
 }
 
 
-// 执行 HTTP 请求
+//Perform HTTP request
 fn (o AliyunOSS) do_request(method http.Method, bucket string, key string, query_params map[string]string, extra_headers map[string]string, payload []u8) !http.Response {
 	url := o.get_url(bucket, key, query_params)
 
-	// 准备请求头
+	// Prepare request headers
 	mut headers := extra_headers.clone()
 	headers['Host'] = o.get_host(bucket)
 
-	// 如果有 payload，计算 Content-MD5
+	// If there is a payload, calculate Content-MD5
 	if payload.len > 0 {
 		md5_hash := md5.sum(payload)
 		headers['Content-MD5'] = base64.encode(md5_hash)
 		headers['Content-Length'] = payload.len.str()
 	}
 
-	// 签名请求
+	// Signature request
 	signed_headers := o.sign_request(method.str(), bucket, key, mut headers, query_params)
 
-	// 构建 http.Header
+	// Build http.Header
 	mut http_header := http.Header{}
 	for k, v in signed_headers {
 		http_header.add_custom(k, v) or {}
 	}
 
-	// 执行请求
+	//Execute the request
 	mut config := http.FetchConfig{
 		url: url
 		method: method
@@ -398,11 +398,11 @@ fn (o AliyunOSS) do_request(method http.Method, bucket string, key string, query
 	return response
 }
 
-// 解析 OSS 错误响应
+// Parse OSS error response
 fn (o AliyunOSS) parse_error_response(response http.Response, operation string) StorageError {
 	status := response.status_code
 
-	// 根据状态码判断错误类型
+	// Determine the error type based on the status code
 	kind := match status {
 		403 { StorageErrorKind.access_denied }
 		404 { StorageErrorKind.object_not_found }
@@ -412,7 +412,7 @@ fn (o AliyunOSS) parse_error_response(response http.Response, operation string) 
 		else { StorageErrorKind.unknown }
 	}
 
-	// 尝试从响应体解析错误消息
+	// Attempt to parse the error message from the response body
 	message := if response.body.len > 0 {
 		o.extract_error_message(response.body)
 	} else {
@@ -422,15 +422,15 @@ fn (o AliyunOSS) parse_error_response(response http.Response, operation string) 
 	return new_storage_error_with_status(kind, message, 'aliyun_oss', operation, status)
 }
 
-// 从 XML 错误响应中提取错误消息
+//Extract the error message from the XML error response
 fn (o AliyunOSS) extract_error_message(body string) string {
-	// 简单的 XML 解析，提取 <Message> 标签内容
+	// Simple XML parsing, extract <Message> tag content
 	if message_start := body.index('<Message>') {
 		if message_end := body.index('</Message>') {
 			return body[message_start + 9..message_end]
 		}
 	}
-	// 尝试提取 <Code> 标签
+	// Try to extract the <Code> tag
 	if code_start := body.index('<Code>') {
 		if code_end := body.index('</Code>') {
 			return body[code_start + 6..code_end]
@@ -439,7 +439,7 @@ fn (o AliyunOSS) extract_error_message(body string) string {
 	return body
 }
 
-// 计算数据的 ETag (MD5)
+// Calculate the ETag (MD5) of the data
 fn (o AliyunOSS) calculate_etag(data []u8) string {
 	hash := md5.sum(data)
 	mut result := ''
@@ -451,10 +451,10 @@ fn (o AliyunOSS) calculate_etag(data []u8) string {
 
 
 // ============================================================================
-// StorageProvider 接口实现 - 基本操作
+// StorageProvider interface implementation - basic operations
 // ============================================================================
 
-// 上传文件
+//Upload file
 pub fn (mut o AliyunOSS) upload(bucket string, key string, data []u8, content_type string) !StorageResult {
 	mut headers := map[string]string{}
 	if content_type != '' {
@@ -469,15 +469,15 @@ pub fn (mut o AliyunOSS) upload(bucket string, key string, data []u8, content_ty
 		return error(o.parse_error_response(response, 'upload').msg())
 	}
 
-	// 从响应头获取 ETag
+	// Get ETag from response header
 	etag := response.header.get_custom('ETag') or { o.calculate_etag(data) }
 
 	return new_storage_result(key, etag, i64(data.len))
 }
 
-// 流式上传文件
+// Streaming upload file
 pub fn (mut o AliyunOSS) upload_stream(bucket string, key string, mut reader io.Reader, size i64, content_type string) !StorageResult {
-	// 读取所有数据
+	// read all data
 	mut data := []u8{}
 	mut buf := []u8{len: 8192}
 	for {
@@ -491,7 +491,7 @@ pub fn (mut o AliyunOSS) upload_stream(bucket string, key string, mut reader io.
 	return o.upload(bucket, key, data, content_type)
 }
 
-// 下载文件
+// Download file
 pub fn (o AliyunOSS) download(bucket string, key string) ![]u8 {
 	response := o.do_request(.get, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 
@@ -506,7 +506,7 @@ pub fn (o AliyunOSS) download(bucket string, key string) ![]u8 {
 	return response.body.bytes()
 }
 
-// 流式下载文件
+// Streaming download file
 pub fn (o AliyunOSS) download_stream(bucket string, key string, mut writer io.Writer) !i64 {
 	data := o.download(bucket, key)!
 	written := writer.write(data) or {
@@ -515,11 +515,11 @@ pub fn (o AliyunOSS) download_stream(bucket string, key string, mut writer io.Wr
 	return i64(written)
 }
 
-// 删除文件
+// delete file
 pub fn (o AliyunOSS) delete(bucket string, key string) ! {
 	response := o.do_request(.delete, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 
-	// OSS 返回 204 或 200 表示成功删除
+	// OSS returns 204 or 200 to indicate successful deletion
 	if response.status_code != 204 && response.status_code != 200 {
 		if response.status_code == 404 {
 			return error(new_not_found_error('aliyun_oss', bucket, key).msg())
@@ -528,7 +528,7 @@ pub fn (o AliyunOSS) delete(bucket string, key string) ! {
 	}
 }
 
-// 检查文件是否存在
+// Check if the file exists
 pub fn (o AliyunOSS) exists(bucket string, key string) !bool {
 	response := o.do_request(.head, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 
@@ -544,10 +544,10 @@ pub fn (o AliyunOSS) exists(bucket string, key string) !bool {
 
 
 // ============================================================================
-// StorageProvider 接口实现 - 元数据操作
+// StorageProvider interface implementation - metadata operation
 // ============================================================================
 
-// 获取文件元数据
+// Get file metadata
 pub fn (o AliyunOSS) head(bucket string, key string) !ObjectInfo {
 	response := o.do_request(.head, bucket, key, map[string]string{}, map[string]string{}, []u8{})!
 
@@ -559,22 +559,22 @@ pub fn (o AliyunOSS) head(bucket string, key string) !ObjectInfo {
 		return error(o.parse_error_response(response, 'head').msg())
 	}
 
-	// 解析响应头
+	// Parse response headers
 	content_length := response.header.get_custom('Content-Length') or { '0' }
 	etag := response.header.get_custom('ETag') or { '' }
 	content_type := response.header.get_custom('Content-Type') or { 'application/octet-stream' }
 	last_modified_str := response.header.get_custom('Last-Modified') or { '' }
 
-	// 解析 Last-Modified 时间
+	// Parse Last-Modified time
 	last_modified := parse_oss_http_date(last_modified_str)
 
 	return new_object_info(key, content_length.i64(), etag, content_type, last_modified)
 }
 
-// 复制文件
+// copy file
 pub fn (mut o AliyunOSS) copy(src_bucket string, src_key string, dst_bucket string, dst_key string) !StorageResult {
 	mut headers := map[string]string{}
-	// OSS 复制源格式
+	// OSS copy source format
 	copy_source := '/${src_bucket}/${src_key}'
 	headers['x-oss-copy-source'] = copy_source
 
@@ -584,10 +584,10 @@ pub fn (mut o AliyunOSS) copy(src_bucket string, src_key string, dst_bucket stri
 		return error(o.parse_error_response(response, 'copy').msg())
 	}
 
-	// 从响应解析 ETag
+	// Parse ETag from response
 	etag := o.extract_copy_result_etag(response.body)
 
-	// 获取复制后文件的大小
+	// Get the size of the copied file
 	head_info := o.head(dst_bucket, dst_key) or {
 		return new_storage_result(dst_key, etag, 0)
 	}
@@ -595,7 +595,7 @@ pub fn (mut o AliyunOSS) copy(src_bucket string, src_key string, dst_bucket stri
 	return new_storage_result(dst_key, etag, head_info.size)
 }
 
-// 从复制结果 XML 中提取 ETag
+// Extract ETag from copy result XML
 fn (o AliyunOSS) extract_copy_result_etag(body string) string {
 	if etag_start := body.index('<ETag>') {
 		if etag_end := body.index('</ETag>') {
@@ -606,13 +606,13 @@ fn (o AliyunOSS) extract_copy_result_etag(body string) string {
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - 列表操作
+// StorageProvider interface implementation - list operation
 // ============================================================================
 
-// 列出文件
+// List files
 pub fn (o AliyunOSS) list(bucket string, options ListOptions) !ListResult {
 	mut query_params := map[string]string{}
-	query_params['list-type'] = '2' // 使用 ListObjectsV2
+	query_params['list-type'] = '2' //Use ListObjectsV2
 
 	if options.prefix != '' {
 		query_params['prefix'] = options.prefix
@@ -637,19 +637,19 @@ pub fn (o AliyunOSS) list(bucket string, options ListOptions) !ListResult {
 		return error(o.parse_error_response(response, 'list').msg())
 	}
 
-	// 解析 XML 响应
+	// Parse the XML response
 	return o.parse_list_objects_response(response.body)
 }
 
 
-// 解析 ListObjectsV2 响应
+// Parse ListObjectsV2 response
 fn (o AliyunOSS) parse_list_objects_response(body string) !ListResult {
 	mut objects := []ObjectInfo{}
 	mut common_prefixes := []string{}
 	mut is_truncated := false
 	mut next_marker := ''
 
-	// 解析 IsTruncated
+	// Parse IsTruncated
 	if truncated_start := body.index('<IsTruncated>') {
 		if truncated_end := body.index('</IsTruncated>') {
 			truncated_str := body[truncated_start + 13..truncated_end]
@@ -657,14 +657,14 @@ fn (o AliyunOSS) parse_list_objects_response(body string) !ListResult {
 		}
 	}
 
-	// 解析 NextContinuationToken
+	// Parse NextContinuationToken
 	if token_start := body.index('<NextContinuationToken>') {
 		if token_end := body.index('</NextContinuationToken>') {
 			next_marker = body[token_start + 23..token_end]
 		}
 	}
 
-	// 解析 Contents
+	// Parse Contents
 	mut search_pos := 0
 	for {
 		content_start := body.index_after('<Contents>', search_pos) or { break }
@@ -677,7 +677,7 @@ fn (o AliyunOSS) parse_list_objects_response(body string) !ListResult {
 		search_pos = content_end + 11
 	}
 
-	// 解析 CommonPrefixes
+	// Parse CommonPrefixes
 	search_pos = 0
 	for {
 		prefix_start := body.index_after('<CommonPrefixes>', search_pos) or { break }
@@ -696,7 +696,7 @@ fn (o AliyunOSS) parse_list_objects_response(body string) !ListResult {
 	return new_list_result(objects, common_prefixes, is_truncated, next_marker)
 }
 
-// 从 XML 解析单个对象信息
+// Parse single object information from XML
 fn (o AliyunOSS) parse_object_from_xml(xml string) ObjectInfo {
 	mut key := ''
 	mut size := i64(0)
@@ -735,27 +735,27 @@ fn (o AliyunOSS) parse_object_from_xml(xml string) ObjectInfo {
 
 
 // ============================================================================
-// StorageProvider 接口实现 - Bucket 操作
+//StorageProvider interface implementation - Bucket operation
 // ============================================================================
 
-// 创建 bucket
+//Create bucket
 pub fn (o AliyunOSS) create_bucket(bucket string) ! {
 	mut headers := map[string]string{}
 	headers['Content-Type'] = 'application/xml'
 
-	// 构建创建 bucket 的 XML
-	// 注意：OSS 需要指定存储类型和数据冗余类型
+	//Construct the XML that creates the bucket
+	// Note: OSS needs to specify the storage type and data redundancy type
 	payload := '<?xml version="1.0" encoding="UTF-8"?><CreateBucketConfiguration><StorageClass>Standard</StorageClass></CreateBucketConfiguration>'
 
 	response := o.do_request(.put, bucket, '', map[string]string{}, headers, payload.bytes())!
 
-	// 200 或 409 (BucketAlreadyExists) 都算成功
+	// 200 or 409 (BucketAlreadyExists) is considered successful
 	if response.status_code != 200 && response.status_code != 409 {
 		return error(o.parse_error_response(response, 'create_bucket').msg())
 	}
 }
 
-// 删除 bucket
+// delete bucket
 pub fn (o AliyunOSS) delete_bucket(bucket string) ! {
 	response := o.do_request(.delete, bucket, '', map[string]string{}, map[string]string{}, []u8{})!
 
@@ -767,7 +767,7 @@ pub fn (o AliyunOSS) delete_bucket(bucket string) ! {
 	}
 }
 
-// 检查 bucket 是否存在
+// Check if bucket exists
 pub fn (o AliyunOSS) bucket_exists(bucket string) !bool {
 	response := o.do_request(.head, bucket, '', map[string]string{}, map[string]string{}, []u8{})!
 
@@ -781,16 +781,16 @@ pub fn (o AliyunOSS) bucket_exists(bucket string) !bool {
 	return error(o.parse_error_response(response, 'bucket_exists').msg())
 }
 
-// 获取提供者名称
+// Get provider name
 pub fn (o AliyunOSS) provider_name() string {
 	return 'aliyun_oss'
 }
 
 // ============================================================================
-// StorageProvider 接口实现 - 分片上传
+//StorageProvider interface implementation - multipart upload
 // ============================================================================
 
-// 初始化分片上传
+//Initialize multipart upload
 pub fn (mut o AliyunOSS) init_multipart(bucket string, key string, content_type string) !string {
 	mut query_params := map[string]string{}
 	query_params['uploads'] = ''
@@ -806,13 +806,13 @@ pub fn (mut o AliyunOSS) init_multipart(bucket string, key string, content_type 
 		return error(o.parse_error_response(response, 'init_multipart').msg())
 	}
 
-	// 从 XML 响应中提取 UploadId
+	//Extract the UploadId from the XML response
 	upload_id := o.extract_upload_id(response.body)
 	if upload_id == '' {
 		return error(new_storage_error(.unknown, 'Failed to parse UploadId from response', 'aliyun_oss', 'init_multipart').msg())
 	}
 
-	// 记录上传状态
+	//Record upload status
 	o.multipart_uploads[upload_id] = OSSMultipartUploadState{
 		bucket: bucket
 		key: key
@@ -825,7 +825,7 @@ pub fn (mut o AliyunOSS) init_multipart(bucket string, key string, content_type 
 	return upload_id
 }
 
-// 从 InitiateMultipartUploadResult XML 中提取 UploadId
+// Extract UploadId from InitiateMultipartUploadResult XML
 fn (o AliyunOSS) extract_upload_id(body string) string {
 	if id_start := body.index('<UploadId>') {
 		if id_end := body.index('</UploadId>') {
@@ -836,7 +836,7 @@ fn (o AliyunOSS) extract_upload_id(body string) string {
 }
 
 
-// 上传分片
+//Upload fragments
 pub fn (mut o AliyunOSS) upload_part(bucket string, key string, upload_id string, part_number int, data []u8) !string {
 	mut query_params := map[string]string{}
 	query_params['partNumber'] = part_number.str()
@@ -851,10 +851,10 @@ pub fn (mut o AliyunOSS) upload_part(bucket string, key string, upload_id string
 		return error(o.parse_error_response(response, 'upload_part').msg())
 	}
 
-	// 从响应头获取 ETag
+	// Get ETag from response header
 	etag := response.header.get_custom('ETag') or { o.calculate_etag(data) }
 
-	// 更新上传状态
+	//Update upload status
 	if upload_id in o.multipart_uploads {
 		mut upload_state := o.multipart_uploads[upload_id]
 		upload_state.parts[part_number] = new_part_info(part_number, etag, i64(data.len))
@@ -864,12 +864,12 @@ pub fn (mut o AliyunOSS) upload_part(bucket string, key string, upload_id string
 	return etag
 }
 
-// 完成分片上传
+//Complete multipart upload
 pub fn (mut o AliyunOSS) complete_multipart(bucket string, key string, upload_id string, parts []PartInfo) !StorageResult {
 	mut query_params := map[string]string{}
 	query_params['uploadId'] = upload_id
 
-	// 构建 CompleteMultipartUpload XML
+	// Build CompleteMultipartUpload XML
 	mut xml_parts := '<?xml version="1.0" encoding="UTF-8"?><CompleteMultipartUpload>'
 	for part in parts {
 		xml_parts += '<Part>'
@@ -889,22 +889,22 @@ pub fn (mut o AliyunOSS) complete_multipart(bucket string, key string, upload_id
 		return error(o.parse_error_response(response, 'complete_multipart').msg())
 	}
 
-	// 从响应解析 ETag
+	// Parse ETag from response
 	etag := o.extract_complete_multipart_etag(response.body)
 
-	// 计算总大小
+	// Calculate total size
 	mut total_size := i64(0)
 	for part in parts {
 		total_size += part.size
 	}
 
-	// 清理上传状态
+	// Clear upload status
 	o.multipart_uploads.delete(upload_id)
 
 	return new_storage_result(key, etag, total_size)
 }
 
-// 从 CompleteMultipartUploadResult XML 中提取 ETag
+// Extract ETag from CompleteMultipartUploadResult XML
 fn (o AliyunOSS) extract_complete_multipart_etag(body string) string {
 	if etag_start := body.index('<ETag>') {
 		if etag_end := body.index('</ETag>') {
@@ -914,7 +914,7 @@ fn (o AliyunOSS) extract_complete_multipart_etag(body string) string {
 	return ''
 }
 
-// 取消分片上传
+//Cancel multipart upload
 pub fn (mut o AliyunOSS) abort_multipart(bucket string, key string, upload_id string) ! {
 	mut query_params := map[string]string{}
 	query_params['uploadId'] = upload_id
@@ -925,23 +925,23 @@ pub fn (mut o AliyunOSS) abort_multipart(bucket string, key string, upload_id st
 		return error(o.parse_error_response(response, 'abort_multipart').msg())
 	}
 
-	// 清理上传状态
+	// Clear upload status
 	o.multipart_uploads.delete(upload_id)
 }
 
 
 // ============================================================================
-// StorageProvider 接口实现 - 预签名 URL
+// StorageProvider interface implementation - pre-signed URL
 // ============================================================================
 
-// 生成预签名 URL
+// Generate pre-signed URL
 pub fn (o AliyunOSS) presign_url(bucket string, key string, options PresignOptions) !string {
-	// 计算过期时间戳
+	// Calculate expiration timestamp
 	now := time.utc()
 	expires := now.unix() + i64(options.expires_in)
 
-	// 构建待签名字符串
-	// 格式: METHOD\n\nContent-Type\nExpires\nCanonicalizedOSSHeaders\nCanonicalizedResource
+	//Construct the string to be signed
+	// Format: METHOD\n\nContent-Type\nExpires\nCanonicalizedOSSHeaders\nCanonicalizedResource
 	mut content_type := ''
 	if options.content_type != '' {
 		content_type = options.content_type
@@ -951,10 +951,10 @@ pub fn (o AliyunOSS) presign_url(bucket string, key string, options PresignOptio
 
 	string_to_sign := '${options.method}\n\n${content_type}\n${expires}\n${canonicalized_resource}'
 
-	// 计算签名
+	// Calculate signature
 	signature := o.calculate_signature(string_to_sign)
 
-	// 构建 URL
+	// Build URL
 	host := o.get_host(bucket)
 	encoded_key := o.encode_key(key)
 
@@ -967,25 +967,25 @@ pub fn (o AliyunOSS) presign_url(bucket string, key string, options PresignOptio
 }
 
 // ============================================================================
-// 辅助函数
+// helper function
 // ============================================================================
 
-// 解析 OSS HTTP 日期格式
+// Parse OSS HTTP date format
 fn parse_oss_http_date(date_str string) i64 {
 	if date_str == '' {
 		return 0
 	}
-	// HTTP 日期格式: "Mon, 02 Jan 2006 15:04:05 GMT"
-	// 简化处理，返回当前时间
+	// HTTP translated comment: "Mon, 02 Jan 2006 15:04:05 GMT"
+	// Simplify processing and return the current time
 	return time.now().unix()
 }
 
-// 解析 OSS ISO8601 日期格式
+// Parse OSS ISO8601 date format
 fn parse_oss_iso8601_date(date_str string) i64 {
 	if date_str == '' {
 		return 0
 	}
-	// ISO8601 格式: "2006-01-02T15:04:05.000Z"
-	// 简化处理，返回当前时间
+	// ISO8601 format: "2006-01-02T15:04:05.000Z"
+	// Simplify processing and return the current time
 	return time.now().unix()
 }

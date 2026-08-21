@@ -3,7 +3,7 @@ import compress.zlib
 import rand
 import time
 
-// Compression Middleware 属性测试
+// Compression Middleware property test
 // Property-Based Testing for Compression functionality
 // 
 // Note: These tests validate the compression round-trip properties
@@ -45,7 +45,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机字符串（用于测试压缩）
+// Generate random string (for testing compression)
 fn generate_random_string(min_len int, max_len int) string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 \t\n!@#\$%^&*()_+-=[]{}|;:,.<>?'
 	len := rand.int_in_range(min_len, max_len) or { min_len }
@@ -57,7 +57,7 @@ fn generate_random_string(min_len int, max_len int) string {
 	return result
 }
 
-// 生成可压缩的文本（重复模式更容易压缩）
+// Generate compressible text (repeating patterns are easier to compress)
 fn generate_compressible_text(min_len int, max_len int) string {
 	patterns := [
 		'Hello World! ',

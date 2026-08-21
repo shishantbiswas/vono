@@ -2,25 +2,25 @@ module hono
 
 import net.http
 
-// BearerToken 类型 - 支持单 token 或多 token 配置
+// BearerToken type - supports single token or multi-token configuration
 pub type BearerToken = string | []string
 
-// BearerAuthOptions 结构体 - Bearer Auth 配置选项
+// BearerAuthOptions structure - Bearer Auth configuration options
 pub struct BearerAuthOptions {
 pub:
-	token         BearerToken                         // Token 配置（必需）
+	token         BearerToken                         //Token configuration (required)
 	realm         string                              // WWW-Authenticate realm
-	prefix        string       = 'Bearer'             // 认证前缀，默认 "Bearer"
-	header_name   string       = 'Authorization'      // 请求头名称，默认 "Authorization"
-	hash_function ?fn (string) string                 // 哈希函数（用于安全比较）
-	verify_token  ?fn (string, Context) bool          // 自定义验证回调
+	prefix        string       = 'Bearer'             // Authentication prefix, default "Bearer"
+	header_name   string       = 'Authorization'      //Request header name, default "Authorization"
+	hash_function ?fn (string) string                 // Hash function (for safe comparison)
+	verify_token  ?fn (string, Context) bool          // Custom verification callback
 }
 
-// bearer_auth - Bearer Auth 中间件工厂函数
-// 返回一个 ContextMiddleware，用于验证 Bearer Token
+// bearer_auth - Bearer Auth middleware factory function
+// Return a ContextMiddleware for verifying Bearer Token
 pub fn bearer_auth(options BearerAuthOptions) ContextMiddleware {
 	return fn [options] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 获取 Authorization 头
+		// Get the Authorization header
 		auth_header := c.req.header.get_custom(options.header_name) or {
 			return unauthorized_response(mut c, options.realm, 'Missing authorization header')
 		}
@@ -29,25 +29,25 @@ pub fn bearer_auth(options BearerAuthOptions) ContextMiddleware {
 			return unauthorized_response(mut c, options.realm, 'Missing authorization header')
 		}
 
-		// 解析 token
+		// parse token
 		token := extract_bearer_token(auth_header, options.prefix) or {
 			return unauthorized_response(mut c, options.realm, 'Invalid token format')
 		}
 
-		// 验证 token
+		//Verify token
 		if !validate_bearer_token(token, options, c) {
 			return unauthorized_response(mut c, options.realm, 'Invalid token')
 		}
 
-		// 将 token 存储到 Context（便于后续使用）
+		// Store token in Context (for subsequent use)
 		c.set('bearer_token', token)
 
-		// 继续处理请求
+		// Continue processing the request
 		return next(mut c)
 	}
 }
 
-// extract_bearer_token - 从 Authorization 头提取 token
+// extract_bearer_token - extract token from Authorization header
 fn extract_bearer_token(auth_header string, prefix string) !string {
 	expected_prefix := '${prefix} '
 
@@ -64,21 +64,21 @@ fn extract_bearer_token(auth_header string, prefix string) !string {
 	return token
 }
 
-// validate_bearer_token - 验证 Bearer Token
+// validate_bearer_token - validate Bearer Token
 fn validate_bearer_token(token string, options BearerAuthOptions, c Context) bool {
-	// 优先使用自定义验证回调
+	// Prioritize using custom verification callbacks
 	if verify_fn := options.verify_token {
 		return verify_fn(token, c)
 	}
 
-	// 使用配置的 token 进行验证
+	// Use configured token for verification
 	match options.token {
 		string {
-			// 单 token 验证
+			//Single token verification
 			return secure_token_compare(token, options.token, options.hash_function)
 		}
 		[]string {
-			// 多 token 验证
+			//Multi-token verification
 			for valid_token in options.token {
 				if secure_token_compare(token, valid_token, options.hash_function) {
 					return true
@@ -89,20 +89,20 @@ fn validate_bearer_token(token string, options BearerAuthOptions, c Context) boo
 	}
 }
 
-// secure_token_compare - 安全的 token 比较（防止时序攻击）
+// secure_token_compare - secure token comparison (prevent timing attacks)
 fn secure_token_compare(provided string, expected string, hash_fn ?fn (string) string) bool {
-	// 如果提供了哈希函数，先对 token 进行哈希
+	// If a hash function is provided, hash the token first
 	if hash_function := hash_fn {
 		hashed_provided := hash_function(provided)
 		hashed_expected := hash_function(expected)
 		return constant_time_compare_bearer(hashed_provided, hashed_expected)
 	}
 
-	// 直接使用常量时间比较
+	// Use constant time comparison directly
 	return constant_time_compare_bearer(provided, expected)
 }
 
-// constant_time_compare_bearer - 常量时间字符串比较，防止时序攻击
+// constant_time_compare_bearer - constant time string comparison to prevent timing attacks
 fn constant_time_compare_bearer(a string, b string) bool {
 	if a.len != b.len {
 		return false
@@ -116,11 +116,11 @@ fn constant_time_compare_bearer(a string, b string) bool {
 	return result == 0
 }
 
-// unauthorized_response - 返回 401 未授权响应
+// unauthorized_response - returns 401 unauthorized response
 fn unauthorized_response(mut c Context, realm string, message string) http.Response {
 	c.status(401)
 
-	// 设置 WWW-Authenticate 头
+	// Set WWW-Authenticate header
 	mut www_auth := 'Bearer'
 	if realm.len > 0 {
 		www_auth = 'Bearer realm="${realm}"'
@@ -130,8 +130,8 @@ fn unauthorized_response(mut c Context, realm string, message string) http.Respo
 	return c.json('{"error":"Unauthorized","message":"${message}"}')
 }
 
-// get_bearer_token - 从 Context 获取已验证的 Bearer Token
-// 这是一个便捷方法，用于在 handler 中获取已验证的 token
+// get_bearer_token - Get the verified Bearer Token from the Context
+// This is a convenience method for getting the verified token in the handler
 pub fn get_bearer_token(c Context) ?string {
 	return c.get('bearer_token')
 }

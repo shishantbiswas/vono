@@ -1,8 +1,8 @@
-// test_openapi_structures.v - 测试 OpenAPI 数据结构
+// test_openapi_structures.v - Test OpenAPI data structures
 import meiseayoung.hono
 
-// OpenAPI 数据结构测试
-// 测试 OpenAPI 3.0/3.1 规范的数据结构定义
+// OpenAPI data structure test
+// Test the data structure definition of OpenAPI 3.0/3.1 specification
 
 struct TestStats {
 mut:
@@ -37,7 +37,7 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 测试 1: OpenAPIContact 结构体
+//Test 1: OpenAPIContact structure
 fn test_openapi_contact() bool {
 	contact := hono.OpenAPIContact{
 		name: 'API Support'
@@ -49,7 +49,7 @@ fn test_openapi_contact() bool {
 		contact.email == 'support@example.com'
 }
 
-// 测试 2: OpenAPILicense 结构体
+//Test 2: OpenAPILicense structure
 fn test_openapi_license() bool {
 	license := hono.OpenAPILicense{
 		name: 'MIT'
@@ -59,7 +59,7 @@ fn test_openapi_license() bool {
 		license.url == 'https://opensource.org/licenses/MIT'
 }
 
-// 测试 3: OpenAPIInfo 结构体
+//Test 3: OpenAPIInfo structure
 fn test_openapi_info() bool {
 	info := hono.OpenAPIInfo{
 		title: 'My API'
@@ -78,7 +78,7 @@ fn test_openapi_info() bool {
 		info.description == 'A sample API'
 }
 
-// 测试 4: OpenAPIServer 结构体
+//Test 4: OpenAPIServer structure
 fn test_openapi_server() bool {
 	server := hono.OpenAPIServer{
 		url: 'https://api.example.com'
@@ -88,7 +88,7 @@ fn test_openapi_server() bool {
 		server.description == 'Production server'
 }
 
-// 测试 5: OpenAPITag 结构体
+//Test 5: OpenAPITag structure
 fn test_openapi_tag() bool {
 	tag := hono.OpenAPITag{
 		name: 'users'
@@ -102,7 +102,7 @@ fn test_openapi_tag() bool {
 		tag.description == 'User operations'
 }
 
-// 测试 6: OpenAPIParameter 结构体
+//Test 6: OpenAPIParameter structure
 fn test_openapi_parameter() bool {
 	param := hono.OpenAPIParameter{
 		name: 'id'
@@ -120,7 +120,7 @@ fn test_openapi_parameter() bool {
 		param.required == true
 }
 
-// 测试 7: OpenAPIResponse 结构体
+//Test 7: OpenAPIResponse structure
 fn test_openapi_response() bool {
 	response := hono.OpenAPIResponse{
 		description: 'Successful response'
@@ -136,7 +136,7 @@ fn test_openapi_response() bool {
 		'application/json' in response.content
 }
 
-// 测试 8: OpenAPIOperation 结构体
+//Test 8: OpenAPIOperation structure
 fn test_openapi_operation() bool {
 	op := hono.OpenAPIOperation{
 		summary: 'Get user'
@@ -154,7 +154,7 @@ fn test_openapi_operation() bool {
 		'users' in op.tags
 }
 
-// 测试 9: OpenAPIPathItem 结构体
+//Test 9: OpenAPIPathItem structure
 fn test_openapi_path_item() bool {
 	path_item := hono.OpenAPIPathItem{
 		summary: 'User operations'
@@ -180,7 +180,7 @@ fn test_openapi_path_item() bool {
 		path_item.post.summary == 'Create user'
 }
 
-// 测试 10: OpenAPISchema 结构体
+//Test 10: OpenAPISchema structure
 fn test_openapi_schema() bool {
 	schema := hono.OpenAPISchema{
 		schema_type: 'object'
@@ -203,7 +203,7 @@ fn test_openapi_schema() bool {
 		'name' in schema.properties
 }
 
-// 测试 11: OpenAPISecurityScheme 结构体
+//Test 11: OpenAPISecurityScheme structure
 fn test_openapi_security_scheme() bool {
 	scheme := hono.OpenAPISecurityScheme{
 		scheme_type: 'http'
@@ -216,7 +216,7 @@ fn test_openapi_security_scheme() bool {
 		scheme.bearer_format == 'JWT'
 }
 
-// 测试 12: OpenAPIComponents 结构体
+// Test 12: OpenAPIComponents structure
 fn test_openapi_components() bool {
 	components := hono.OpenAPIComponents{
 		schemas: {
@@ -235,7 +235,7 @@ fn test_openapi_components() bool {
 		'bearerAuth' in components.security_schemes
 }
 
-// 测试 13: OpenAPIDocument 结构体
+//Test 13: OpenAPIDocument structure
 fn test_openapi_document() bool {
 	doc := hono.OpenAPIDocument{
 		openapi: '3.0.0'
@@ -271,7 +271,7 @@ fn test_openapi_document() bool {
 		'/users' in doc.paths
 }
 
-// 测试 14: 参数位置支持 (path, query, header, cookie)
+// Test 14: Parameter position support (path, query, header, cookie)
 fn test_parameter_locations() bool {
 	locations := ['path', 'query', 'header', 'cookie']
 	for loc in locations {
@@ -286,7 +286,7 @@ fn test_parameter_locations() bool {
 	return true
 }
 
-// 测试 15: HTTP 方法支持
+// Test 15: HTTP method support
 fn test_http_methods() bool {
 	path_item := hono.OpenAPIPathItem{
 		get: hono.OpenAPIOperation{
@@ -332,7 +332,7 @@ fn main() {
 
 	mut stats := TestStats{}
 
-	// 运行所有测试
+	//Run all tests
 	stats.run_test('OpenAPIContact 结构体', test_openapi_contact)
 	stats.run_test('OpenAPILicense 结构体', test_openapi_license)
 	stats.run_test('OpenAPIInfo 结构体', test_openapi_info)
@@ -349,6 +349,6 @@ fn main() {
 	stats.run_test('参数位置支持', test_parameter_locations)
 	stats.run_test('HTTP 方法支持', test_http_methods)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

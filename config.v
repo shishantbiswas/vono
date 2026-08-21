@@ -3,30 +3,30 @@ module hono
 import os
 import x.json2
 
-// 服务器配置结构
+// Server configuration structure
 pub struct ServerConfig {
 pub mut:
 	host              string = '127.0.0.1'
 	port              int    = 8080
-	read_timeout      int    = 30  // 秒
-	write_timeout     int    = 30  // 秒
+	read_timeout      int    = 30  // Second
+	write_timeout     int    = 30  // Second
 	max_request_size  u64    = 10 * 1024 * 1024  // 10MB
 	enable_cors       bool   = true
 	enable_gzip       bool   = true
 }
 
-// 静态文件配置
+// Static file configuration
 pub struct StaticConfig {
 pub mut:
 	enabled           bool   = true
 	root_dir          string = './static'
 	index_files       []string = ['index.html', 'index.htm']
-	cache_max_age     int    = 3600  // 秒
+	cache_max_age     int    = 3600  // Second
 	enable_directory_listing bool
 	allowed_extensions []string = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.txt', '.pdf']
 }
 
-// 上传配置
+//Upload configuration
 pub struct UploadConfig {
 pub mut:
 	enabled           bool   = true
@@ -35,19 +35,19 @@ pub mut:
 	max_chunk_size    u64    = 5 * 1024 * 1024    // 5MB
 	merge_buffer_size int    = 8192  // 8KB
 	allowed_types     []string = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif']
-	cleanup_timeout   int    = 3600  // 秒，清理未完成上传的超时时间
+	cleanup_timeout   int    = 3600  //Seconds, timeout for cleaning up unfinished uploads
 }
 
-// 缓存配置
+// cache configuration
 pub struct CacheConfig {
 pub mut:
 	enabled           bool = true
 	max_size          int  = 1000
-	default_ttl       int  = 300   // 秒
-	cleanup_interval  int  = 60    // 秒
+	default_ttl       int  = 300   // Second
+	cleanup_interval  int  = 60    // Second
 }
 
-// 安全配置
+//security configuration
 pub struct SecurityConfig {
 pub mut:
 	enable_path_validation    bool = true
@@ -59,7 +59,7 @@ pub mut:
 	enable_csrf_protection   bool
 }
 
-// 日志配置
+//Log configuration
 pub struct LogConfig {
 pub mut:
 	enabled           bool   = true
@@ -71,7 +71,7 @@ pub mut:
 	enable_request_log bool  = true
 }
 
-// 应用配置主结构
+// Application configuration main structure
 pub struct AppConfig {
 pub mut:
 	server   ServerConfig
@@ -84,7 +84,7 @@ pub mut:
 	env      string = 'development'  // development, production, test
 }
 
-// 默认配置
+//Default configuration
 pub fn default_config() AppConfig {
 	return AppConfig{
 		server: ServerConfig{}
@@ -96,7 +96,7 @@ pub fn default_config() AppConfig {
 	}
 }
 
-// 从文件加载配置
+//Load configuration from file
 pub fn load_config(config_path string) !AppConfig {
 	if !os.exists(config_path) {
 		println('配置文件不存在: ${config_path}，使用默认配置')
@@ -111,7 +111,7 @@ pub fn load_config(config_path string) !AppConfig {
 		return error('配置文件格式错误: ${err}')
 	}
 	
-	// 验证配置
+	//Verify configuration
 	validate_config(config) or {
 		return error('配置验证失败: ${err}')
 	}
@@ -120,11 +120,11 @@ pub fn load_config(config_path string) !AppConfig {
 	return config
 }
 
-// 保存配置到文件
+//Save configuration to file
 pub fn save_config(config AppConfig, config_path string) ! {
 	config_json := json2.encode[AppConfig](config, prettify: true)
 	
-	// 确保目录存在
+	// Make sure the directory exists
 	config_dir := os.dir(config_path)
 	if !os.exists(config_dir) {
 		os.mkdir_all(config_dir) or {
@@ -139,11 +139,11 @@ pub fn save_config(config AppConfig, config_path string) ! {
 	println('配置已保存到: ${config_path}')
 }
 
-// 从环境变量加载配置
+//Load configuration from environment variables
 pub fn load_config_from_env() AppConfig {
 	mut config := default_config()
 	
-	// 服务器配置
+	// Server configuration
 	host := os.getenv('HONO_HOST')
 	if host != '' {
 		config.server.host = host
@@ -164,7 +164,7 @@ pub fn load_config_from_env() AppConfig {
 		config.debug = debug_str.to_lower() in ['true', '1', 'yes']
 	}
 	
-	// 上传配置
+	//Upload configuration
 	upload_dir := os.getenv('HONO_UPLOAD_DIR')
 	if upload_dir != '' {
 		config.upload.upload_dir = upload_dir
@@ -175,7 +175,7 @@ pub fn load_config_from_env() AppConfig {
 		config.static.root_dir = static_dir
 	}
 	
-	// 日志配置
+	//Log configuration
 	log_level := os.getenv('HONO_LOG_LEVEL')
 	if log_level != '' {
 		config.log.level = log_level
@@ -189,19 +189,19 @@ pub fn load_config_from_env() AppConfig {
 	return config
 }
 
-// 验证配置
+//Verify configuration
 pub fn validate_config(config AppConfig) ! {
-	// 验证端口范围
+	// Verify port range
 	if config.server.port < 1 || config.server.port > 65535 {
 		return error('端口号必须在 1-65535 范围内')
 	}
 	
-	// 验证超时设置
+	// Verification timeout settings
 	if config.server.read_timeout < 1 || config.server.write_timeout < 1 {
 		return error('超时时间必须大于0')
 	}
 	
-	// 验证文件大小限制
+	// Verify file size limit
 	if config.server.max_request_size < 1024 {
 		return error('最大请求大小不能小于1KB')
 	}
@@ -214,22 +214,22 @@ pub fn validate_config(config AppConfig) ! {
 		return error('最大分片大小不能小于1KB')
 	}
 	
-	// 验证缓存配置
+	//Verify cache configuration
 	if config.cache.max_size < 1 {
 		return error('缓存最大大小必须大于0')
 	}
 	
-	// 验证日志级别
+	// Verify log level
 	if config.log.level !in ['debug', 'info', 'warn', 'error'] {
 		return error('日志级别必须是: debug, info, warn, error 之一')
 	}
 	
-	// 验证环境
+	// Verify environment
 	if config.env !in ['development', 'production', 'test'] {
 		return error('环境必须是: development, production, test 之一')
 	}
 	
-	// 验证目录路径
+	//Verify directory path
 	if config.static.enabled && config.static.root_dir == '' {
 		return error('静态文件目录不能为空')
 	}
@@ -239,7 +239,7 @@ pub fn validate_config(config AppConfig) ! {
 	}
 }
 
-// 创建示例配置文件
+//Create a sample configuration file
 pub fn create_example_config(config_path string) ! {
 	config := default_config()
 	save_config(config, config_path) or {
@@ -248,7 +248,7 @@ pub fn create_example_config(config_path string) ! {
 	println('示例配置文件已创建: ${config_path}')
 }
 
-// 获取配置摘要信息
+// Get configuration summary information
 pub fn get_config_summary(config AppConfig) string {
 	mut summary := []string{}
 	
@@ -292,12 +292,12 @@ pub fn get_config_summary(config AppConfig) string {
 	return summary.join('\n')
 }
 
-// 合并配置（用于配置覆盖）
+// Merge configuration (for configuration override)
 pub fn merge_config(base AppConfig, override AppConfig) AppConfig {
 	mut merged := base
 	
-	// 这里可以实现更复杂的合并逻辑
-	// 目前简单地用override覆盖base的非零值
+	// More complex merge logic can be implemented here
+	// Currently simply use override to cover the non-zero value of base
 	if override.server.host != '' {
 		merged.server.host = override.server.host
 	}

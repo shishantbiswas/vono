@@ -7,7 +7,7 @@ import crypto.md5
 
 // ============================================================================
 // Property 1: Upload-Download Round Trip (Local)
-// Feature: v-hono-upload-integration, Property 1: Upload-Download Round Trip
+// Feature: vono-upload-integration, Property 1: Upload-Download Round Trip
 // Validates: Requirements 1.2, 2.3
 //
 // *For any* valid file data and any storage provider (Local, S3, OSS, COS),
@@ -79,7 +79,7 @@ pub:
 }
 
 
-// LocalStorage 本地存储提供者
+// LocalStorage local storage provider
 struct LocalStorage {
 	config LocalStorageConfig
 mut:
@@ -95,7 +95,7 @@ mut:
 	created_at   i64
 }
 
-// 创建本地存储提供者
+//Create local storage provider
 fn new_local_storage(config LocalStorageConfig) !LocalStorage {
 	if config.create_dirs {
 		os.mkdir_all(config.base_path) or {
@@ -634,7 +634,7 @@ fn test_property_1_5_etag_consistency() bool {
 
 fn main() {
 	println('🚀 开始 Upload-Download Round Trip 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 1: Upload-Download Round Trip (Local)')
+	println('Feature: vono-upload-integration, Property 1: Upload-Download Round Trip (Local)')
 	println('Validates: Requirements 1.2, 2.3')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

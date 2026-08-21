@@ -5,19 +5,19 @@ import net.http
 fn main() {
 	println('=== FastRouter 功能迁移完成验证 ===')
 	
-	// 测试1: 验证所有高级功能已迁移
+	//Test 1: Verify that all advanced features have been migrated
 	test_all_advanced_features()
 	
-	// 测试2: 验证性能提升
+	//Test 2: Verify performance improvement
 	test_performance_improvements()
 	
-	// 测试3: 验证向后兼容性
+	//Test 3: Verify backward compatibility
 	test_backward_compatibility()
 	
-	// 测试4: 验证新增功能
+	//Test 4: Verify new features
 	test_new_features()
 	
-	// 测试5: 最终性能基准测试
+	//Test 5: Final performance benchmark
 	test_final_benchmark()
 	
 	println('\n🎉 FastRouter 功能迁移验证完成！')
@@ -32,7 +32,7 @@ fn test_all_advanced_features() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 功能清单验证
+	// Function list verification
 	features := [
 		'✅ 预编译路由系统',
 		'✅ LRU 缓存机制',
@@ -51,10 +51,10 @@ fn test_all_advanced_features() {
 		println('    ${feature}')
 	}
 	
-	// 验证核心接口
+	//Verify core interface
 	println('\n  🔧 核心接口验证:')
 	
-	// 1. 路由添加
+	// 1. Route addition
 	handler := hono.ContextHandler{
 		path: '/test/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -67,31 +67,31 @@ fn test_all_advanced_features() {
 	}
 	println('    ✅ add_route() - 路由添加')
 	
-	// 2. 路由匹配
+	// 2. Route matching
 	if _ := router.match_route('GET', '/test/123') {
 		println('    ✅ match_route() - 路由匹配')
 	} else {
 		println('    ❌ 路由匹配接口失败')
 	}
 	
-	// 3. 统计信息
+	// 3. Statistics
 	static_count, dynamic_count, cache_count := router.get_stats()
 	println('    ✅ get_stats() - 基本统计: ${static_count}/${dynamic_count}/${cache_count}')
 	
-	// 4. 详细统计
+	// 4. Detailed statistics
 	detailed_stats := router.get_detailed_stats()
 	println('    ✅ get_detailed_stats() - 详细统计: ${detailed_stats.len} 项')
 	
-	// 5. 缓存管理
+	// 5. Cache management
 	router.clear_cache()
 	println('    ✅ clear_cache() - 缓存清理')
 	
-	// 6. 健康检查
+	// 6. Health check
 	if router.is_healthy() {
 		println('    ✅ is_healthy() - 健康检查')
 	}
 	
-	// 7. 性能分析
+	// 7. Performance analysis
 	println('    ✅ analyze_performance() - 性能分析:')
 	router.analyze_performance()
 }
@@ -99,11 +99,11 @@ fn test_all_advanced_features() {
 fn test_performance_improvements() {
 	println('\n📈 验证性能提升...')
 	
-	// 创建测试路由
+	//Create test route
 	mut enhanced_router := hono.FastRouter.new()
 	mut original_router := hono.ContextHybridRouter.new()
 	
-	// 添加相同的测试路由
+	//Add the same test route
 	test_routes := [
 		'/api/:version/users/:id',
 		'/posts/:id/comments/:comment_id',
@@ -140,7 +140,7 @@ fn test_performance_improvements() {
 	
 	iterations := 3000
 	
-	// 测试冷启动性能
+	//Test cold start performance
 	enhanced_router.clear_cache()
 	original_router.clear_cache()
 	original_router.clear_regex_cache()
@@ -197,7 +197,7 @@ fn test_backward_compatibility() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 测试原有接口是否保持兼容
+	// Test whether the original interface remains compatible
 	_ := [
 		'add_route() 接口',
 		'match_route() 接口',
@@ -209,7 +209,7 @@ fn test_backward_compatibility() {
 	
 	println('  📋 兼容性测试清单:')
 	
-	// 1. add_route 兼容性
+	// 1. add_route compatibility
 	handler1 := hono.ContextHandler{
 		path: '/users/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -222,7 +222,7 @@ fn test_backward_compatibility() {
 	}
 	println('    ✅ add_route() 接口兼容')
 	
-	// 2. match_route 兼容性
+	// 2. match_route compatibility
 	if match_result := router.match_route('GET', '/users/123') {
 		if match_result.params['id'] == '123' {
 			println('    ✅ match_route() 接口兼容')
@@ -233,7 +233,7 @@ fn test_backward_compatibility() {
 		println('    ❌ match_route() 接口不兼容')
 	}
 	
-	// 3. get_stats 兼容性
+	// 3. get_stats compatibility
 	static_count, dynamic_count, cache_count := router.get_stats()
 	if static_count >= 0 && dynamic_count >= 0 && cache_count >= 0 {
 		println('    ✅ get_stats() 接口兼容')
@@ -241,11 +241,11 @@ fn test_backward_compatibility() {
 		println('    ❌ get_stats() 接口不兼容')
 	}
 	
-	// 4. clear_cache 兼容性
+	// 4. clear_cache compatibility
 	router.clear_cache()
 	println('    ✅ clear_cache() 接口兼容')
 	
-	// 5. get_all_routes 兼容性
+	// 5. get_all_routes compatibility
 	static_routes, dynamic_routes := router.get_all_routes()
 	if static_routes.len >= 0 && dynamic_routes.len >= 0 {
 		println('    ✅ get_all_routes() 接口兼容')
@@ -253,7 +253,7 @@ fn test_backward_compatibility() {
 		println('    ❌ get_all_routes() 接口不兼容')
 	}
 	
-	// 6. analyze_performance 兼容性
+	// 6. analyze_performance compatibility
 	println('    ✅ analyze_performance() 接口兼容:')
 	router.analyze_performance()
 }
@@ -263,7 +263,7 @@ fn test_new_features() {
 	
 	mut router := hono.FastRouter.new_with_cache_size(50)
 	
-	// 新功能清单
+	// List of new features
 	_ := [
 		'LRU 缓存机制',
 		'TTL 过期管理',
@@ -276,7 +276,7 @@ fn test_new_features() {
 	
 	println('  🎯 新增功能验证:')
 	
-	// 1. LRU 缓存
+	// 1. LRU cache
 	handler := hono.ContextHandler{
 		path: '/test/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -285,8 +285,8 @@ fn test_new_features() {
 	}
 	router.add_route('GET', handler, '') or { return }
 	
-	// 填充缓存
-	for i in 0 .. 60 {  // 超过缓存容量
+	//Fill cache
+	for i in 0 .. 60 {  //Exceeded cache capacity
 		router.match_route('GET', '/test/${i}')
 	}
 	
@@ -297,30 +297,30 @@ fn test_new_features() {
 		println('    ❌ LRU 缓存容量限制失效')
 	}
 	
-	// 2. TTL 管理
-	router.set_cache_ttl(1)  // 1秒 TTL
+	// 2. TTL management
+	router.set_cache_ttl(1)  // 1 second TTL
 	router.match_route('GET', '/test/ttl')
 	time.sleep(1100 * time.millisecond)
 	router.force_cleanup_expired()
 	println('    ✅ TTL 过期管理功能正常')
 	
-	// 3. 健康检查
+	// 3. Health check
 	if router.is_healthy() {
 		println('    ✅ 健康状态检查功能正常')
 	} else {
 		println('    ❌ 健康状态检查异常')
 	}
 	
-	// 4. 智能预热
+	// 4. Intelligent preheating
 	sample_paths := ['/test/warm1', '/test/warm2']
 	router.smart_warmup(sample_paths)
 	println('    ✅ 智能预热功能正常')
 	
-	// 5. 路由复杂度
+	// 5. Routing complexity
 	simple_routes, complex_routes := router.get_routes_by_complexity()
 	println('    ✅ 路由复杂度分组: 简单=${simple_routes.len}, 复杂=${complex_routes.len}')
 	
-	// 6. 详细统计
+	// 6. Detailed statistics
 	detailed_stats := router.get_detailed_stats()
 	if detailed_stats.len > 5 {
 		println('    ✅ 详细统计信息: ${detailed_stats.len} 项指标')
@@ -328,7 +328,7 @@ fn test_new_features() {
 		println('    ❌ 详细统计信息不足')
 	}
 	
-	// 7. 缓存配置
+	// 7. Cache configuration
 	router.set_cache_enabled(false)
 	router.set_cache_enabled(true)
 	router.set_sort_enabled(true)
@@ -340,24 +340,24 @@ fn test_final_benchmark() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加多种类型的路由
+	//Add multiple types of routes
 	routes := [
-		// 静态路由
+		// static routing
 		'/static/home',
 		'/static/about',
 		'/static/contact',
 		
-		// 简单动态路由
+		// Simple dynamic routing
 		'/users/:id',
 		'/posts/:id',
 		'/files/:name',
 		
-		// 复杂动态路由
+		//Complex dynamic routing
 		'/api/:version/users/:user_id/posts/:post_id',
 		'/shop/:category/:subcategory/products/:id',
 		'/admin/:module/:action/:resource/:id',
 		
-		// 非常复杂的路由
+		// Very complex routing
 		'/deep/:a/:b/:c/:d/:e/:f/:g'
 	]
 	
@@ -371,7 +371,7 @@ fn test_final_benchmark() {
 		router.add_route('GET', handler, '') or { continue }
 	}
 	
-	// 对应的测试路径
+	//Corresponding test path
 	test_paths := [
 		'/static/home',
 		'/static/about', 
@@ -385,7 +385,7 @@ fn test_final_benchmark() {
 		'/deep/1/2/3/4/5/6/7'
 	]
 	
-	// 大规模性能测试
+	// Large-scale performance testing
 	iterations := 10000
 	
 	println('  🚀 执行大规模性能测试 (${iterations}轮 × ${test_paths.len}路径)...')
@@ -413,7 +413,7 @@ fn test_final_benchmark() {
 		println('    平均响应时间: ${avg_time:.3f}μs')
 		println('    吞吐量: ${throughput:.0f} 请求/秒')
 		
-		// 性能等级评估
+		//Performance level evaluation
 		if avg_time < 1.0 {
 			println('    🏆 性能等级: 优秀 (< 1μs)')
 		} else if avg_time < 5.0 {
@@ -433,7 +433,7 @@ fn test_final_benchmark() {
 		}
 	}
 	
-	// 显示最终统计
+	//display final statistics
 	println('\n  📋 最终路由器状态:')
 	router.analyze_performance()
 }

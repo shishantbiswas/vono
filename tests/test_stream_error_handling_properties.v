@@ -1,8 +1,8 @@
 // test_stream_error_handling_properties.v
 // Property-Based Testing for Error Handling in SSE Streaming
 // Feature: sse-streaming-helper
-// Property 8: 错误处理器调用
-// Property 9: 流自动关闭
+// Property 8: Error handler call
+// Property 9: Stream automatically closed
 // Validates: Requirements 4.1, 1.5, 5.2
 module main
 
@@ -277,7 +277,7 @@ fn generate_random_string(max_len int) string {
 }
 
 // ============================================================================
-// Property 8: 错误处理器调用
+// Property 8: Error handler call
 // Feature: sse-streaming-helper, Property 8
 // Validates: Requirements 4.1
 //
@@ -506,7 +506,7 @@ fn test_property_8e_error_type_preserved() bool {
 }
 
 // ============================================================================
-// Property 9: 流自动关闭
+// Property 9: Stream automatically closed
 // Feature: sse-streaming-helper, Property 9
 // Validates: Requirements 1.5, 5.2
 //
@@ -734,7 +734,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 8 tests
-	// Feature: sse-streaming-helper, Property 8: 错误处理器调用
+	// Feature: sse-streaming-helper, Property 8: Error handler call
 	// Validates: Requirements 4.1
 	println('--- Property 8: 错误处理器调用 ---')
 	stats.run_property_test('Property 8a: Error handler called on error', test_property_8a_error_handler_called)
@@ -746,7 +746,7 @@ fn main() {
 	println('')
 
 	// Run Property 9 tests
-	// Feature: sse-streaming-helper, Property 9: 流自动关闭
+	// Feature: sse-streaming-helper, Property 9: Streaming automatically closed
 	// Validates: Requirements 1.5, 5.2
 	println('--- Property 9: 流自动关闭 ---')
 	stats.run_property_test('Property 9a: Stream closed after success', test_property_9a_stream_closed_after_success)

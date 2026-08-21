@@ -1,8 +1,8 @@
 module usockets
 
-// 条件编译：根据操作系统选择正确的路径和库
-// @VMODROOT 指向包含 v.mod 的模块根目录 (v-hono/)
-// 预编译库按平台存放在 usockets/lib/{platform}/ 目录
+// Conditional compilation: choose the correct path and library according to the operating system
+// @VMODROOT points to the module root directory (vono/) containing v.mod
+// Precompiled libraries are stored in the usockets/lib/{platform}/ directory according to platform
 
 $if windows {
 	#flag -DLIBUS_USE_LIBUV
@@ -26,7 +26,7 @@ $if windows {
 		#flag @VMODROOT/usockets/lib/macos-x64/libusockets_full.a
 	}
 } $else {
-	// Linux 和其他平台
+	// Linux and other platforms
 	#flag -DLIBUS_USE_LIBUV
 	#flag -DLIBUS_NO_SSL
 	#flag -I@VMODROOT/usockets/include
@@ -95,7 +95,7 @@ pub fn create_socket_context(loop Loop) SocketContext {
 	return C.us_create_socket_context(0, loop, 0, options)
 }
 
-// 创建带扩展数据的 socket context
+//Create a socket context with extended data
 pub fn create_socket_context_with_ext(loop Loop, ext_size int) SocketContext {
 	options := C.us_socket_context_options_t{}
 	return C.us_create_socket_context(0, loop, ext_size, options)
@@ -111,7 +111,7 @@ pub fn (ctx SocketContext) on_end(h voidptr) { C.us_socket_context_on_end(0, ctx
 pub fn (ctx SocketContext) listen(port int) ListenSocket {
 	return C.us_socket_context_listen(0, ctx, unsafe { nil }, port, 0, 0)
 }
-// 获取 context 的扩展数据指针
+// Get the extended data pointer of context
 pub fn (ctx SocketContext) ext() voidptr {
 	return C.us_socket_context_ext(0, ctx)
 }
@@ -119,9 +119,9 @@ pub fn (ctx SocketContext) ext() voidptr {
 pub fn (s Socket) write_bytes(data string) int { return C.us_socket_write(0, s, data.str, data.len, 0) }
 pub fn (s Socket) shutdown() { C.us_socket_shutdown(0, s) }
 pub fn (s Socket) close() Socket { return C.us_socket_close(0, s, 0, unsafe { nil }) }
-// 获取 socket 所属的 context
+// Get the context to which the socket belongs
 pub fn (s Socket) context() SocketContext { return C.us_socket_context(0, s) }
-// 获取 socket 的扩展数据指针
+// Get the extended data pointer of the socket
 pub fn (s Socket) ext() voidptr { return C.us_socket_ext(0, s) }
 
 pub fn (ls ListenSocket) close() { C.us_listen_socket_close(0, ls) }

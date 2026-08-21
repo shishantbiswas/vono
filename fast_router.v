@@ -2,7 +2,7 @@ module hono
 
 import regex
 
-// 预编译路由条目
+// Precompile routing entries
 pub struct PrecompiledRoute {
 pub:
 	method      string
@@ -10,10 +10,10 @@ pub:
 	regex       regex.RE
 	param_names []string
 	handler     IHandler
-	complexity  int  // 路由复杂度分数
+	complexity  int  // Routing complexity score
 }
 
-// 编译后的正则表达式缓存
+// Compiled regular expression cache
 pub struct FastCompiledRegex {
 pub mut:
 	regex       regex.RE
@@ -21,55 +21,55 @@ pub mut:
 	compiled    bool
 }
 
-// 快速路由器（增强版本）
+// Fast router (enhanced version)
 pub struct FastRouter {
 pub mut:
 	static_routes        map[string]IHandler
-	static_route_results map[string]ContextRouteMatch  // 预分配的静态路由结果
+	static_route_results map[string]ContextRouteMatch  // Pre-allocated static routing results
 	precompiled_routes   []PrecompiledRoute
-	fast_cache           FastRouteCache       // 使用高性能缓存替代 LRU
-	lru_cache            ContextLRUCache      // 保留 LRU 缓存用于兼容
-	regex_cache          map[string]FastCompiledRegex  // 正则表达式缓存
+	fast_cache           FastRouteCache       // Use high-performance cache instead of LRU
+	lru_cache            ContextLRUCache      // Keep LRU cache for compatibility
+	regex_cache          map[string]FastCompiledRegex  //Regular expression cache
 	cache_enabled        bool = true
-	sort_enabled         bool = true          // 是否启用路由排序
-	use_fast_cache       bool = true          // 是否使用高性能缓存
+	sort_enabled         bool = true          // Whether to enable route sorting
+	use_fast_cache       bool = true          // Whether to use high-performance cache
 }
 
-// 创建快速路由器
+//Create a fast router
 pub fn FastRouter.new() FastRouter {
 	return FastRouter{
 		static_routes: map[string]IHandler{}
 		static_route_results: map[string]ContextRouteMatch{}
 		precompiled_routes: []PrecompiledRoute{}
-		fast_cache: FastRouteCache.new(10000)  // 高性能缓存，10000条
-		lru_cache: ContextLRUCache.new(1000)   // LRU 缓存保留兼容
+		fast_cache: FastRouteCache.new(10000)  // High-performance cache, 10,000 items
+		lru_cache: ContextLRUCache.new(1000)   // LRU cache remains compatible
 		regex_cache: map[string]FastCompiledRegex{}
 		use_fast_cache: true
 	}
 }
 
-// 创建带自定义缓存大小的快速路由器
+// Create a fast router with custom cache size
 pub fn FastRouter.new_with_cache_size(cache_size int) FastRouter {
 	return FastRouter{
 		static_routes: map[string]IHandler{}
 		static_route_results: map[string]ContextRouteMatch{}
 		precompiled_routes: []PrecompiledRoute{}
-		fast_cache: FastRouteCache.new(cache_size * 10)  // 高性能缓存
+		fast_cache: FastRouteCache.new(cache_size * 10)  // High performance caching
 		lru_cache: ContextLRUCache.new(cache_size)
 		regex_cache: map[string]FastCompiledRegex{}
 		use_fast_cache: true
 	}
 }
 
-// 添加路由（预编译）
+//Add route (precompiled)
 pub fn (mut router FastRouter) add_route(method string, handler IHandler, base_path string) ! {
 	full_path := handler.path
 	
-	// 静态路由直接存储，并预分配匹配结果
+	//Static routes are stored directly and matching results are pre-allocated
 	if !full_path.contains(':') && !full_path.contains('*') {
 		key := '${method}:${full_path}'
 		router.static_routes[key] = handler
-		// 预分配匹配结果，避免每次查询时创建新对象
+		// Pre-allocate matching results to avoid creating new objects every time you query
 		router.static_route_results[key] = ContextRouteMatch{
 			handler: handler
 			params: map[string]string{}
@@ -79,20 +79,20 @@ pub fn (mut router FastRouter) add_route(method string, handler IHandler, base_p
 		return
 	}
 	
-	// 动态路由预编译
+	//Dynamic routing precompilation
 	compiled_route := router.precompile_route(method, handler) or {
 		return error('Failed to precompile route ${full_path}: ${err}')
 	}
 	
 	router.precompiled_routes << compiled_route
 	
-	// 如果启用排序，按复杂度排序
+	// If sorting is enabled, sort by complexity
 	if router.sort_enabled {
 		router.sort_dynamic_routes()
 	}
 }
 
-// 按路由复杂度排序动态路由（简单路由优先）
+// Sort dynamic routes by routing complexity (simple routes first)
 fn (mut router FastRouter) sort_dynamic_routes() {
 	router.precompiled_routes.sort_with_compare(fn (a &PrecompiledRoute, b &PrecompiledRoute) int {
 		if a.complexity < b.complexity {
@@ -104,20 +104,20 @@ fn (mut router FastRouter) sort_dynamic_routes() {
 	})
 }
 
-// 计算路由复杂度分数（FastRouter 版本）
+// Calculate routing complexity score (FastRouter version)
 fn calculate_fast_route_complexity(path string) int {
 	mut score := 0
 	
-	// 参数数量（每个参数+10分）
+	// Number of parameters (+10 points for each parameter)
 	score += path.count(':') * 10
 	
-	// 通配符（每个通配符+20分）
+	// Wildcards (+20 points for each wildcard)
 	score += path.count('*') * 20
 	
-	// 路径段数量（每个段+1分）
+	//Number of path segments (+1 point for each segment)
 	score += path.split('/').len
 	
-	// 特殊字符（每个+5分）
+	// Special characters (+5 points each)
 	special_chars := ['?', '+', '.', '(', ')', '[', ']', '{', '}', '^', '$', '|']
 	for ch in special_chars {
 		score += path.count(ch) * 5
@@ -126,14 +126,14 @@ fn calculate_fast_route_complexity(path string) int {
 	return score
 }
 
-// 预编译路由
+// Precompile routing
 fn (router FastRouter) precompile_route(method string, handler IHandler) !PrecompiledRoute {
 	route_path := handler.path
 	
-	// 计算路由复杂度
+	// Calculate routing complexity
 	complexity := calculate_fast_route_complexity(route_path)
 	
-	// 提取参数名
+	//Extract parameter name
 	mut param_names := []string{}
 	mut param_reg := regex.regex_opt(r':[a-zA-Z_][a-zA-Z0-9_]*') or {
 		return error('Failed to create param regex')
@@ -141,28 +141,28 @@ fn (router FastRouter) precompile_route(method string, handler IHandler) !Precom
 	
 	all_params := param_reg.find_all_str(route_path)
 	for param in all_params {
-		param_names << param[1..]  // 去掉冒号
+		param_names << param[1..]  //remove colon
 	}
 	
-	// 构建正则表达式
+	// Build regular expression
 	mut regex_pattern := route_path
 	
-	// 转义特殊字符
+	//Escape special characters
 	special_chars := ['?', '+', '.', '(', ')', '[', ']', '{', '}', '^', '$', '|']
 	for ch in special_chars {
 		regex_pattern = regex_pattern.replace(ch, '\\${ch}')
 	}
 	
-	// 替换参数为命名捕获组
+	//Replace parameters with named capture groups
 	regex_pattern = param_reg.replace_by_fn(regex_pattern, fn (re regex.RE, in_txt string, start int, end int) string {
 		param_name := in_txt[start+1..end]
 		return '(?P<${param_name}>[^/]+)'
 	})
 	
-	// 添加锚点
+	//Add anchor point
 	regex_pattern = '^${regex_pattern}$'
 	
-	// 编译正则表达式
+	//Compile regular expression
 	compiled_regex := regex.regex_opt(regex_pattern) or {
 		return error('Failed to compile regex: ${regex_pattern}')
 	}
@@ -177,36 +177,36 @@ fn (router FastRouter) precompile_route(method string, handler IHandler) !Precom
 	}
 }
 
-// 快速路由匹配（优化版：静态路由跳过缓存 + 预分配结果 + 高性能缓存）
+// Fast route matching (optimized version: static route skip caching + pre-allocated results + high-performance caching)
 pub fn (mut router FastRouter) match_route(method string, path string) ?ContextRouteMatch {
-	// 优化：只拼接一次 cache key，复用于静态路由和缓存查找
+	// Optimization: only splice the cache key once and reuse it for static routing and cache lookup
 	cache_key := '${method}:${path}'
 	
-	// 1. 静态路由直接返回预分配的结果（零分配）
+	// 1. Static routing directly returns pre-allocated results (zero allocation)
 	if result := router.static_route_results[cache_key] {
 		return result
 	}
 	
-	// 2. 动态路由先检查高性能缓存（零开销查找）
+	// 2. Dynamic routing first checks the high-performance cache (zero-overhead search)
 	if router.cache_enabled && router.use_fast_cache {
 		if cached := router.fast_cache.get(cache_key) {
 			return cached
 		}
 	} else if router.cache_enabled {
-		// 回退到 LRU 缓存
+		// Fallback to LRU cache
 		if cached := router.lru_cache.get(cache_key) {
 			return cached
 		}
 	}
 	
-	// 3. 预编译动态路由匹配（已按复杂度排序）
+	// 3. Precompiled dynamic route matching (sorted by complexity)
 	for route in router.precompiled_routes {
 		if route.method != method {
 			continue
 		}
 		
 		if route.regex.matches_string(path) {
-			// 提取参数
+			//Extract parameters
 			mut params := map[string]string{}
 			for param_name in route.param_names {
 				group := route.regex.get_group_by_name(path, param_name)
@@ -220,7 +220,7 @@ pub fn (mut router FastRouter) match_route(method string, path string) ?ContextR
 				base_path: ''
 			}
 			
-			// 缓存动态路由结果
+			//Cache dynamic routing results
 			if router.cache_enabled {
 				if router.use_fast_cache {
 					router.fast_cache.put(cache_key, result)
@@ -236,13 +236,13 @@ pub fn (mut router FastRouter) match_route(method string, path string) ?ContextR
 	return none
 }
 
-// 获取路由统计
+// Get routing statistics
 pub fn (router FastRouter) get_stats() (int, int, int) {
 	cache_size, _ := router.lru_cache.get_stats()
 	return router.static_routes.len, router.precompiled_routes.len, cache_size
 }
 
-// 获取详细统计信息
+// Get detailed statistics
 pub fn (mut router FastRouter) get_detailed_stats() map[string]i64 {
 	cache_stats := router.lru_cache.get_detailed_stats()
 	
@@ -261,7 +261,7 @@ pub fn (mut router FastRouter) get_detailed_stats() map[string]i64 {
 	stats['cache_enabled'] = if router.cache_enabled { 1 } else { 0 }
 	stats['sort_enabled'] = if router.sort_enabled { 1 } else { 0 }
 	
-	// 合并 LRU 缓存统计
+	// Merge LRU cache statistics
 	for key, value in cache_stats {
 		stats['lru_${key}'] = value
 	}
@@ -269,12 +269,12 @@ pub fn (mut router FastRouter) get_detailed_stats() map[string]i64 {
 	return stats
 }
 
-// 获取缓存统计信息
+// Get cache statistics
 pub fn (router FastRouter) get_cache_stats() (int, int) {
 	return router.lru_cache.get_stats()
 }
 
-// 获取正则表达式缓存统计信息
+// Get regular expression cache statistics
 pub fn (router FastRouter) get_regex_cache_stats() (int, int) {
 	mut compiled_count := 0
 	for _, cached_regex in router.regex_cache {
@@ -285,22 +285,22 @@ pub fn (router FastRouter) get_regex_cache_stats() (int, int) {
 	return router.regex_cache.len, compiled_count
 }
 
-// 清理缓存
+// clear cache
 pub fn (mut router FastRouter) clear_cache() {
 	router.lru_cache.clear()
 }
 
-// 清理正则表达式缓存
+// Clear the regular expression cache
 pub fn (mut router FastRouter) clear_regex_cache() {
 	router.regex_cache.clear()
 }
 
-// 强制清理过期缓存
+//Force clear expired cache
 pub fn (mut router FastRouter) force_cleanup_expired() {
 	router.lru_cache.force_cleanup_expired()
 }
 
-// 启用/禁用缓存
+// Enable/disable cache
 pub fn (mut router FastRouter) set_cache_enabled(enabled bool) {
 	router.cache_enabled = enabled
 	if !enabled {
@@ -308,7 +308,7 @@ pub fn (mut router FastRouter) set_cache_enabled(enabled bool) {
 	}
 }
 
-// 启用/禁用路由排序
+// Enable/disable route sorting
 pub fn (mut router FastRouter) set_sort_enabled(enabled bool) {
 	router.sort_enabled = enabled
 	if enabled {
@@ -316,22 +316,22 @@ pub fn (mut router FastRouter) set_sort_enabled(enabled bool) {
 	}
 }
 
-// 设置缓存 TTL
+//Set cache TTL
 pub fn (mut router FastRouter) set_cache_ttl(ttl_seconds i64) {
 	router.lru_cache.set_ttl(ttl_seconds)
 }
 
-// 设置缓存清理间隔
+//Set cache cleaning interval
 pub fn (mut router FastRouter) set_cache_cleanup_interval(interval_seconds i64) {
 	router.lru_cache.set_cleanup_interval(interval_seconds)
 }
 
-// 检查路由器健康状态
+// Check router health status
 pub fn (mut router FastRouter) is_healthy() bool {
 	return router.lru_cache.is_healthy()
 }
 
-// 预热缓存
+// Warm up cache
 pub fn (mut router FastRouter) warmup_cache(common_paths []string, method string) {
 	if !router.cache_enabled {
 		return
@@ -342,18 +342,18 @@ pub fn (mut router FastRouter) warmup_cache(common_paths []string, method string
 	}
 }
 
-// 预热正则表达式缓存
+// Warm up regular expression cache
 pub fn (mut router FastRouter) warmup_regex_cache() {
 	println('[INFO] Warming up FastRouter regex cache...')
 	warmed_count := router.precompiled_routes.len
 	
-	// 预编译的路由已经有编译好的正则表达式
-	// 这里可以进行一些预热操作
+	// Precompiled routes already have compiled regular expressions
+	// Some preheating operations can be performed here
 	
 	println('[INFO] FastRouter regex cache warmup completed: ${warmed_count} patterns ready')
 }
 
-// 智能预热（基于路由复杂度）
+// Intelligent preheating (based on routing complexity)
 pub fn (mut router FastRouter) smart_warmup(sample_paths []string) {
 	if !router.cache_enabled {
 		return
@@ -361,7 +361,7 @@ pub fn (mut router FastRouter) smart_warmup(sample_paths []string) {
 	
 	println('[INFO] Starting smart warmup for FastRouter...')
 	
-	// 按复杂度分组预热
+	// Preheat by complexity group
 	mut simple_routes := []string{}
 	mut complex_routes := []string{}
 	
@@ -373,7 +373,7 @@ pub fn (mut router FastRouter) smart_warmup(sample_paths []string) {
 		}
 	}
 	
-	// 先预热简单路由
+	// Preheat simple routing first
 	for path in sample_paths {
 		router.match_route('GET', path)
 	}
@@ -381,7 +381,7 @@ pub fn (mut router FastRouter) smart_warmup(sample_paths []string) {
 	println('[INFO] Smart warmup completed: ${simple_routes.len} simple, ${complex_routes.len} complex routes')
 }
 
-// 获取所有路由
+// Get all routes
 pub fn (router FastRouter) get_all_routes() ([]string, []string) {
 	mut static_paths := []string{}
 	mut dynamic_paths := []string{}
@@ -397,7 +397,7 @@ pub fn (router FastRouter) get_all_routes() ([]string, []string) {
 	return static_paths, dynamic_paths
 }
 
-// 获取路由按复杂度分组
+// Get routes grouped by complexity
 pub fn (router FastRouter) get_routes_by_complexity() ([]PrecompiledRoute, []PrecompiledRoute) {
 	mut simple_routes := []PrecompiledRoute{}
 	mut complex_routes := []PrecompiledRoute{}
@@ -413,7 +413,7 @@ pub fn (router FastRouter) get_routes_by_complexity() ([]PrecompiledRoute, []Pre
 	return simple_routes, complex_routes
 }
 
-// 性能分析
+//Performance analysis
 pub fn (mut router FastRouter) analyze_performance() {
 	static_count, dynamic_count, cache_count := router.get_stats()
 	regex_total, regex_compiled := router.get_regex_cache_stats()
@@ -426,20 +426,20 @@ pub fn (mut router FastRouter) analyze_performance() {
 	println('  Cache Enabled: ${router.cache_enabled}')
 	println('  Sort Enabled: ${router.sort_enabled}')
 	
-	// 显示路由复杂度分布
+	//Display routing complexity distribution
 	simple_routes, complex_routes := router.get_routes_by_complexity()
 	println('  Route Complexity Distribution:')
 	println('    Simple Routes (≤30): ${simple_routes.len}')
 	println('    Complex Routes (>30): ${complex_routes.len}')
 	
-	// 显示缓存健康状态
+	//Display cache health status
 	if router.is_healthy() {
 		println('  Cache Health: ✅ Healthy')
 	} else {
 		println('  Cache Health: ⚠️  Issues detected')
 	}
 	
-	// 显示详细统计
+	// Show detailed statistics
 	detailed_stats := router.get_detailed_stats()
 	println('  Detailed Stats:')
 	for key, value in detailed_stats {

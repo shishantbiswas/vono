@@ -5,10 +5,10 @@ import net.http
 fn main() {
 	println('=== 路由性能详细分析 ===')
 	
-	// 测试1: 分步骤性能分析
+	//Test 1: Step-by-step performance analysis
 	test_step_by_step_performance()
 	
-	// 测试2: 不同复杂度路由的性能对比
+	//Test 2: Performance comparison of routing with different complexity
 	test_complexity_performance()
 	
 	println('✅ 路由性能分析完成')
@@ -19,7 +19,7 @@ fn test_step_by_step_performance() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 测试路由
+	// test route
 	route_path := '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id'
 	test_path := '/api/v1/users/123/posts/456/comments/789'
 	
@@ -30,13 +30,13 @@ fn test_step_by_step_performance() {
 		}
 	}
 	
-	// 步骤1: 添加路由的时间
+	// Step 1: Add routing time
 	start_time1 := time.now()
 	router.add_route('GET', handler, '')
 	add_route_time := time.since(start_time1)
 	println('  添加路由时间: ${add_route_time}')
 	
-	// 步骤2: 第一次匹配（包含编译）
+	// Step 2: First match (including compilation)
 	start_time2 := time.now()
 	result1 := router.match_route('GET', test_path)
 	first_match_time := time.since(start_time2)
@@ -46,22 +46,22 @@ fn test_step_by_step_performance() {
 		println('  ✅ 第一次匹配成功')
 	}
 	
-	// 步骤3: 第二次匹配（使用缓存）
+	// Step 3: Second match (using cache)
 	start_time3 := time.now()
 	_ = router.match_route('GET', test_path)
 	second_match_time := time.since(start_time3)
 	println('  第二次匹配时间 (使用缓存): ${second_match_time}')
 	
-	// 步骤4: 分析缓存状态
+	// Step 4: Analyze cache status
 	cache_size, cache_capacity := router.get_cache_stats()
 	regex_total, regex_compiled := router.get_regex_cache_stats()
 	println('  路由缓存: ${cache_size}/${cache_capacity}')
 	println('  正则缓存: ${regex_compiled}/${regex_total}')
 	
-	// 步骤5: 测试纯正则匹配时间（安全访问）
+	// Step 5: Test pure regular matching time (safe access)
 	if cached := router.regex_cache[route_path] {
 		if cached.compiled {
-			// 先验证正则能匹配
+			// First verify that the regular expression matches
 			if cached.regex.matches_string(test_path) {
 				start_time4 := time.now()
 				for _ in 0 .. 1000 {
@@ -78,15 +78,15 @@ fn test_step_by_step_performance() {
 		println('  ⚠️  正则缓存中未找到路由')
 	}
 	
-	// 步骤6: 测试参数提取时间（安全访问）
+	// Step 6: Test parameter extraction time (security access)
 	if cached := router.regex_cache[route_path] {
 		if cached.compiled && cached.param_names.len > 0 {
-			// 先执行一次匹配确保正则状态正确
+			// Execute a match first to ensure that the regular state is correct
 			if cached.regex.matches_string(test_path) {
 				start_time5 := time.now()
 				mut extract_count := 0
 				for _ in 0 .. 1000 {
-					// 每次提取前重新匹配
+					//Rematch before each extraction
 					if cached.regex.matches_string(test_path) {
 						for param_name in cached.param_names {
 							group := cached.regex.get_group_by_name(test_path, param_name)
@@ -108,7 +108,7 @@ fn test_step_by_step_performance() {
 fn test_complexity_performance() {
 	println('\n📊 不同复杂度路由性能对比...')
 	
-	// 定义不同复杂度的路由
+	// Define routes of different complexity
 	test_cases := [
 		{
 			'name': '简单路由 (1个参数)'
@@ -146,12 +146,12 @@ fn test_complexity_performance() {
 		
 		router.add_route('GET', handler, '')
 		
-		// 第一次匹配（编译）
+		// First match (compile)
 		start_time1 := time.now()
 		result1 := router.match_route('GET', test_case['path'])
 		first_time := time.since(start_time1)
 		
-		// 多次缓存匹配
+		//Multiple cache matches
 		iterations := 10000
 		start_time2 := time.now()
 		mut cache_matches := 0
@@ -169,7 +169,7 @@ fn test_complexity_performance() {
 				println('    平均缓存匹配: ${avg_cache_time:.3f}μs')
 			}
 			
-			// 分析路由复杂度
+			//Analyze routing complexity
 			param_count := test_case['route'].count(':')
 			path_segments := test_case['route'].split('/').len
 			println('    参数数量: ${param_count}')
@@ -179,17 +179,17 @@ fn test_complexity_performance() {
 		}
 	}
 	
-	// 测试路由排序效果
+	//Test the routing sorting effect
 	println('\n  📈 测试路由排序效果...')
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加不同复杂度的路由（故意按复杂度递减顺序添加）
+	//Add routes of different complexity (deliberately added in order of decreasing complexity)
 	routes := [
-		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',  // 最复杂
-		'/api/:version/users/:user_id/posts/:post_id',                      // 中等复杂
-		'/users/:id/posts/:post_id',                                        // 较简单
-		'/users/:id'                                                        // 最简单
+		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',  // most complex
+		'/api/:version/users/:user_id/posts/:post_id',                      // medium complex
+		'/users/:id/posts/:post_id',                                        // simpler
+		'/users/:id'                                                        // simplest
 	]
 	
 	for route in routes {
@@ -202,7 +202,7 @@ fn test_complexity_performance() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 测试匹配最简单的路由（应该最先被匹配）
+	//Test the simplest route to match (should be matched first)
 	simple_path := '/users/123'
 	
 	start_time := time.now()
@@ -214,7 +214,7 @@ fn test_complexity_performance() {
 	avg_sorted_time := f64(sorted_time.microseconds()) / 10000.0
 	println('    排序后简单路由平均匹配时间: ${avg_sorted_time:.3f}μs')
 	
-	// 显示路由顺序
+	//Display routing order
 	_, dynamic_paths := router.get_all_routes()
 	println('    路由排序后顺序:')
 	for i, path in dynamic_paths {

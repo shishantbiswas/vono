@@ -7,7 +7,7 @@ fn main() {
     mut app := hono.Hono.new()
 
     app.get('/', fn (mut c hono.Context) http.Response {
-        return c.text('Hello from V-Hono + picoev!')
+        return c.text('Hello from vono + picoev!')
     })
 
     app.get('/json', fn (mut c hono.Context) http.Response {
@@ -19,6 +19,6 @@ fn main() {
         return c.json('{"user_id": "${user_id}"}')
     })
 
-    // 使用默认 picoev 后端
+    // Use the default picoev backend
     app.listen(':3009')
 }

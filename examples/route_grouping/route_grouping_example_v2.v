@@ -1,17 +1,17 @@
-// V-Hono 路由分组增强示例
-// 演示新功能：子应用中间件继承、all() 方法、notFound/onError 处理器
+// vono routing group enhancement example
+// Demonstrate new features: sub-application middleware inheritance, all() method, notFound/onError handler
 
 import net.http
 import meiseayoung.hono
 
 fn main() {
-	println('🚀 V-Hono 路由分组增强示例启动中...')
+	println('🚀 vono 路由分组增强示例启动中...')
 	
-	// 创建主应用
+	//Create the main application
 	mut app := hono.Hono.new()
 	
 	// ========================================
-	// 1. 自定义 notFound 处理器
+	// 1. Customize notFound processor
 	// ========================================
 	app.not_found(fn (mut c hono.Context) http.Response {
 		c.status(404)
@@ -19,7 +19,7 @@ fn main() {
 	})
 	
 	// ========================================
-	// 2. 自定义 onError 处理器
+	// 2. Customize onError handler
 	// ========================================
 	app.on_error(fn (error_msg string, status_code int, mut c hono.Context) http.Response {
 		c.status(status_code)
@@ -27,53 +27,53 @@ fn main() {
 	})
 	
 	// ========================================
-	// 3. 全局中间件
+	// 3. Global middleware
 	// ========================================
 	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		println('[GLOBAL] ${c.req.method} ${c.path}')
 		return next(mut c)
 	})
 	
-	// 根路由
+	//Root route
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.html(generate_index_page())
 	})
 	
 	// ========================================
-	// 4. all() 方法示例 - 匹配所有 HTTP 方法
+	// 4. all() method example - matches all HTTP methods
 	// ========================================
 	app.all('/echo', fn (mut c hono.Context) http.Response {
 		return c.json('{"method": "${c.req.method}", "path": "${c.path}", "message": "Echo endpoint handles all HTTP methods"}')
 	})
 	
 	// ========================================
-	// 5. 子应用中间件继承示例 - API 路由组
+	// 5. Sub-application middleware inheritance example - API routing group
 	// ========================================
 	mut api := hono.Hono.new()
 	
-	// API 子应用的中间件（只对 /api/* 路由生效）
+	//Middleware for API sub-applications (only valid for /api/* routes)
 	api.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		println('[API] Request to API endpoint: ${c.path}')
-		// 添加 API 版本头
+		//Add API version header
 		c.headers['X-API-Version'] = '1.0'
 		return next(mut c)
 	})
 	
 	api.get('/version', fn (mut c hono.Context) http.Response {
-		return c.json('{"version": "1.0.0", "name": "V-Hono API"}')
+		return c.json('{"version": "1.0.0", "name": "vono API"}')
 	})
 	
 	app.route('/api', mut api)
 	
 	// ========================================
-	// 6. Books 子应用（带认证中间件）
+	// 6. Books sub-application (with authentication middleware)
 	// ========================================
 	mut books := hono.Hono.new()
 	
-	// Books 子应用的认证中间件
+	// Authentication middleware for Books sub-application
 	books.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		println('[BOOKS] Auth check for: ${c.path}')
-		// 模拟认证检查
+		//Mock authentication check
 		auth_header := c.req.header.get_custom('Authorization') or { '' }
 		if auth_header == '' {
 			println('[BOOKS] No auth header, allowing public access')
@@ -97,7 +97,7 @@ fn main() {
 		return c.json('{"message": "Book created", "body": "${c.body}"}')
 	})
 	
-	// 使用 all() 处理所有方法
+	// Use all() to handle all methods
 	books.all('/stats', fn (mut c hono.Context) http.Response {
 		return c.json('{"method": "${c.req.method}", "total_books": 100, "message": "Stats endpoint"}')
 	})
@@ -105,11 +105,11 @@ fn main() {
 	app.route('/api/books', mut books)
 	
 	// ========================================
-	// 7. Admin 子应用（带严格认证中间件）
+	// 7. Admin sub-application (with strict authentication middleware)
 	// ========================================
 	mut admin := hono.Hono.new()
 	
-	// Admin 子应用的严格认证中间件
+	// Strict authentication middleware for Admin sub-application
 	admin.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		println('[ADMIN] Strict auth check for: ${c.path}')
 		auth_header := c.req.header.get_custom('Authorization') or { '' }
@@ -132,27 +132,27 @@ fn main() {
 	app.route('/admin', mut admin)
 	
 	// ========================================
-	// 8. 健康检查（无中间件）
+	// 8. Health check (no middleware)
 	// ========================================
 	app.get('/health', fn (mut c hono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
 	
-	// 打印路由信息
+	//Print routing information
 	print_routes_info()
 	
-	// 启动服务器
+	// Start the server
 	app.listen(':8080')
 }
 
-// 生成首页 HTML
+// Generate homepage HTML
 fn generate_index_page() string {
 	return '<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Hono 路由分组增强示例</title>
+    <title>vono 路由分组增强示例</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
         .group { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
@@ -168,7 +168,7 @@ fn generate_index_page() string {
     </style>
 </head>
 <body>
-    <h1>🚀 V-Hono 路由分组增强示例</h1>
+    <h1>🚀 vono 路由分组增强示例</h1>
     
     <div class="feature">
         <strong>新功能演示：</strong>
@@ -212,20 +212,20 @@ fn generate_index_page() string {
     
     <div class="group">
         <h2>💻 代码示例</h2>
-        <pre>// 1. 自定义 notFound 处理器
+        <pre>// 1. Customize notFound processor
 app.not_found(fn (mut c hono.Context) http.Response {
     c.status(404)
     return c.json(\'{"error": "Not Found"}\')
 })
 
-// 2. all() 方法 - 匹配所有 HTTP 方法
+// 2. all() method - matches all HTTP methods
 app.all(\'/echo\', fn (mut c hono.Context) http.Response {
     return c.json(\'{"method": "\' + c.req.method + \'"}\')
 })
 
-// 3. 子应用中间件继承
+// 3. Sub-application middleware inheritance
 mut books := hono.Hono.new()
-books.use(auth_middleware)  // 只对 /api/books/* 生效
+books.use(auth_middleware)  // Only valid for /api/books/*
 books.get(\'/\', handler)
 app.route(\'/api/books\', mut books)</pre>
     </div>
@@ -237,18 +237,18 @@ curl http://127.0.0.1:8080/echo
 curl -X POST http://127.0.0.1:8080/echo
 curl -X PUT http://127.0.0.1:8080/echo
 
-# 测试自定义 404
+# Test custom 404
 curl http://127.0.0.1:8080/not-exist
 
-# 测试 Admin 认证中间件
-curl http://127.0.0.1:8080/admin  # 返回 401
-curl -H "Authorization: Bearer admin-token" http://127.0.0.1:8080/admin  # 成功</pre>
+# Test Admin authentication middleware
+curl http://127.0.0.1:8080/admin # Return 401
+curl -H "Authorization: Bearer admin-token" http://127.0.0.1:8080/admin # Success</pre>
     </div>
 </body>
 </html>'
 }
 
-// 打印路由信息
+//Print routing information
 fn print_routes_info() {
 	println('')
 	println('📍 服务器地址: http://127.0.0.1:8080')

@@ -2,7 +2,7 @@ module hono
 
 import net.http
 
-// Multipart 表单数据项
+//Multipart form data items
 pub struct MultipartItem {
 pub:
 	name     string
@@ -11,16 +11,16 @@ pub:
 	content_type string
 }
 
-// Multipart 解析器
+// Multipart parser
 pub struct MultipartParser {
 pub:
 	boundary string
 	data     string
 }
 
-// 创建 Multipart 解析器
+// Create Multipart parser
 pub fn new_multipart_parser(content_type string, data string) !MultipartParser {
-	// 从 Content-Type 中提取 boundary
+	// Extract boundary from Content-Type
 	boundary := extract_boundary(content_type) or {
 		return error('Failed to extract boundary')
 	}
@@ -31,10 +31,10 @@ pub fn new_multipart_parser(content_type string, data string) !MultipartParser {
 	}
 }
 
-// 解析 multipart 数据
+// Parse multipart data
 pub fn (parser MultipartParser) parse() ![]MultipartItem {
 	mut items := []MultipartItem{}
-	// 更健壮的分割方式，兼容不同换行
+	// More robust segmentation method, compatible with different line breaks
 	parts := parser.data.split('--${parser.boundary}')
 	for _, part in parts {
 		if part.trim_space() == '' || part.trim_space() == '--' || part.trim_space().starts_with('--') {
@@ -48,9 +48,9 @@ pub fn (parser MultipartParser) parse() ![]MultipartItem {
 	return items
 }
 
-// 解析单个部分
+// Parse a single part
 fn (parser MultipartParser) parse_part(part string) !MultipartItem {
-	// 分离头部和内容
+	// Separate header and content
 	header_content := part.split('\r\n\r\n')
 	if header_content.len < 2 {
 		return error('Invalid part format')
@@ -59,7 +59,7 @@ fn (parser MultipartParser) parse_part(part string) !MultipartItem {
 	header := header_content[0]
 	content := header_content[1..].join('\r\n\r\n')
 	
-	// 解析头部
+	// Parse the header
 	name := extract_header_value(header, 'name') or {
 		return error('Missing name')
 	}
@@ -74,7 +74,7 @@ fn (parser MultipartParser) parse_part(part string) !MultipartItem {
 	}
 }
 
-// 从 Content-Type 中提取 boundary
+// Extract boundary from Content-Type
 fn extract_boundary(content_type string) !string {
 	if !content_type.starts_with('multipart/form-data') {
 		return error('Not multipart/form-data')
@@ -85,7 +85,7 @@ fn extract_boundary(content_type string) !string {
 	}
 	mut boundary := content_type[boundary_start + 9..]
 	
-	// 移除引号
+	// remove quotes
 	if boundary.starts_with('"') && boundary.ends_with('"') {
 		boundary = boundary[1..boundary.len - 1]
 	}
@@ -93,12 +93,12 @@ fn extract_boundary(content_type string) !string {
 	return boundary
 }
 
-// 从头部中提取值
+//Extract value from header
 fn extract_header_value(header string, key string) !string {
-    // 先找 Content-Disposition 行
+    // First find the Content-Disposition line
     for line in header.split('\r\n') {
         if line.starts_with('Content-Disposition:') {
-            // 查找 key="value"
+            // Find key="value"
             key_eq := '${key}="'
             idx := line.index(key_eq) or { continue }
             start := idx + key_eq.len
@@ -109,7 +109,7 @@ fn extract_header_value(header string, key string) !string {
     return error('Key not found: $key')
 }
 
-// 解析 multipart 表单数据（便捷函数）
+// Parse multipart form data (convenience function)
 pub fn parse_multipart_form(req http.Request) !map[string]MultipartItem {
 	content_type := req.header.get_custom('Content-Type') or {
 		return error('No Content-Type header')
@@ -123,7 +123,7 @@ pub fn parse_multipart_form(req http.Request) !map[string]MultipartItem {
 		return error('Failed to parse multipart data: $err')
 	}
 	
-	// 转换为 map
+	//Convert to map
 	mut result := map[string]MultipartItem{}
 	for item in items {
 		result[item.name] = item
@@ -132,7 +132,7 @@ pub fn parse_multipart_form(req http.Request) !map[string]MultipartItem {
 	return result
 }
 
-// 获取文件数据
+// Get file data
 pub fn (items map[string]MultipartItem) get_file(key string) !string {
 	item := items[key] or {
 		return error('File not found: $key')
@@ -140,7 +140,7 @@ pub fn (items map[string]MultipartItem) get_file(key string) !string {
 	return item.content
 }
 
-// 获取表单字段值
+// Get form field value
 pub fn (items map[string]MultipartItem) get(key string) !string {
 	item := items[key] or {
 		return error('Field not found: $key')
@@ -148,13 +148,13 @@ pub fn (items map[string]MultipartItem) get(key string) !string {
 	return item.content
 }
 
-// 检查是否为文件
+// Check if it is a file
 pub fn (items map[string]MultipartItem) is_file(key string) bool {
 	item := items[key] or { return false }
 	return item.filename != ''
 }
 
-// 获取文件名
+// Get file name
 pub fn (items map[string]MultipartItem) get_filename(key string) !string {
 	item := items[key] or {
 		return error('Item not found: $key')
@@ -162,7 +162,7 @@ pub fn (items map[string]MultipartItem) get_filename(key string) !string {
 	return item.filename
 }
 
-// 获取内容类型
+// Get content type
 pub fn (items map[string]MultipartItem) get_content_type(key string) !string {
 	item := items[key] or {
 		return error('Item not found: $key')

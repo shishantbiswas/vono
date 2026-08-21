@@ -1,0 +1,15 @@
+# VitePress core ignores
+.vitepress/dist
+.vitepress/cache
+
+# Node dependencies
+node_modules/
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# Operating system files
+.DS_Store
+Thumbs.db

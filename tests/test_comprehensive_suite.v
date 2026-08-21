@@ -3,7 +3,7 @@ import time
 import strings
 import net.http
 
-// 测试统计
+//Test statistics
 struct TestStats {
 mut:
 	total_tests  int
@@ -45,14 +45,14 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 1. 测试缓存系统
+// 1. Test cache system
 fn test_cache_system(mut stats TestStats) {
 	stats.start_test('缓存系统')
 	
-	// 创建缓存
+	//Create cache
 	mut cache := hono.ContextLRUCache.new(3)
 	
-	// 创建测试数据
+	//Create test data
 	test_match := hono.ContextRouteMatch{
 		handler: hono.ContextHandler{ path: '/test' }
 		params: {'id': '123'}
@@ -60,28 +60,28 @@ fn test_cache_system(mut stats TestStats) {
 		base_path: ''
 	}
 	
-	// 测试基本操作
+	//Test basic operations
 	cache.put('key1', test_match)
 	cache.put('key2', test_match)
 	cache.put('key3', test_match)
 	
-	// 验证获取
+	// Verify acquisition
 	if _ := cache.get('key1') {
-		// 获取成功
+		// Get success
 	} else {
 		stats.fail_test('无法获取缓存值')
 		return
 	}
 	
-	// 测试LRU淘汰 - key1 被访问后移到头部，key2 成为最久未使用
-	cache.put('key4', test_match)  // 应该淘汰 key2
+	// Test LRU elimination - key1 is moved to the head after being accessed, and key2 becomes the longest unused one
+	cache.put('key4', test_match)  // key2 should be eliminated
 	
 	if _ := cache.get('key2') {
 		stats.fail_test('LRU淘汰机制失效')
 		return
 	}
 	
-	// 测试健康检查
+	//Test health check
 	if !cache.is_healthy() {
 		stats.fail_test('缓存健康检查失败')
 		return
@@ -90,11 +90,11 @@ fn test_cache_system(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 2. 测试安全验证
+// 2. Test security verification
 fn test_security_validation(mut stats TestStats) {
 	stats.start_test('安全验证')
 	
-	// 测试路径验证
+	//Test path verification
 	dangerous_paths := [
 		'../../../etc/passwd',
 		'..\\..\\windows\\system32',
@@ -112,7 +112,7 @@ fn test_security_validation(mut stats TestStats) {
 		}
 	}
 	
-	// 测试安全路径
+	//Test safe path
 	safe_paths := [
 		'documents/file.txt',
 		'images/photo.jpg',
@@ -130,7 +130,7 @@ fn test_security_validation(mut stats TestStats) {
 		}
 	}
 	
-	// 测试哈希验证
+	//Test hash verification
 	invalid_hashes := [
 		'invalid_hash',
 		'12345',
@@ -145,7 +145,7 @@ fn test_security_validation(mut stats TestStats) {
 		}
 	}
 	
-	// 测试有效哈希 (32字符)
+	// Test for valid hash (32 characters)
 	valid_hash := 'a1b2c3d4e5f67890123456789012abcd'
 	result := hono.validate_file_hash(valid_hash) or {
 		stats.fail_test('有效哈希被错误拒绝: ${err}')
@@ -159,14 +159,14 @@ fn test_security_validation(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 3. 测试错误处理
+// 3. Test error handling
 fn test_error_handling(mut stats TestStats) {
 	stats.start_test('错误处理')
 	
-	// 创建测试 Context
+	//Create test Context
 	mut ctx := create_test_context()
 	
-	// 测试各种错误响应
+	//Test various error responses
 	response := ctx.bad_request('测试错误')
 	if response.status_code != 400 {
 		stats.fail_test('bad_request 状态码错误')
@@ -200,13 +200,13 @@ fn test_error_handling(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 4. 测试路由系统
+// 4. Test routing system
 fn test_router_system(mut stats TestStats) {
 	stats.start_test('路由系统')
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加路由
+	//Add route
 	routes := [
 		['/users', 'get_users'],
 		['/users/:id', 'get_user'],
@@ -226,15 +226,15 @@ fn test_router_system(mut stats TestStats) {
 		}
 	}
 	
-	// 测试静态路由匹配
+	//Test static route matching
 	if _ := router.match_route('GET', '/users') {
-		// 匹配成功
+		// Match successful
 	} else {
 		stats.fail_test('静态路由匹配失败')
 		return
 	}
 	
-	// 测试动态路由匹配
+	//Test dynamic route matching
 	if match_result := router.match_route('GET', '/users/123') {
 		if match_result.params['id'] != '123' {
 			stats.fail_test('参数提取失败')
@@ -245,7 +245,7 @@ fn test_router_system(mut stats TestStats) {
 		return
 	}
 	
-	// 测试多参数路由
+	//Test multi-parameter routing
 	if match_result := router.match_route('GET', '/posts/456/comments/789') {
 		if match_result.params['post_id'] != '456' || match_result.params['comment_id'] != '789' {
 			stats.fail_test('多参数提取失败')
@@ -256,7 +256,7 @@ fn test_router_system(mut stats TestStats) {
 		return
 	}
 	
-	// 测试不存在的路由
+	//Test non-existent routes
 	if _ := router.match_route('DELETE', '/nonexistent') {
 		stats.fail_test('不应该匹配不存在的路由')
 		return
@@ -265,11 +265,11 @@ fn test_router_system(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 5. 测试配置管理
+// 5. Test configuration management
 fn test_config_management(mut stats TestStats) {
 	stats.start_test('配置管理')
 	
-	// 测试默认配置
+	//Test default configuration
 	config := hono.default_config()
 	
 	if config.server.host != '127.0.0.1' {
@@ -282,12 +282,12 @@ fn test_config_management(mut stats TestStats) {
 		return
 	}
 	
-	// 测试配置验证
+	//Test configuration verification
 	mut invalid_config := config
 	invalid_config.server.port = 0
 	
 	hono.validate_config(invalid_config) or {
-		// 应该验证失败
+		// Should validation fail
 		stats.pass_test()
 		return
 	}
@@ -295,11 +295,11 @@ fn test_config_management(mut stats TestStats) {
 	stats.fail_test('无效配置未被拒绝')
 }
 
-// 6. 测试日志系统
+// 6. Test log system
 fn test_logging_system(mut stats TestStats) {
 	stats.start_test('日志系统')
 	
-	// 创建测试日志器
+	//Create test logger
 	config := hono.LoggerConfig{
 		level: hono.LogLevel.debug
 		output: hono.LogOutput.console
@@ -308,7 +308,7 @@ fn test_logging_system(mut stats TestStats) {
 	
 	mut logger := hono.new_logger(config)
 	
-	// 测试日志级别转换
+	//Test log level conversion
 	if hono.parse_log_level('info') != hono.LogLevel.info {
 		stats.fail_test('日志级别解析失败')
 		return
@@ -319,7 +319,7 @@ fn test_logging_system(mut stats TestStats) {
 		return
 	}
 	
-	// 测试日志输出（不会失败，只是验证不崩溃）
+	//Test log output (will not fail, just verify that it does not crash)
 	logger.info('测试信息日志')
 	logger.warn('测试警告日志')
 	logger.error('测试错误日志')
@@ -328,18 +328,18 @@ fn test_logging_system(mut stats TestStats) {
 }
 
 
-// 7. 测试文件上传配置
+// 7. Test file upload configuration
 fn test_file_upload_config(mut stats TestStats) {
 	stats.start_test('文件上传配置')
 	
-	// 创建上传配置
+	//Create upload configuration
 	config := hono.ChunkUploadConfig{
 		upload_dir: './test_uploads'
 		max_file_size: 1024 * 1024  // 1MB
 		chunk_size: 1024            // 1KB
 	}
 	
-	// 验证配置
+	//Verify configuration
 	if config.upload_dir != './test_uploads' {
 		stats.fail_test('上传目录配置错误')
 		return
@@ -350,10 +350,10 @@ fn test_file_upload_config(mut stats TestStats) {
 		return
 	}
 	
-	// 创建上传管理器
+	//Create upload manager
 	mut manager := hono.new_chunk_upload_manager(config)
 	
-	// 验证管理器创建成功
+	// Verification manager created successfully
 	if manager.config.chunk_size != 1024 {
 		stats.fail_test('上传管理器配置错误')
 		return
@@ -362,11 +362,11 @@ fn test_file_upload_config(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 8. 测试性能
+// 8. Test performance
 fn test_performance(mut stats TestStats) {
 	stats.start_test('性能测试')
 	
-	// 测试字符串构建性能
+	//Test string construction performance
 	start_time := time.now()
 	
 	mut builder := strings.new_builder(1000)
@@ -387,7 +387,7 @@ fn test_performance(mut stats TestStats) {
 		return
 	}
 	
-	// 测试缓存性能
+	//Test cache performance
 	start_time2 := time.now()
 	
 	mut cache := hono.ContextLRUCache.new(1000)
@@ -416,11 +416,11 @@ fn test_performance(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 9. 测试内存管理
+// 9. Test memory management
 fn test_memory_management(mut stats TestStats) {
 	stats.start_test('内存管理')
 	
-	// 测试缓存清理
+	//Test cache cleanup
 	mut cache := hono.ContextLRUCache.new(5)
 	
 	test_match := hono.ContextRouteMatch{
@@ -430,19 +430,19 @@ fn test_memory_management(mut stats TestStats) {
 		base_path: ''
 	}
 	
-	// 填充缓存
+	//Fill cache
 	for i in 0 .. 10 {
 		cache.put('key${i}', test_match)
 	}
 	
-	// 验证大小限制
+	// Verify size limit
 	size, capacity := cache.get_stats()
 	if size > capacity {
 		stats.fail_test('缓存大小超出限制: ${size}/${capacity}')
 		return
 	}
 	
-	// 清理缓存
+	// clear cache
 	cache.clear()
 	
 	size2, _ := cache.get_stats()
@@ -451,7 +451,7 @@ fn test_memory_management(mut stats TestStats) {
 		return
 	}
 	
-	// 验证健康状态
+	//Verify health status
 	if !cache.is_healthy() {
 		stats.fail_test('缓存清理后健康检查失败')
 		return
@@ -460,14 +460,14 @@ fn test_memory_management(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 10. 集成测试
+// 10. Integration testing
 fn test_integration(mut stats TestStats) {
 	stats.start_test('集成测试')
 	
-	// 创建完整的应用
+	//Create a complete application
 	mut app := hono.Hono.new()
 	
-	// 添加路由
+	//Add route
 	app.get('/health', fn (mut c hono.Context) http.Response {
 		return c.json('{"status": "ok"}')
 	})
@@ -477,7 +477,7 @@ fn test_integration(mut stats TestStats) {
 		return c.json('{"user_id": "${user_id}"}')
 	})
 	
-	// 验证路由统计
+	//Verify routing statistics
 	static_count, dynamic_count, _, _ := app.get_router_stats()
 	
 	if static_count + dynamic_count < 2 {
@@ -485,7 +485,7 @@ fn test_integration(mut stats TestStats) {
 		return
 	}
 	
-	// 创建缓存
+	//Create cache
 	mut cache := hono.ContextLRUCache.new(100)
 	test_match := hono.ContextRouteMatch{
 		handler: hono.ContextHandler{ path: '/test' }
@@ -495,15 +495,15 @@ fn test_integration(mut stats TestStats) {
 	}
 	cache.put('app_status', test_match)
 	
-	// 验证缓存
+	//Verify cache
 	if _ := cache.get('app_status') {
-		// 缓存获取成功
+		//Cache acquisition successful
 	} else {
 		stats.fail_test('缓存获取失败')
 		return
 	}
 	
-	// 创建日志器
+	//Create logger
 	log_config := hono.LoggerConfig{
 		level: hono.LogLevel.info
 		output: hono.LogOutput.console
@@ -515,7 +515,7 @@ fn test_integration(mut stats TestStats) {
 	stats.pass_test()
 }
 
-// 辅助函数：创建测试 Context
+//Auxiliary function: Create test Context
 fn create_test_context() hono.Context {
 	req := http.Request{
 		method: .get
@@ -525,13 +525,13 @@ fn create_test_context() hono.Context {
 }
 
 fn main() {
-	println('🚀 开始V-Hono综合测试套件...\n')
+	println('🚀 开始vono综合测试套件...\n')
 	
 	mut stats := TestStats{
 		start_time: time.now()
 	}
 	
-	// 运行所有测试
+	//Run all tests
 	test_cache_system(mut stats)
 	test_security_validation(mut stats)
 	test_error_handling(mut stats)
@@ -543,6 +543,6 @@ fn main() {
 	test_memory_management(mut stats)
 	test_integration(mut stats)
 	
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

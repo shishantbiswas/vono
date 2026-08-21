@@ -1,6 +1,6 @@
 // test_usockets_stream_writer_properties.v
 // Property-Based Testing for UsocketsStreamWriter chunked encoding
-// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 // Validates: Requirements 7.2
 module main
 
@@ -254,8 +254,8 @@ fn (w TestUsocketsStreamWriter) is_connected() bool {
 
 
 // ============================================================================
-// Property 10: Chunked 编码格式正确性
-// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+// Property 10: Chunked encoding format correctness
+// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 // Validates: Requirements 7.2
 //
 // *For any* data written to the stream, the output SHALL follow HTTP chunked 
@@ -609,7 +609,7 @@ fn main() {
 	mut stats := PropertyTestStats{}
 
 	// Run Property 10 tests for UsocketsStreamWriter
-	// Feature: sse-streaming-helper, Property 10: Chunked 编码格式正确性
+	// Feature: sse-streaming-helper, Property 10: Chunked encoding format correctness
 	// Validates: Requirements 7.2
 	stats.run_property_test('Property 10a: UsocketsStreamWriter.write bytes encoding', test_property_10a_usockets_write_bytes)
 	stats.run_property_test('Property 10b: UsocketsStreamWriter.write_string encoding', test_property_10b_usockets_write_string)

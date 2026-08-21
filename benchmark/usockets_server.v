@@ -1,7 +1,7 @@
-// uSockets 测试服务器
-// 用于集成测试验证 uSockets 后端功能
+// uSockets test server
+// Used for integration testing to verify uSockets backend functionality
 //
-// 编译运行:
+//Compile and run:
 //   v -enable-globals -cc gcc -ldflags "-ldbghelp" benchmark/usockets_test_server.v -o usockets_test.exe
 //   .\usockets_test.exe
 
@@ -13,14 +13,14 @@ import net.http
 fn main() {
 	mut app := hono.Hono.new()
 
-	// 全局中间件 - 添加自定义响应头
+	// Global middleware - add custom response headers
 	app.use(fn (mut c hono.Context, next fn (mut hono.Context) http.Response) http.Response {
 		mut resp := next(mut c)
 		c.headers['X-Middleware'] = 'applied'
 		return resp
 	})
 
-	// ==================== 基本路由 ====================
+	// ==================== Basic routing ====================
 
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello World')
@@ -34,7 +34,7 @@ fn main() {
 		return c.text('OK')
 	})
 
-	// ==================== CRUD 路由 ====================
+	// ==================== CRUD routing ====================
 
 	app.get('/api/users', fn (mut c hono.Context) http.Response {
 		return c.json('{"users": []}')
@@ -65,7 +65,7 @@ fn main() {
 		return c.json('{"id": "${id}", "patched": true}')
 	})
 
-	// ==================== 多参数路由 ====================
+	// ==================== Multi-parameter routing ====================
 
 	app.get('/api/users/:user_id/posts/:post_id', fn (mut c hono.Context) http.Response {
 		user_id := c.params['user_id'] or { '' }
@@ -79,7 +79,7 @@ fn main() {
 		return c.json('{"category": "${category}", "item": "${item}"}')
 	})
 
-	// ==================== 查询参数路由 ====================
+	// ==================== Query parameter routing ====================
 
 	app.get('/api/search', fn (mut c hono.Context) http.Response {
 		q := c.query['q'] or { '' }
@@ -88,7 +88,7 @@ fn main() {
 		return c.json('{"query": "${q}", "limit": ${limit}, "page": ${page}}')
 	})
 
-	// ==================== 响应格式路由 ====================
+	// ==================== Response format routing ====================
 
 	app.get('/api/json', fn (mut c hono.Context) http.Response {
 		return c.json('{"message": "JSON response"}')
@@ -108,14 +108,14 @@ fn main() {
 		return c.text('OK')
 	})
 
-	// ==================== 自定义 404 ====================
+	// ==================== Custom 404 ====================
 
 	app.not_found(fn (mut c hono.Context) http.Response {
 		c.status(404)
 		return c.json('{"error": "Not Found", "path": "${c.path}"}')
 	})
 
-	// 启动 uSockets 服务器
+	// Start uSockets server
 	println('[usockets-test-server] Starting on port 9998...')
 	app.listen_usockets(9998)
 }

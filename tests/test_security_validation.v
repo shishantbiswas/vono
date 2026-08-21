@@ -5,7 +5,7 @@ fn main() {
 	
 	println('1. 路径安全验证测试')
 	
-	// 测试安全路径
+	//Test safe path
 	safe_paths := [
 		'test.txt',
 		'images/photo.jpg',
@@ -21,7 +21,7 @@ fn main() {
 		println('   ✅ 安全路径通过: $path -> $result')
 	}
 	
-	// 测试危险路径
+	// Test dangerous paths
 	dangerous_paths := [
 		'../etc/passwd',
 		'..\\windows\\system32',
@@ -43,7 +43,7 @@ fn main() {
 	
 	println('2. 文件哈希验证测试')
 	
-	// 测试有效哈希
+	// Test for valid hash
 	valid_hashes := [
 		'5d41402abc4b2a76b9719d911017c592',  // MD5 of "hello"
 		'098f6bcd4621d373cade4e832627b4f6',  // MD5 of "test"
@@ -58,13 +58,13 @@ fn main() {
 		println('   ✅ 有效哈希通过: $hash -> $result')
 	}
 	
-	// 测试无效哈希
+	// Test for invalid hash
 	invalid_hashes := [
-		'',                                   // 空哈希
-		'invalid',                           // 太短
-		'5d41402abc4b2a76b9719d911017c592x', // 包含非十六进制字符
-		'5d41402abc4b2a76b9719d911017c59',   // 太短
-		'5d41402abc4b2a76b9719d911017c5922'  // 太长
+		'',                                   // empty hash
+		'invalid',                           // too short
+		'5d41402abc4b2a76b9719d911017c592x', // Contains non-hexadecimal characters
+		'5d41402abc4b2a76b9719d911017c59',   // too short
+		'5d41402abc4b2a76b9719d911017c5922'  // too long
 	]
 	
 	for hash in invalid_hashes {
@@ -77,7 +77,7 @@ fn main() {
 	
 	println('3. 文件名验证测试')
 	
-	// 测试有效文件名
+	//Test valid file name
 	valid_filenames := [
 		'document.pdf',
 		'image_001.jpg',
@@ -93,14 +93,14 @@ fn main() {
 		println('   ✅ 有效文件名通过: $filename -> $result')
 	}
 	
-	// 测试无效文件名
+	// Test for invalid file names
 	invalid_filenames := [
-		'',           // 空文件名
-		'CON.txt',    // Windows 保留名
-		'file<>.txt', // 危险字符
+		'',           // Empty file name
+		'CON.txt',    // Windows reserved name
+		'file<>.txt', // Dangerous characters
 		'file|pipe.txt',
 		'test?.doc',
-		'a'.repeat(300) // 太长的文件名
+		'a'.repeat(300) // File name too long
 	]
 	
 	for filename in invalid_filenames {
@@ -115,7 +115,7 @@ fn main() {
 	
 	max_size := 10 * 1024 * 1024 // 10MB
 	
-	// 测试有效大小
+	//Test effective size
 	valid_sizes := ['1024', '5242880', '10485760'] // 1KB, 5MB, 10MB
 	
 	for size_str in valid_sizes {
@@ -126,8 +126,8 @@ fn main() {
 		println('   ✅ 有效大小通过: $size_str -> ${result} bytes')
 	}
 	
-	// 测试无效大小
-	invalid_sizes := ['', '0', '-1024', '20971520'] // 空, 0, 负数, 20MB(超过限制)
+	// Test for invalid size
+	invalid_sizes := ['', '0', '-1024', '20971520'] // Empty, 0, negative number, 20MB (exceeds limit)
 	
 	for size_str in invalid_sizes {
 		result := hono.validate_file_size(size_str, max_size) or {
@@ -141,7 +141,7 @@ fn main() {
 	
 	max_chunks := 100
 	
-	// 测试有效索引
+	//Test valid index
 	valid_indices := ['0', '50', '99']
 	
 	for index_str in valid_indices {
@@ -152,7 +152,7 @@ fn main() {
 		println('   ✅ 有效索引通过: $index_str -> $result')
 	}
 	
-	// 测试无效索引
+	//Test for invalid index
 	invalid_indices := ['', '-1', '100', 'abc']
 	
 	for index_str in invalid_indices {

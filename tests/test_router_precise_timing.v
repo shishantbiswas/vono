@@ -5,10 +5,10 @@ import net.http
 fn main() {
 	println('=== 精确路由性能计时 ===')
 	
-	// 测试1: 多次重复测量第一次匹配
+	//Test 1: Repeat the measurement multiple times to get the first match
 	test_first_match_precision()
 	
-	// 测试2: 分离各个组件的时间
+	//Test 2: Time to separate components
 	test_component_timing()
 	
 	println('✅ 精确路由性能计时完成')
@@ -20,7 +20,7 @@ fn test_first_match_precision() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id/comments/:comment_id'
 	test_path := '/api/v1/users/123/posts/456/comments/789'
 	
-	// 进行多次独立测试
+	// Conduct multiple independent tests
 	mut first_match_times := []f64{}
 	
 	for round in 0 .. 10 {
@@ -35,10 +35,10 @@ fn test_first_match_precision() {
 		
 		router.add_route('GET', handler, '')
 		
-		// 确保缓存为空
+		// Make sure the cache is empty
 		router.clear_regex_cache()
 		
-		// 测量第一次匹配时间
+		//Measure first match time
 		start_time := time.now()
 		result := router.match_route('GET', test_path)
 		first_time := time.since(start_time)
@@ -49,7 +49,7 @@ fn test_first_match_precision() {
 		}
 	}
 	
-	// 计算统计数据
+	// Calculate statistics
 	if first_match_times.len > 0 {
 		mut total := 0.0
 		mut min_time := first_match_times[0]
@@ -90,13 +90,13 @@ fn test_component_timing() {
 		}
 	}
 	
-	// 1. 测量添加路由的时间
+	// 1. Measure the time to add a route
 	start_time1 := time.now()
 	router.add_route('GET', handler, '')
 	add_route_time := time.since(start_time1)
 	println('  添加路由时间: ${add_route_time}')
 	
-	// 2. 测量静态路由检查时间
+	// 2. Measure static route check time
 	start_time2 := time.now()
 	for _ in 0 .. 10000 {
 		router.match_static_route('GET', test_path)
@@ -105,7 +105,7 @@ fn test_component_timing() {
 	avg_static_check := f64(static_check_time.microseconds()) / 10000.0
 	println('  平均静态路由检查: ${avg_static_check:.3f}μs')
 	
-	// 3. 测量缓存检查时间
+	// 3. Measure cache check time
 	cache_key := 'GET:${test_path}'
 	start_time3 := time.now()
 	for _ in 0 .. 10000 {
@@ -115,7 +115,7 @@ fn test_component_timing() {
 	avg_cache_check := f64(cache_check_time.microseconds()) / 10000.0
 	println('  平均缓存检查: ${avg_cache_check:.3f}μs')
 	
-	// 4. 清空缓存，测量完整的第一次匹配
+	// 4. Clear the cache and measure the complete first match
 	router.clear_cache()
 	router.clear_regex_cache()
 	
@@ -127,7 +127,7 @@ fn test_component_timing() {
 	if result != none {
 		println('  ✅ 匹配成功')
 		
-		// 5. 测量后续缓存匹配
+		// 5. Measure subsequent cache matches
 		start_time5 := time.now()
 		for _ in 0 .. 10000 {
 			router.match_route('GET', test_path)
@@ -136,13 +136,13 @@ fn test_component_timing() {
 		avg_cached_match := f64(cached_matches_time.microseconds()) / 10000.0
 		println('  平均缓存匹配: ${avg_cached_match:.3f}μs')
 		
-		// 6. 分析缓存状态
+		// 6. Analyze cache status
 		cache_size, cache_capacity := router.get_cache_stats()
 		regex_total, regex_compiled := router.get_regex_cache_stats()
 		println('  路由缓存: ${cache_size}/${cache_capacity}')
 		println('  正则缓存: ${regex_compiled}/${regex_total}')
 		
-		// 7. 测量纯正则匹配（如果可以访问）
+		// 7. Measure pure canonical matches (if accessible)
 		if cached_regex := router.regex_cache[route_path] {
 			if cached_regex.compiled {
 				start_time6 := time.now()
@@ -153,7 +153,7 @@ fn test_component_timing() {
 				avg_regex_match := f64(pure_regex_time.microseconds()) / 10000.0
 				println('  平均纯正则匹配: ${avg_regex_match:.3f}μs')
 				
-				// 8. 测量参数提取
+				// 8. Measurement parameter extraction
 				start_time7 := time.now()
 				for _ in 0 .. 10000 {
 					for param_name in cached_regex.param_names {
@@ -168,7 +168,7 @@ fn test_component_timing() {
 		}
 	}
 	
-	// 9. 测量字符串操作开销
+	// 9. Measure string operation overhead
 	println('\n  字符串操作性能:')
 	
 	start_time8 := time.now()

@@ -5,13 +5,13 @@ import net.http
 fn main() {
 	println('=== 路由正则表达式缓存优化测试 ===')
 	
-	// 测试1: 正则表达式缓存效果
+	//Test 1: Regular expression caching effect
 	test_regex_cache_performance()
 	
-	// 测试2: 缓存预热效果
+	//Test 2: Cache warm-up effect
 	test_cache_warmup()
 	
-	// 测试3: 性能分析
+	//Test 3: Performance Analysis
 	test_performance_analysis()
 	
 	println('✅ 路由正则表达式缓存测试完成')
@@ -22,7 +22,7 @@ fn test_regex_cache_performance() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加一些动态路由
+	//Add some dynamic routing
 	dynamic_routes := [
 		'/users/:id',
 		'/posts/:post_id/comments/:comment_id',
@@ -45,7 +45,7 @@ fn test_regex_cache_performance() {
 	
 	println('  添加了${dynamic_routes.len}个动态路由')
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/users/123',
 		'/posts/456/comments/789',
@@ -56,7 +56,7 @@ fn test_regex_cache_performance() {
 		'/api/v2/projects/777/tasks/888'
 	]
 	
-	// 第一次匹配（编译正则表达式）
+	// First match (compiled regular expression)
 	start_time1 := time.now()
 	mut first_matches := 0
 	for _ in 0 .. 1000 {
@@ -68,7 +68,7 @@ fn test_regex_cache_performance() {
 	}
 	first_run_time := time.since(start_time1)
 	
-	// 第二次匹配（使用缓存的正则表达式）
+	// Second match (using cached regular expression)
 	start_time2 := time.now()
 	mut second_matches := 0
 	for _ in 0 .. 1000 {
@@ -98,7 +98,7 @@ fn test_cache_warmup() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加动态路由
+	//Add dynamic route
 	for i in 0 .. 10 {
 		route := '/api/v${i}/items/:id'
 		handler := hono.ContextHandler{
@@ -112,7 +112,7 @@ fn test_cache_warmup() {
 	
 	println('  添加了10个动态路由')
 	
-	// 执行预热
+	//Perform warm-up
 	router.warmup_regex_cache()
 	
 	println('  ✅ 预热完成')
@@ -123,7 +123,7 @@ fn test_performance_analysis() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加静态路由
+	//Add static route
 	static_routes := ['/api/health', '/api/status', '/api/info']
 	for route in static_routes {
 		handler := hono.ContextHandler{
@@ -135,7 +135,7 @@ fn test_performance_analysis() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 添加动态路由
+	//Add dynamic route
 	dynamic_routes := ['/users/:id', '/posts/:id/comments', '/files/:category/:name']
 	for route in dynamic_routes {
 		handler := hono.ContextHandler{
@@ -147,7 +147,7 @@ fn test_performance_analysis() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 执行一些匹配操作
+	//Perform some matching operations
 	test_paths := ['/api/health', '/users/123', '/posts/456/comments', '/files/docs/readme.txt']
 	for _ in 0 .. 100 {
 		for path in test_paths {
@@ -155,6 +155,6 @@ fn test_performance_analysis() {
 		}
 	}
 	
-	// 显示性能分析
+	//Display performance analysis
 	router.analyze_router_performance()
 }

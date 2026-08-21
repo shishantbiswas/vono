@@ -1,4 +1,4 @@
-// 优化分析：v-hono 静态路由性能瓶颈测试
+// Optimization analysis: vono static routing performance bottleneck test
 
 module main
 
@@ -10,22 +10,22 @@ const iterations = 100_000
 
 fn main() {
 	println('╔══════════════════════════════════════════════════════════════╗')
-	println('║       v-hono 静态路由性能瓶颈分析                            ║')
+	println('║       vono 静态路由性能瓶颈分析                            ║')
 	println('╚══════════════════════════════════════════════════════════════╝')
 	
-	// 测试1: 纯 map 查找
+	//Test 1: Pure map search
 	test_pure_map()
 	
-	// 测试2: 带字符串拼接的 map 查找
+	//Test 2: map search with string concatenation
 	test_map_with_string_concat()
 	
-	// 测试3: v-hono FastRouter（带缓存）
+	//Test 3: vono FastRouter (with cache)
 	test_hono_with_cache()
 	
-	// 测试4: v-hono FastRouter（禁用缓存）
+	//Test 4: vono FastRouter (disable caching)
 	test_hono_without_cache()
 	
-	// 测试5: 直接访问静态路由 map
+	//Test 5: Directly access the static routing map
 	test_hono_direct_static()
 }
 
@@ -74,7 +74,7 @@ fn test_map_with_string_concat() {
 }
 
 fn test_hono_with_cache() {
-	println('\n[测试3] v-hono FastRouter（带 LRU 缓存）')
+	println('\n[测试3] vono FastRouter（带 LRU 缓存）')
 	println('----------------------------------------')
 	
 	mut app := hono.Hono.new()
@@ -82,7 +82,7 @@ fn test_hono_with_cache() {
 		return c.text('users')
 	})
 	
-	// 预热
+	// preheat
 	for _ in 0 .. 1000 {
 		app.fast_router.match_route('GET', '/api/users') or { continue }
 	}
@@ -99,7 +99,7 @@ fn test_hono_with_cache() {
 }
 
 fn test_hono_without_cache() {
-	println('\n[测试4] v-hono FastRouter（禁用缓存）')
+	println('\n[测试4] vono FastRouter（禁用缓存）')
 	println('----------------------------------------')
 	
 	mut app := hono.Hono.new()
@@ -107,7 +107,7 @@ fn test_hono_without_cache() {
 		return c.text('users')
 	})
 	
-	// 禁用缓存
+	// disable caching
 	app.fast_router.set_cache_enabled(false)
 	
 	sw := time.new_stopwatch()

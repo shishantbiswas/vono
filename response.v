@@ -2,11 +2,11 @@ module hono
 
 import net.http
 
-// 响应工具
+// response tool
 pub struct Response {
 }
 
-// 创建HTML响应
+// Create HTML response
 pub fn Response.html(content string) http.Response {
 	return http.Response{
 		status_code: 200
@@ -15,7 +15,7 @@ pub fn Response.html(content string) http.Response {
 	}
 }
 
-// 创建JSON响应
+// Create JSON response
 pub fn Response.json(content string) http.Response {
 	return http.Response{
 		status_code: 200
@@ -24,7 +24,7 @@ pub fn Response.json(content string) http.Response {
 	}
 }
 
-// 创建文本响应
+//Create text response
 pub fn Response.text(content string) http.Response {
 	return http.Response{
 		status_code: 200
@@ -33,7 +33,7 @@ pub fn Response.text(content string) http.Response {
 	}
 }
 
-// 创建错误响应
+// Create error response
 pub fn Response.error(status_code int, message string) http.Response {
 	return http.Response{
 		status_code: status_code

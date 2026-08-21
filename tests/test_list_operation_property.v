@@ -8,7 +8,7 @@ import crypto.rand as crand
 
 // ============================================================================
 // Property 7: List Operation Completeness
-// Feature: v-hono-upload-integration, Property 7: List Operation Completeness
+// Feature: vono-upload-integration, Property 7: List Operation Completeness
 // Validates: Requirements 8.5
 //
 // *For any* set of uploaded files in a bucket, the list operation should return
@@ -56,19 +56,19 @@ pub:
 	has_more    bool
 }
 
-// 数据库管理器
+// database manager
 struct DatabaseManager {
 mut:
 	db sqlite.DB
 }
 
-// 创建数据库管理器
+//Create database manager
 fn new_database_manager(db_path string) !DatabaseManager {
 	mut db := sqlite.connect(db_path) or {
 		return error('Failed to connect to database: ${err}')
 	}
 
-	// 创建文件信息表
+	//Create file information table
 	db.exec('CREATE TABLE IF NOT EXISTS file_info (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		file_uuid TEXT UNIQUE NOT NULL,
@@ -84,7 +84,7 @@ fn new_database_manager(db_path string) !DatabaseManager {
 		metadata TEXT
 	);') or { return error('Failed to create file_info table: ${err}') }
 
-	// 创建索引
+	//Create index
 	db.exec('CREATE INDEX IF NOT EXISTS idx_file_hash ON file_info(file_hash);') or {
 		return error('Failed to create idx_file_hash index: ${err}')
 	}
@@ -103,7 +103,7 @@ fn new_database_manager(db_path string) !DatabaseManager {
 	}
 }
 
-// 生成文件UUID
+// Generate file UUID
 fn generate_file_uuid() string {
 	random_bytes := crand.bytes(16) or { return '' }
 	mut uuid := ''
@@ -116,12 +116,12 @@ fn generate_file_uuid() string {
 	return uuid
 }
 
-// SQL 字符串转义
+// SQL string escape
 fn escape_sql(s string) string {
 	return s.replace("'", "''")
 }
 
-// 插入文件信息
+//Insert file information
 fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	now := time.now().unix()
 	file_uuid := if file.file_uuid != '' { file.file_uuid } else { generate_file_uuid() }
@@ -146,7 +146,7 @@ fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	}
 }
 
-// 分页列表查询
+//Paging list query
 fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult {
 	mut where_clauses := []string{}
 	
@@ -164,13 +164,13 @@ fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult {
 	order_dir := if options.order_desc { 'DESC' } else { 'ASC' }
 	order_sql := 'ORDER BY ${options.order_by} ${order_dir}'
 
-	// 获取总数
+	// Get the total number
 	count_rows := dm.db.exec('SELECT COUNT(*) FROM file_info ${where_sql}') or {
 		return error('Failed to count files: ${err}')
 	}
 	total_count := if count_rows.len > 0 { count_rows[0].vals[0].int() } else { 0 }
 
-	// 获取分页数据
+	// Get pagination data
 	limit := if options.limit > 0 { options.limit } else { 100 }
 	rows := dm.db.exec('SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info ${where_sql} ${order_sql} LIMIT ${limit} OFFSET ${options.offset}') or {
 		return error('Failed to list files: ${err}')
@@ -201,7 +201,7 @@ fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult {
 	}
 }
 
-// 关闭数据库连接
+//Close database connection
 fn (mut dm DatabaseManager) close() {
 	dm.db.close() or {}
 }
@@ -244,7 +244,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机字符串
+// Generate random string
 fn generate_random_string(min_len int, max_len int) string {
 	chars := 'abcdefghijklmnopqrstuvwxyz0123456789'
 	len := rand.int_in_range(min_len, max_len) or { min_len }
@@ -256,7 +256,7 @@ fn generate_random_string(min_len int, max_len int) string {
 	return result
 }
 
-// 生成随机文件名
+// Generate random file name
 fn generate_random_filename() string {
 	name := generate_random_string(5, 15)
 	extensions := ['.txt', '.bin', '.dat', '.json', '.xml']
@@ -264,7 +264,7 @@ fn generate_random_filename() string {
 	return name + extensions[ext_idx]
 }
 
-// 生成随机 hash
+// Generate random hash
 fn generate_random_hash() string {
 	mut hash := ''
 	for _ in 0 .. 32 {
@@ -274,36 +274,36 @@ fn generate_random_hash() string {
 	return hash
 }
 
-// 生成随机 content_type
+// Generate random content_type
 fn generate_random_content_type() string {
 	types := ['text/plain', 'application/octet-stream', 'application/json', 'image/png']
 	idx := rand.int_in_range(0, types.len) or { 0 }
 	return types[idx]
 }
 
-// 生成随机存储类型
+// Generate random storage type
 fn generate_random_storage_type() string {
 	types := ['local', 's3', 'aliyun_oss', 'tencent_cos']
 	idx := rand.int_in_range(0, types.len) or { 0 }
 	return types[idx]
 }
 
-// 生成随机文件大小
+// Generate random file size
 fn generate_random_file_size() i64 {
 	return rand.i64_in_range(100, 1_000_000) or { 1000 }
 }
 
-// 清理测试数据库
+// Clean the test database
 fn cleanup_test_db() {
 	os.rm(test_db_path) or {}
 }
 
-// 创建测试数据库管理器
+//Create a test database manager
 fn create_test_db() !DatabaseManager {
 	return new_database_manager(test_db_path)
 }
 
-// 生成随机 FileInfo
+// Generate a random FileInfo
 fn generate_random_file_info(bucket string, prefix string) FileInfo {
 	object_key := if prefix != '' {
 		prefix + '/' + generate_random_filename()
@@ -682,7 +682,7 @@ fn test_property_7_5_empty_bucket() bool {
 
 fn main() {
 	println('🚀 开始 List Operation Completeness 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 7: List Operation Completeness')
+	println('Feature: vono-upload-integration, Property 7: List Operation Completeness')
 	println('Validates: Requirements 8.5')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

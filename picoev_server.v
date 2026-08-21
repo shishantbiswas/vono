@@ -5,35 +5,35 @@ import net.http
 import picoev
 import picohttpparser
 
-// picoev 服务器配置
+// picoev server configuration
 pub struct PicoevConfig {
 pub:
 	port              int            = 8080
 	host              string
 	family            net.AddrFamily = .ip6
-	timeout_secs      int            = 120    // 高并发场景需要更长超时（原 8 秒太短）
+	timeout_secs      int            = 120    //High concurrency scenarios require longer timeout (original 8 seconds is too short)
 	max_headers       int            = 100
 	max_read          int            = 8192
 	max_write         int            = 65536
-	keepalive_timeout int            = 30     // Keep-Alive 超时延长到 30 秒
-	max_keepalive_req int            = 10000  // 单连接最大请求数提升到 10000
+	keepalive_timeout int            = 30     // Keep-Alive timeout extended to 30 seconds
+	max_keepalive_req int            = 10000  //The maximum number of requests for a single connection is increased to 10000
 }
 
-// picoev 请求上下文
+// picoev request context
 struct PicoevRequestContext {
 mut:
 	app    &Hono = unsafe { nil }
 	config PicoevConfig
 }
 
-// 使用 picoev 启动服务器
+// Start the server using picoev
 pub fn (mut app Hono) listen_picoev(port int) {
 	app.listen_picoev_with_config(PicoevConfig{
 		port: port
 	})
 }
 
-// 使用 picoev 启动服务器（带配置）
+// Start the server using picoev (with configuration)
 pub fn (mut app Hono) listen_picoev_with_config(config PicoevConfig) {
 	mut ctx := &PicoevRequestContext{
 		app: unsafe { &app }
@@ -51,12 +51,12 @@ pub fn (mut app Hono) listen_picoev_with_config(config PicoevConfig) {
 		cb: picoev_callback
 		user_data: ctx
 	) or {
-		eprintln('[v-hono] Failed to create picoev server: ${err}')
+		eprintln('[vono] Failed to create picoev server: ${err}')
 		return
 	}
 	
 	host_str := if config.host == '' { '127.0.0.1' } else { config.host }
-	println('[v-hono] Listening on http://${host_str}:${config.port}/ (picoev)')
+	println('[vono] Listening on http://${host_str}:${config.port}/ (picoev)')
 	
 	pico.serve()
 }
@@ -190,7 +190,7 @@ fn send_ws_frame_picoev(data []u8) ! {
 	// In practice, we need to write directly to the socket fd
 }
 
-// picoev 回调函数
+// picoev callback function
 fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picohttpparser.Response) {
 	mut ctx := unsafe { &PicoevRequestContext(user_data) }
 	
@@ -207,7 +207,7 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 	// Check if this is a WebSocket upgrade request
 	is_ws_upgrade := is_picoev_ws_upgrade(req)
 	
-	// 优先使用快速路由器
+	// Prioritize using fast routers
 	if ctx.app.use_fast_router {
 		if route_match := ctx.app.fast_router.match_route(method_str, path) {
 			mut hono_ctx := create_picoev_context(req, route_match.params, query_map)
@@ -222,7 +222,7 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 				return
 			}
 			
-			// 优化：零中间件快速路径
+			// Optimization: Zero middleware fast path
 			if !ctx.app.has_middlewares {
 				response := route_match.handler.handle(mut hono_ctx)
 				send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
@@ -236,7 +236,7 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 		}
 	}
 	
-	// 回退到混合路由器
+	// Fallback to hybrid router
 	if route_match := ctx.app.context_hybrid_router.match_route(method_str, path) {
 		mut hono_ctx := create_picoev_context(req, route_match.params, query_map)
 		
@@ -249,7 +249,7 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 			return
 		}
 		
-		// 优化：零中间件快速路径
+		// Optimization: Zero middleware fast path
 		if !ctx.app.has_middlewares {
 			response := route_match.handler.handle(mut hono_ctx)
 			send_picoev_response(mut res, hono_ctx, response, keepalive, ctx.config)
@@ -271,7 +271,7 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 		return
 	}
 	
-	// 默认 404 响应
+	//Default 404 response
 	res.raw('HTTP/1.1 404 Not Found\r\n')
 	res.header('Content-Type', 'text/plain')
 	res.header('Content-Length', '9')
@@ -285,21 +285,21 @@ fn picoev_callback(user_data voidptr, req picohttpparser.Request, mut res picoht
 	res.end()
 }
 
-// 检查客户端是否请求 Keep-Alive - 优化版
-// 避免 to_lower() 创建新字符串，使用大小写不敏感比较
+// Check if the client requests Keep-Alive - optimized version
+// Avoid to_lower() creating new strings, use case-insensitive comparisons
 fn check_keepalive_request(req picohttpparser.Request) bool {
 	for i in 0 .. req.num_headers {
 		h := req.headers[i]
-		// 大小写不敏感比较 "connection"
+		// Case-insensitive comparison "connection"
 		if h.name.len == 10 && eq_ignore_case(h.name, 'connection') {
-			// 检查是否包含 "keep-alive"（大小写不敏感）
+			// Check if "keep-alive" is included (case insensitive)
 			return contains_ignore_case(h.value, 'keep-alive')
 		}
 	}
-	return true // HTTP/1.1 默认 Keep-Alive
+	return true // HTTP/1.1 default Keep-Alive
 }
 
-// 大小写不敏感字符串比较（避免分配）
+// Case-insensitive string comparison (avoid allocation)
 @[inline]
 fn eq_ignore_case(a string, b string) bool {
 	if a.len != b.len {
@@ -308,7 +308,7 @@ fn eq_ignore_case(a string, b string) bool {
 	for i in 0 .. a.len {
 		ca := a[i]
 		cb := b[i]
-		// 转换为小写比较
+		// Convert to lower case for comparison
 		la := if ca >= `A` && ca <= `Z` { ca + 32 } else { ca }
 		lb := if cb >= `A` && cb <= `Z` { cb + 32 } else { cb }
 		if la != lb {
@@ -318,7 +318,7 @@ fn eq_ignore_case(a string, b string) bool {
 	return true
 }
 
-// 大小写不敏感的 contains 检查（避免分配）
+// Case-insensitive contains check (avoids allocation)
 @[inline]
 fn contains_ignore_case(haystack string, needle string) bool {
 	if needle.len > haystack.len {
@@ -344,16 +344,16 @@ fn contains_ignore_case(haystack string, needle string) bool {
 	return false
 }
 
-// 获取路径对应的所有中间件（优化版：使用预排序的前缀列表）
+// Get all middleware corresponding to the path (optimized version: use presorted prefix list)
 fn get_middlewares_for_path_picoev_optimized(app &Hono, path string) []ContextMiddleware {
-	// 优化：只有全局中间件时，直接返回引用（避免克隆）
+	// Optimization: When there is only global middleware, return the reference directly (avoid cloning)
 	if app.route_middlewares.len == 0 {
 		return app.context_middlewares
 	}
 	
 	mut middlewares := app.context_middlewares.clone()
 	
-	// 优化：使用预排序的前缀列表（启动时已排序，不需要每次请求都排序）
+	// Optimization: Use pre-sorted prefix list (sorted at startup, no need to sort on every request)
 	for prefix in app.sorted_middleware_prefixes {
 		if path.starts_with(prefix) || prefix == '/' {
 			if mws := app.route_middlewares[prefix] {
@@ -365,12 +365,12 @@ fn get_middlewares_for_path_picoev_optimized(app &Hono, path string) []ContextMi
 	return middlewares
 }
 
-// 获取路径对应的所有中间件（保留旧版本兼容）
+// Get all middleware corresponding to the path (retain compatibility with old versions)
 fn get_middlewares_for_path_picoev(app &Hono, path string) []ContextMiddleware {
 	return get_middlewares_for_path_picoev_optimized(app, path)
 }
 
-// 执行中间件链
+//Execute middleware chain
 fn exec_middlewares_picoev(idx int, middlewares []ContextMiddleware, mut ctx Context, handler IHandler) http.Response {
 	if idx < middlewares.len {
 		mw := middlewares[idx]
@@ -381,8 +381,8 @@ fn exec_middlewares_picoev(idx int, middlewares []ContextMiddleware, mut ctx Con
 	return handler.handle(mut ctx)
 }
 
-// 解析路径和查询参数 - 零分配优化版
-// 使用指针遍历避免创建临时数组
+// Parse paths and query parameters - zero-allocation optimized version
+// Use pointer traversal to avoid creating temporary arrays
 fn parse_path_and_query(full_path string) (string, map[string]string) {
 	mut query_map := map[string]string{}
 	len := full_path.len
@@ -391,8 +391,8 @@ fn parse_path_and_query(full_path string) (string, map[string]string) {
 		return full_path, query_map
 	}
 	
-	// 快速路径：大多数请求没有查询参数
-	// 从后向前搜索 '?' 通常更快（查询参数在末尾）
+	// Fast path: most requests have no query parameters
+	// Searching for '?' from back to front is usually faster (query parameters are at the end)
 	mut query_start := -1
 	for i := len - 1; i >= 0; i-- {
 		if full_path[i] == `?` {
@@ -401,36 +401,36 @@ fn parse_path_and_query(full_path string) (string, map[string]string) {
 		}
 	}
 	
-	// 没有查询参数，直接返回（最常见情况）
+	// No query parameters, return directly (the most common case)
 	if query_start == -1 {
 		return full_path, query_map
 	}
 	
 	path := full_path[..query_start]
 	
-	// 解析查询参数（单次遍历，避免 split）
+	// Parse query parameters (single traversal, avoid split)
 	mut key_start := query_start + 1
 	mut key_end := -1
 	mut value_start := -1
 	
 	for i := query_start + 1; i <= len; i++ {
-		ch := if i < len { full_path[i] } else { `&` } // 末尾视为分隔符
+		ch := if i < len { full_path[i] } else { `&` } // The end is treated as a separator
 		
 		if ch == `=` && key_end == -1 {
 			key_end = i
 			value_start = i + 1
 		} else if ch == `&` {
-			// 完成一个键值对
+			//Complete a key-value pair
 			if key_end > key_start && value_start > 0 {
 				key := full_path[key_start..key_end]
 				value := if value_start < i { full_path[value_start..i] } else { '' }
 				query_map[key] = value
 			} else if key_end == -1 && i > key_start {
-				// 只有 key 没有 value（如 ?foo&bar=1）
+				// Only key without value (such as ?foo&bar=1)
 				key := full_path[key_start..i]
 				query_map[key] = ''
 			}
-			// 重置状态
+			//Reset state
 			key_start = i + 1
 			key_end = -1
 			value_start = -1
@@ -440,10 +440,10 @@ fn parse_path_and_query(full_path string) (string, map[string]string) {
 	return path, query_map
 }
 
-// 创建 picoev 上下文 - 优化版
-// 延迟转换 http.Request，只在真正需要时才转换
+// Create picoev context - optimized version
+// Lazy conversion of http.Request, only when really needed
 fn create_picoev_context(req picohttpparser.Request, params map[string]string, query map[string]string) Context {
-	// 提取纯路径（不含查询参数）
+	//Extract pure path (without query parameters)
 	path := extract_path_only(req.path)
 	
 	return Context{
@@ -458,7 +458,7 @@ fn create_picoev_context(req picohttpparser.Request, params map[string]string, q
 	}
 }
 
-// 快速提取路径（不含查询参数）
+//Quick extraction path (excluding query parameters)
 @[inline]
 fn extract_path_only(full_path string) string {
 	for i in 0 .. full_path.len {
@@ -469,8 +469,8 @@ fn extract_path_only(full_path string) string {
 	return full_path
 }
 
-// 转换 picoev 请求 - 优化版
-// 使用预计算的方法映射避免字符串比较
+//Convert picoev request - optimized version
+// Use precomputed method mapping to avoid string comparisons
 fn convert_picoev_request(req picohttpparser.Request) http.Request {
 	mut headers := http.new_header()
 	
@@ -487,7 +487,7 @@ fn convert_picoev_request(req picohttpparser.Request) http.Request {
 	}
 }
 
-// 快速 HTTP 方法解析（基于首字符和长度）
+// Fast HTTP method parsing (based on first character and length)
 @[inline]
 fn parse_http_method_fast(method string) http.Method {
 	len := method.len
@@ -495,7 +495,7 @@ fn parse_http_method_fast(method string) http.Method {
 		return http.Method.get
 	}
 	
-	// 基于首字符快速分支
+	// Quick branch based on first character
 	match method[0] {
 		`G` {
 			if len == 3 { return http.Method.get }
@@ -519,7 +519,7 @@ fn parse_http_method_fast(method string) http.Method {
 	return http.Method.get
 }
 
-// 发送 picoev 响应 - 优化版
+//Send picoev response - optimized version
 fn send_picoev_response(mut res picohttpparser.Response, ctx Context, response http.Response, keepalive bool, config PicoevConfig) {
 	// Check if this is a streaming response
 	if is_streaming_response(ctx) {
@@ -540,10 +540,10 @@ fn send_picoev_response(mut res picohttpparser.Response, ctx Context, response h
 	mut has_connection := false
 	
 	for key, value in ctx.headers {
-		// 使用快速大小写不敏感比较
+		// Use fast case-insensitive comparison
 		key_len := key.len
 		if key_len == 14 && eq_ignore_case(key, 'content-length') {
-			continue // 跳过 Content-Length
+			continue // Skip Content-Length
 		}
 		res.header(key, value)
 		if key_len == 12 && eq_ignore_case(key, 'content-type') {
@@ -689,7 +689,7 @@ fn write_to_socket_fd(fd int, data []u8) ! {
 	}
 }
 
-// 获取状态码文本
+// Get status code text
 fn get_status_text(code int) string {
 	return match code {
 		101 { 'Switching Protocols' }

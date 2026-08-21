@@ -7,7 +7,7 @@ fn main() {
     mut app := hono.Hono.new()
 
     app.get('/', fn (mut c hono.Context) http.Response {
-        return c.text('Hello from V-Hono + uSockets!')
+        return c.text('Hello from vono + uSockets!')
     })
 
     app.get('/json', fn (mut c hono.Context) http.Response {
@@ -19,6 +19,6 @@ fn main() {
         return c.json('{"user_id": "${user_id}"}')
     })
 
-    // 使用 uSockets 后端
+    //Use uSockets backend
     app.listen_usockets(3008)
 }

@@ -5,24 +5,24 @@ import net.urllib
 import os
 import strings
 
-// Context 结构体，类似 Hono.js 的实现
+// Context structure, similar to the implementation of Hono.js
 pub struct Context {
 pub:
 	req    http.Request
 	params map[string]string
 	query  map[string]string
 	url    string
-	path   string  // 当前请求的路径
+	path   string  //The path of the current request
 pub mut:
 	status_code int = 200
 	headers     map[string]string
 	body        string
-	store       map[string]string  // 中间件数据存储
+	store       map[string]string  //Middleware data storage
 }
 
-// Context 构造函数
+//Context constructor
 pub fn Context.new(req http.Request, params map[string]string, query map[string]string, body string) Context {
-	// 解析URL获取路径
+	// Parse the URL to get the path
 	url := urllib.parse(req.url) or {
 		urllib.URL{
 			path: '/'
@@ -33,14 +33,14 @@ pub fn Context.new(req http.Request, params map[string]string, query map[string]
 		params: params
 		query: query
 		body: body
-		url: url.str()  // 设置为完整的URL字符串
-		path: url.path  // 设置 path 属性
+		url: url.str()  // Set to the complete URL string
+		path: url.path  //Set the path attribute
 		headers: map[string]string{}
-		store: map[string]string{}  // 初始化中间件数据存储
+		store: map[string]string{}  //Initialize middleware data storage
 	}
 }
 
-// Context 的便捷方法 - 直接返回 http.Response
+//Convenience method for Context - returns http.Response directly
 pub fn (mut c Context) json(data string) http.Response {
 	mut headers := http.new_header()
 	headers.add_custom('Content-Type', 'application/json; charset=utf-8') or { }
@@ -90,7 +90,7 @@ pub fn (mut c Context) file(file_path string) http.Response {
 
 // file_with_options method - serve a file with custom options
 pub fn (mut c Context) file_with_options(file_path string, options FileOptions) http.Response {
-	// 增强的安全检查
+	// Enhanced security checks
 	validation_options := PathValidationOptions{
 		allow_absolute_paths: false
 		allow_hidden_files: false
@@ -102,38 +102,38 @@ pub fn (mut c Context) file_with_options(file_path string, options FileOptions) 
 		return c.text('Forbidden: $err')
 	}
 	
-	// 检查文件是否存在
+	// Check if the file exists
 	if !os.exists(safe_file_path) {
 		c.status(404)
 		return c.text('File Not Found')
 	}
 	
-	// 检查是否为目录
+	// Check if it is a directory
 	if os.is_dir(safe_file_path) {
 		c.status(400)
 		return c.text('Cannot serve directory')
 	}
 	
-	// 读取文件内容
+	//Read file content
 	file_content := os.read_file(safe_file_path) or {
 		c.status(500)
 		return c.text('Internal Server Error')
 	}
 	
-	// 获取文件信息
+	// Get file information
 	file_info := os.stat(safe_file_path) or {
 		c.status(500)
 		return c.text('Internal Server Error')
 	}
 	
-	// 设置状态码
+	//Set status code
 	if options.status_code > 0 {
 		c.status(options.status_code)
 	} else {
 		c.status(200)
 	}
 	
-	// 设置Content-Type
+	//Set Content-Type
 	if options.content_type != '' {
 		c.headers['Content-Type'] = options.content_type
 	} else {
@@ -141,25 +141,25 @@ pub fn (mut c Context) file_with_options(file_path string, options FileOptions) 
 		c.headers['Content-Type'] = content_type
 	}
 	
-	// 设置Content-Length
+	//Set Content-Length
 	c.headers['Content-Length'] = file_content.len.str()
 	
-	// 设置Last-Modified
+	//Set Last-Modified
 	if options.last_modified {
 		last_modified := format_http_date(file_info.mtime)
 		c.headers['Last-Modified'] = last_modified
 	}
 	
-	// 设置ETag
+	//Set ETag
 	if options.etag {
 		etag := generate_file_etag(file_content, file_info.mtime)
 		c.headers['ETag'] = etag
 		
-		// 检查If-None-Match
+		// Check If-None-Match
 		if_none_match := c.req.header.get_custom('If-None-Match') or { '' }
 		if if_none_match == etag {
 			c.status(304)
-			// 构建响应头
+			// Build response headers
 			mut headers := http.new_header()
 			for key, value in c.headers {
 				headers.add_custom(key, value) or { continue }
@@ -172,19 +172,19 @@ pub fn (mut c Context) file_with_options(file_path string, options FileOptions) 
 		}
 	}
 	
-	// 设置Cache-Control
+	//Set Cache-Control
 	if options.max_age > 0 {
 		c.headers['Cache-Control'] = 'public, max-age=${options.max_age}'
 	} else if options.no_cache {
 		c.headers['Cache-Control'] = 'no-cache'
 	}
 	
-	// 设置自定义头部
+	//Set custom header
 	for key, value in options.headers {
 		c.headers[key] = value
 	}
 	
-	// 返回文件内容
+	//Return file content
 	mut headers := http.new_header()
 	for key, value in c.headers {
 		headers.add_custom(key, value) or { continue }
@@ -199,21 +199,21 @@ pub fn (mut c Context) file_with_options(file_path string, options FileOptions) 
 // FileOptions struct for configuring file serving
 pub struct FileOptions {
 pub:
-	status_code    int              // 自定义状态码，0表示使用默认200
-	content_type   string          // 自定义Content-Type
-	last_modified  bool = true          // 是否设置Last-Modified头
-	etag          bool = true           // 是否设置ETag头
-	max_age       int               // 缓存时间（秒）
-	no_cache      bool          // 是否禁用缓存
-	headers       map[string]string     // 自定义响应头
-	// 流式传输配置
-	stream_threshold u64 = 50 * 1024 * 1024  // 50MB，超过此大小使用流式传输
-	buffer_size      int = 8192              // 流式传输缓冲区大小（8KB）
-	enable_range     bool = true             // 是否支持Range请求
-	compress         bool                    // 是否启用压缩（对流式传输）
+	status_code    int              // Custom status code, 0 means using the default 200
+	content_type   string          // Custom Content-Type
+	last_modified  bool = true          // Whether to set the Last-Modified header
+	etag          bool = true           // Whether to set the ETag header
+	max_age       int               // Cache time (seconds)
+	no_cache      bool          // Whether to disable caching
+	headers       map[string]string     // Custom response header
+	// Streaming configuration
+	stream_threshold u64 = 50 * 1024 * 1024  // 50MB, above this size use streaming
+	buffer_size      int = 8192              // Streaming buffer size (8KB)
+	enable_range     bool = true             // Whether to support Range request
+	compress         bool                    // Whether to enable compression (for streaming)
 }
 
-// 根据文件扩展名获取Content-Type
+// Get Content-Type based on file extension
 fn get_file_content_type(file_path string) string {
 	ext := os.file_ext(file_path).to_lower()
 	
@@ -247,10 +247,10 @@ fn get_file_content_type(file_path string) string {
 	}
 }
 
-// 生成ETag
+// Generate ETag
 fn generate_file_etag(content string, mod_time i64) string {
-	// 简化的ETag生成
-	// 实际应用中可能需要更复杂的哈希算法
+	// Simplified ETag generation
+	// Actual applications may require more complex hash algorithms
 	return '"${content.len}-${mod_time}"'
 }
 
@@ -258,7 +258,7 @@ pub fn (mut c Context) status(code int) {
 	c.status_code = code
 }
 
-// get 方法 - 从 store 中获取中间件数据
+// get method - get middleware data from the store
 pub fn (c Context) get(key string) ?string {
 	if key in c.store {
 		return c.store[key]
@@ -266,17 +266,17 @@ pub fn (c Context) get(key string) ?string {
 	return none
 }
 
-// set 方法 - 向 store 中存储中间件数据
+// set method - stores middleware data in the store
 pub fn (mut c Context) set(key string, value string) {
 	c.store[key] = value
 }
 
-// get_client_ip 方法 - 获取客户端 IP 地址
-// 优先从 X-Forwarded-For 和 X-Real-IP 头获取，否则从连接信息获取
+// get_client_ip method - Get the client IP address
+// Get it from the X-Forwarded-For and X-Real-IP headers first, otherwise get it from the connection information
 pub fn (c Context) get_client_ip() string {
-	// 尝试从 X-Forwarded-For 头获取（代理场景）
+	// Try to get from X-Forwarded-For header (proxy scenario)
 	if forwarded_for := c.req.header.get_custom('X-Forwarded-For') {
-		// X-Forwarded-For 可能包含多个 IP，取第一个
+		// X-Forwarded-For may contain multiple IPs, take the first one
 		ips := forwarded_for.split(',')
 		if ips.len > 0 {
 			ip := ips[0].trim_space()
@@ -286,7 +286,7 @@ pub fn (c Context) get_client_ip() string {
 		}
 	}
 	
-	// 尝试从 X-Real-IP 头获取
+	//Try to get from X-Real-IP header
 	if real_ip := c.req.header.get_custom('X-Real-IP') {
 		trimmed := real_ip.trim_space()
 		if trimmed != '' {
@@ -294,9 +294,9 @@ pub fn (c Context) get_client_ip() string {
 		}
 	}
 	
-	// 从请求 URL 或连接信息获取
-	// 注意：V 语言的 http.Request 可能没有直接的远程地址字段
-	// 这里返回一个默认值，实际使用时可能需要根据服务器实现调整
+	// Get from request URL or connection information
+	// Note: http.Request in V language may not have a direct remote address field
+	// Return a default value here, which may need to be adjusted according to the server implementation in actual use.
 	return '127.0.0.1'
 }
 
@@ -330,41 +330,41 @@ pub fn (mut c Context) redirect(url string, status_code ...int) http.Response {
 
 
 
-// 处理器接口，使用 Context
+//Processor interface, using Context
 pub interface IHandler {
 	path string
 	handle(mut c Context) http.Response
 }
 
-// 泛型处理器类型，使用 Context
+// Generic processor type, use Context
 pub type ContextHandlerFn = fn (mut Context) http.Response
 
-// Context 处理器结构体
+// Context processor structure
 pub struct ContextHandler {
 pub:
 	path    string
 	handler fn (mut Context) http.Response = unsafe { nil }
 }
 
-// 实现 IHandler 接口
+// Implement the IHandler interface
 pub fn (ch ContextHandler) handle(mut c Context) http.Response {
 	return ch.handler(mut c)
 }
 
-// Range 请求结构体
+// Range request structure
 struct RangeRequest {
 	start u64
 	end   u64
 	total u64
 }
 
-// 解析 Range 请求头
+// Parse the Range request header
 fn parse_range_header(range_header string, file_size u64) ?RangeRequest {
 	if !range_header.starts_with('bytes=') {
 		return none
 	}
 	
-	range_part := range_header[6..] // 移除 'bytes=' 前缀
+	range_part := range_header[6..] // Remove 'bytes=' prefix
 	parts := range_part.split('-')
 	
 	if parts.len != 2 {
@@ -399,32 +399,32 @@ fn parse_range_header(range_header string, file_size u64) ?RangeRequest {
 	}
 }
 
-// 流式文件传输方法
+//Streaming file transfer method
 pub fn (mut c Context) file_stream(file_path string) http.Response {
 	return c.file_stream_with_options(file_path, FileOptions{})
 }
 
-// 带选项的流式文件传输方法
+// Streaming file transfer method with options
 pub fn (mut c Context) file_stream_with_options(file_path string, options FileOptions) http.Response {
-	// 安全检查
+	// security check
 	if !is_safe_file_path(file_path) {
 		c.status(403)
 		return c.text('Forbidden')
 	}
 	
-	// 检查文件是否存在
+	// Check if the file exists
 	if !os.exists(file_path) {
 		c.status(404)
 		return c.text('File Not Found')
 	}
 	
-	// 检查是否为目录
+	// Check if it is a directory
 	if os.is_dir(file_path) {
 		c.status(400)
 		return c.text('Cannot serve directory')
 	}
 	
-	// 获取文件信息
+	// Get file information
 	file_info := os.stat(file_path) or {
 		c.status(500)
 		return c.text('Internal Server Error')
@@ -432,7 +432,7 @@ pub fn (mut c Context) file_stream_with_options(file_path string, options FileOp
 	
 	file_size := u64(file_info.size)
 	
-	// 检查是否处理 Range 请求
+	// Check whether the Range request is processed
 	mut range_req := ?RangeRequest(none)
 	if options.enable_range {
 		if range_header := c.req.header.get_custom('Range') {
@@ -440,7 +440,7 @@ pub fn (mut c Context) file_stream_with_options(file_path string, options FileOp
 		}
 	}
 	
-	// 设置基本响应头
+	//Set basic response headers
 	if options.content_type != '' {
 		c.headers['Content-Type'] = options.content_type
 	} else {
@@ -448,7 +448,7 @@ pub fn (mut c Context) file_stream_with_options(file_path string, options FileOp
 		c.headers['Content-Type'] = content_type
 	}
 	
-	// 设置缓存相关头部
+	//Set cache related headers
 	if options.last_modified {
 		last_modified := format_http_date(file_info.mtime)
 		c.headers['Last-Modified'] = last_modified
@@ -460,33 +460,33 @@ pub fn (mut c Context) file_stream_with_options(file_path string, options FileOp
 		c.headers['Cache-Control'] = 'no-cache'
 	}
 	
-	// 设置自定义头部
+	//Set custom header
 	for key, value in options.headers {
 		c.headers[key] = value
 	}
 	
-	// 处理 Range 请求
+	// Handle Range request
 	if range_request := range_req {
 		return c.handle_range_request(file_path, range_request, options)
 	}
 	
-	// 设置完整文件响应头
+	//Set the full file response header
 	c.headers['Content-Length'] = file_size.str()
 	c.headers['Accept-Ranges'] = 'bytes'
 	
-	// 如果文件较小，直接读取到内存
+	//If the file is small, read it directly into memory
 	if file_size <= options.stream_threshold {
 		file_content := os.read_file(file_path) or {
 			c.status(500)
 			return c.text('Internal Server Error')
 		}
 		
-		// 设置ETag（仅对小文件）
+		//Set ETag (only for small files)
 		if options.etag {
 			etag := generate_file_etag(file_content, file_info.mtime)
 			c.headers['ETag'] = etag
 			
-			// 检查If-None-Match
+			// Check If-None-Match
 			if_none_match := c.req.header.get_custom('If-None-Match') or { '' }
 			if if_none_match == etag {
 				c.status(304)
@@ -498,35 +498,35 @@ pub fn (mut c Context) file_stream_with_options(file_path string, options FileOp
 		return c.build_headers_response(file_content)
 	}
 	
-	// 大文件使用流式传输
+	//Use streaming for large files
 	c.status(200)
 	return c.stream_large_file(file_path, file_size, options)
 }
 
-// 处理 Range 请求
+// Handle Range request
 fn (mut c Context) handle_range_request(file_path string, range_req RangeRequest, options FileOptions) http.Response {
 	content_length := range_req.end - range_req.start + 1
 	
-	// 设置 Range 响应头
+	//Set the Range response header
 	c.status(206) // Partial Content
 	c.headers['Content-Length'] = content_length.str()
 	c.headers['Content-Range'] = 'bytes ${range_req.start}-${range_req.end}/${range_req.total}'
 	c.headers['Accept-Ranges'] = 'bytes'
 	
-	// 读取指定范围的文件内容
+	//Read the file contents of the specified range
 	mut file := os.open(file_path) or {
 		c.status(500)
 		return c.text('Internal Server Error')
 	}
 	defer { file.close() }
 	
-	// 跳转到起始位置
+	// jump to starting position
 	file.seek(int(range_req.start), .start) or {
 		c.status(500)
 		return c.text('Internal Server Error')
 	}
 	
-	// 读取范围内容
+	//Read range contents
 	mut buffer := []u8{len: int(content_length)}
 	bytes_read := file.read(mut buffer) or {
 		c.status(500)
@@ -541,11 +541,11 @@ fn (mut c Context) handle_range_request(file_path string, range_req RangeRequest
 	return c.build_headers_response(buffer.bytestr())
 }
 
-// 流式传输大文件
+// Stream large files
 fn (mut c Context) stream_large_file(file_path string, file_size u64, options FileOptions) http.Response {
-	// 注意：V语言的http.Response不直接支持流式传输
-	// 这里我们实现一个分块读取的方法，但仍需要将整个文件读入内存
-	// 对于真正的流式传输，需要在框架层面支持
+	// Note: http.Response in V language does not directly support streaming
+	//Here we implement a method of reading in chunks, but we still need to read the entire file into memory
+	// For true streaming, support needs to be provided at the framework level
 	
 	mut file := os.open(file_path) or {
 		c.status(500)
@@ -570,7 +570,7 @@ fn (mut c Context) stream_large_file(file_path string, file_size u64, options Fi
 	return c.build_headers_response(content.str())
 }
 
-// 构建带头部的响应
+// Construct a response with headers
 fn (mut c Context) build_headers_response(body string) http.Response {
 	mut headers := http.new_header()
 	headers.add_custom('Connection', 'keep-alive') or { }
@@ -584,14 +584,14 @@ fn (mut c Context) build_headers_response(body string) http.Response {
 	}
 }
 
-// 智能文件服务方法（自动选择流式或内存传输）
+//Smart file serving method (automatically selects streaming or memory transfer)
 pub fn (mut c Context) file_smart(file_path string) http.Response {
 	return c.file_smart_with_options(file_path, FileOptions{})
 }
 
-// 带选项的智能文件服务方法
+//Smart file service method with options
 pub fn (mut c Context) file_smart_with_options(file_path string, options FileOptions) http.Response {
-	// 获取文件大小
+	// Get file size
 	if !os.exists(file_path) {
 		c.status(404)
 		return c.text('File Not Found')
@@ -604,7 +604,7 @@ pub fn (mut c Context) file_smart_with_options(file_path string, options FileOpt
 	
 	file_size := u64(file_info.size)
 	
-	// 根据文件大小选择传输方式
+	//Select the transfer method based on file size
 	if file_size > options.stream_threshold {
 		return c.file_stream_with_options(file_path, options)
 	} else {

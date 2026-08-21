@@ -6,16 +6,16 @@ import regex
 fn main() {
 	println('=== 深度路由性能分析 ===')
 	
-	// 测试1: 逐步分解第一次匹配的每个步骤
+	// Test 1: Break down each step of the first match step by step
 	test_step_by_step_breakdown()
 	
-	// 测试2: 分析正则表达式编译开销
+	//Test 2: Analyze regular expression compilation overhead
 	test_regex_compilation_overhead()
 	
-	// 测试3: 分析内存分配开销
+	//Test 3: Analyze memory allocation overhead
 	test_memory_allocation_overhead()
 	
-	// 测试4: 对比不同实现方式
+	//Test 4: Compare different implementations
 	test_implementation_comparison()
 	
 	println('✅ 深度路由性能分析完成')
@@ -42,7 +42,7 @@ fn test_step_by_step_breakdown() {
 	
 	println('  开始逐步计时...')
 	
-	// 步骤1: 静态路由检查
+	// Step 1: Static route check
 	start_time1 := time.now()
 	static_result := router.match_static_route('GET', test_path)
 	step1_time := time.since(start_time1)
@@ -53,7 +53,7 @@ fn test_step_by_step_breakdown() {
 		return
 	}
 	
-	// 步骤2: 缓存检查
+	// Step 2: Cache check
 	start_time2 := time.now()
 	cache_key := 'GET:${test_path}'
 	cache_result := router.cache.get(cache_key)
@@ -65,10 +65,10 @@ fn test_step_by_step_breakdown() {
 		return
 	}
 	
-	// 步骤3: 动态路由遍历开始
+	// Step 3: Dynamic routing traversal begins
 	start_time3 := time.now()
 	
-	// 模拟动态路由匹配的开始部分
+	// Simulate the beginning of dynamic route matching
 	mut found_handler_path := ''
 	for handler_item in router.dynamic_routes {
 		if handler_item.path == route_path {
@@ -85,20 +85,20 @@ fn test_step_by_step_breakdown() {
 		return
 	}
 	
-	// 步骤4: 正则表达式缓存检查
+	// Step 4: Regular expression cache check
 	start_time4 := time.now()
 	_ := router.regex_cache[route_path]
 	step4_time := time.since(start_time4)
 	println('    步骤4 - 正则缓存检查: ${step4_time}')
 	
-	// 步骤5: 正则表达式编译（如果需要）
+	// Step 5: Regular expression compilation (if needed)
 	start_time5 := time.now()
 	
-	// 模拟正则表达式编译过程
+	// Simulate the regular expression compilation process
 	mut replaced_path := route_path
 	mut param_names := []string{}
 	
-	// 提取参数名
+	//Extract parameter name
 	mut param_reg := regex.regex_opt(r':[a-zA-Z_][a-zA-Z0-9_]*') or { 
 		println('    ❌ 参数正则创建失败')
 		return 
@@ -111,7 +111,7 @@ fn test_step_by_step_breakdown() {
 	step5a_time := time.since(start_time5)
 	println('    步骤5a - 参数提取: ${step5a_time}')
 	
-	// 转义特殊字符
+	//Escape special characters
 	start_time5b := time.now()
 	special_chars := ['?', '+', '.', '(', ')', '[', ']', '{', '}', '^', '$', '|']
 	for ch in special_chars {
@@ -120,7 +120,7 @@ fn test_step_by_step_breakdown() {
 	step5b_time := time.since(start_time5b)
 	println('    步骤5b - 字符转义: ${step5b_time}')
 	
-	// 替换参数为捕获组
+	//Replace parameters with capture group
 	start_time5c := time.now()
 	replaced_path = param_reg.replace_by_fn(replaced_path, fn (re regex.RE, in_txt string, start int, end int) string {
 		param_name := in_txt[start+1..end]
@@ -130,7 +130,7 @@ fn test_step_by_step_breakdown() {
 	step5c_time := time.since(start_time5c)
 	println('    步骤5c - 参数替换: ${step5c_time}')
 	
-	// 编译最终正则表达式
+	// Compile the final regular expression
 	start_time5d := time.now()
 	mut final_regex := regex.regex_opt(replaced_path) or {
 		println('    ❌ 最终正则编译失败')
@@ -139,7 +139,7 @@ fn test_step_by_step_breakdown() {
 	step5d_time := time.since(start_time5d)
 	println('    步骤5d - 正则编译: ${step5d_time}')
 	
-	// 步骤6: 正则匹配
+	// Step 6: Regular matching
 	start_time6 := time.now()
 	match_result := final_regex.matches_string(test_path)
 	step6_time := time.since(start_time6)
@@ -150,7 +150,7 @@ fn test_step_by_step_breakdown() {
 		return
 	}
 	
-	// 步骤7: 参数提取
+	// Step 7: Parameter extraction
 	start_time7 := time.now()
 	mut param_map := map[string]string{}
 	for param_name in param_names {
@@ -160,10 +160,10 @@ fn test_step_by_step_breakdown() {
 	step7_time := time.since(start_time7)
 	println('    步骤7 - 参数提取: ${step7_time}')
 	
-	// 步骤8: 创建结果对象
+	// Step 8: Create the result object
 	start_time8 := time.now()
 	route_match := hono.ContextRouteMatch{
-		handler: router.dynamic_routes[0]  // 使用找到的路由
+		handler: router.dynamic_routes[0]  // Use the found route
 		params: param_map
 		path: found_handler_path
 		base_path: ''
@@ -171,20 +171,20 @@ fn test_step_by_step_breakdown() {
 	step8_time := time.since(start_time8)
 	println('    步骤8 - 创建结果: ${step8_time}')
 	
-	// 步骤9: 缓存结果
+	// Step 9: Cache results
 	start_time9 := time.now()
 	router.cache.put(cache_key, route_match)
 	step9_time := time.since(start_time9)
 	println('    步骤9 - 缓存结果: ${step9_time}')
 	
-	// 计算总时间
+	// Calculate total time
 	total_manual_time := step1_time + step2_time + step3_time + step4_time + 
 						 step5a_time + step5b_time + step5c_time + step5d_time + 
 						 step6_time + step7_time + step8_time + step9_time
 	
 	println('\n  手动计算总时间: ${total_manual_time}')
 	
-	// 对比实际的完整匹配时间
+	// Compare to actual complete match time
 	router.clear_cache()
 	router.clear_regex_cache()
 	
@@ -232,7 +232,7 @@ fn test_regex_compilation_overhead() {
 		println('    原始模式: ${pattern['pattern']}')
 		println('    目标正则: ${pattern['regex']}')
 		
-		// 测试直接编译预构建的正则表达式
+		//Test directly compiles pre-built regular expressions
 		start_time1 := time.now()
 		mut direct_regex := regex.regex_opt(pattern['regex']) or {
 			println('    ❌ 直接编译失败')
@@ -241,7 +241,7 @@ fn test_regex_compilation_overhead() {
 		direct_time := time.since(start_time1)
 		println('    直接编译时间: ${direct_time}')
 		
-		// 测试通过路由器编译（包含所有转换步骤）
+		// Test compiled through router (contains all conversion steps)
 		mut router := hono.ContextHybridRouter.new()
 		router.clear_regex_cache()
 		
@@ -255,7 +255,7 @@ fn test_regex_compilation_overhead() {
 			println('    转换开销: ${overhead}')
 		}
 		
-		// 测试编译后的匹配性能
+		//Test the compiled matching performance
 		test_path := match pattern['name'] {
 			'简单模式' { '/users/123' }
 			'中等模式' { '/users/123/posts/456' }
@@ -289,10 +289,10 @@ fn test_regex_compilation_overhead() {
 fn test_memory_allocation_overhead() {
 	println('\n📊 分析内存分配开销...')
 	
-	// 测试各种数据结构创建的开销
+	//Test the overhead of creating various data structures
 	iterations := 10000
 	
-	// 测试map创建
+	//Test map creation
 	start_time1 := time.now()
 	for _ in 0 .. iterations {
 		_ := map[string]string{}
@@ -301,7 +301,7 @@ fn test_memory_allocation_overhead() {
 	avg_map_creation := f64(map_creation_time.microseconds()) / f64(iterations)
 	println('  平均map创建: ${avg_map_creation:.3f}μs')
 	
-	// 测试数组创建
+	//Test array creation
 	start_time2 := time.now()
 	for _ in 0 .. iterations {
 		_ := []string{}
@@ -310,7 +310,7 @@ fn test_memory_allocation_overhead() {
 	avg_array_creation := f64(array_creation_time.microseconds()) / f64(iterations)
 	println('  平均数组创建: ${avg_array_creation:.3f}μs')
 	
-	// 测试结构体创建
+	//Create test structure
 	start_time3 := time.now()
 	for _ in 0 .. iterations {
 		_ := hono.ContextRouteMatch{
@@ -324,7 +324,7 @@ fn test_memory_allocation_overhead() {
 	avg_struct_creation := f64(struct_creation_time.microseconds()) / f64(iterations)
 	println('  平均结构体创建: ${avg_struct_creation:.3f}μs')
 	
-	// 测试字符串操作
+	//Test string operations
 	test_string := '/api/:version/users/:user_id/posts/:post_id'
 	
 	start_time4 := time.now()
@@ -350,7 +350,7 @@ fn test_implementation_comparison() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// 方式1: 当前实现
+	// Method 1: Current implementation
 	mut router1 := hono.ContextHybridRouter.new()
 	handler1 := hono.ContextHandler{
 		path: route_path
@@ -370,7 +370,7 @@ fn test_implementation_comparison() {
 	avg_current := f64(current_impl_time.microseconds()) / 1000.0
 	println('  当前实现平均: ${avg_current:.3f}μs')
 	
-	// 方式2: 预编译正则表达式
+	// Method 2: Precompile regular expression
 	precompiled_regex := regex.regex_opt('^/api/(?P<version>[^/]+)/users/(?P<user_id>[^/]+)/posts/(?P<post_id>[^/]+)$') or {
 		println('  ❌ 预编译失败')
 		return

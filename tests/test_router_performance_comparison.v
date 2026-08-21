@@ -3,7 +3,7 @@ import time
 import net.http
 import regex
 
-// 模拟没有缓存的路由器（用于对比）
+// Simulate a router without caching (for comparison)
 struct NoCacheRouter {
 mut:
 	static_routes  map[string]hono.IHandler
@@ -26,9 +26,9 @@ fn (mut router NoCacheRouter) add_route(method string, handler hono.IHandler, ba
 	}
 }
 
-// 每次都重新编译正则表达式（无缓存）
+// Recompile the regular expression every time (no caching)
 fn (router NoCacheRouter) match_route_no_cache(method string, path string) ?hono.ContextRouteMatch {
-	// 静态路由匹配
+	// Static route matching
 	key := '${method}:${path}'
 	if key in router.static_routes {
 		return hono.ContextRouteMatch{
@@ -39,14 +39,14 @@ fn (router NoCacheRouter) match_route_no_cache(method string, path string) ?hono
 		}
 	}
 	
-	// 动态路由匹配（每次重新编译正则表达式）
+	// Dynamic route matching (recompile regular expression each time)
 	for handler in router.dynamic_routes {
 		if handler.path.contains(':') {
-			// 每次都重新编译正则表达式
+			// Recompile the regular expression every time
 			mut replaced_path := handler.path
 			mut param_names := []string{}
 			
-			// 转义特殊字符
+			//Escape special characters
 			replaced_path = replaced_path.replace('?', r'\?')
 			replaced_path = replaced_path.replace('+', r'\+')
 			replaced_path = replaced_path.replace('.', r'\.')
@@ -60,7 +60,7 @@ fn (router NoCacheRouter) match_route_no_cache(method string, path string) ?hono
 			replaced_path = replaced_path.replace(r'$', r'\$')
 			replaced_path = replaced_path.replace('|', r'\|')
 			
-			// 提取参数名并替换为命名捕获组
+			//Extract parameter names and replace them with named capture groups
 			mut param_reg := regex.regex_opt(r':[a-zA-Z_][a-zA-Z0-9_]*') or { continue }
 			replaced_path = param_reg.replace_by_fn(replaced_path, fn [mut param_names] (re regex.RE, in_txt string, start int, end int) string {
 				param_name := in_txt[start+1..end]
@@ -70,7 +70,7 @@ fn (router NoCacheRouter) match_route_no_cache(method string, path string) ?hono
 			
 			replaced_path = '^${replaced_path}' + r'$'
 			
-			// 每次都重新编译正则表达式（这是性能瓶颈）
+			// Recompile the regular expression every time (this is a performance bottleneck)
 			mut reg := regex.regex_opt(replaced_path) or { continue }
 			
 			if reg.matches_string(path) {
@@ -95,16 +95,16 @@ fn (router NoCacheRouter) match_route_no_cache(method string, path string) ?hono
 fn main() {
 	println('=== 路由性能对比测试 (缓存 vs 无缓存) ===')
 	
-	// 测试1: 小规模路由性能对比
+	//Test 1: Small-scale routing performance comparison
 	test_small_scale_performance()
 	
-	// 测试2: 大规模路由性能对比
+	//Test 2: Large-scale routing performance comparison
 	test_large_scale_performance()
 	
-	// 测试3: 复杂路由模式性能对比
+	//Test 3: Performance comparison of complex routing modes
 	test_complex_patterns_performance()
 	
-	// 测试4: 缓存命中率测试
+	//Test 4: Cache hit rate test
 	test_cache_hit_rate()
 	
 	println('\n🎯 性能测试总结完成')
@@ -113,13 +113,13 @@ fn main() {
 fn test_small_scale_performance() {
 	println('\n📊 小规模路由性能对比 (10个动态路由)...')
 	
-	// 创建有缓存的路由器
+	//Create a cached router
 	mut cached_router := hono.ContextHybridRouter.new()
 	
-	// 创建无缓存的路由器
+	//Create a cacheless router
 	mut no_cache_router := NoCacheRouter.new()
 	
-	// 添加相同的动态路由
+	//Add the same dynamic route
 	dynamic_routes := [
 		'/users/:id',
 		'/posts/:post_id/comments/:comment_id',
@@ -144,7 +144,7 @@ fn test_small_scale_performance() {
 		no_cache_router.add_route('GET', handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/users/123',
 		'/posts/456/comments/789',
@@ -160,7 +160,7 @@ fn test_small_scale_performance() {
 	
 	iterations := 5000
 	
-	// 测试有缓存的路由器
+	// Test the router with cache
 	start_time1 := time.now()
 	mut cached_matches := 0
 	for _ in 0 .. iterations {
@@ -172,7 +172,7 @@ fn test_small_scale_performance() {
 	}
 	cached_time := time.since(start_time1)
 	
-	// 测试无缓存的路由器
+	// Test the router without cache
 	start_time2 := time.now()
 	mut no_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -207,7 +207,7 @@ fn test_large_scale_performance() {
 	mut cached_router := hono.ContextHybridRouter.new()
 	mut no_cache_router := NoCacheRouter.new()
 	
-	// 添加大量动态路由
+	//Add a large number of dynamic routes
 	for i in 0 .. 100 {
 		route := '/api/v${i}/resources/:id/items/:item_id'
 		handler := hono.ContextHandler{
@@ -220,7 +220,7 @@ fn test_large_scale_performance() {
 		no_cache_router.add_route('GET', handler, '')
 	}
 	
-	// 测试路径（匹配不同的路由）
+	// Test path (match different routes)
 	test_paths := [
 		'/api/v1/resources/123/items/456',
 		'/api/v25/resources/789/items/101',
@@ -231,7 +231,7 @@ fn test_large_scale_performance() {
 	
 	iterations := 2000
 	
-	// 测试有缓存的路由器
+	// Test the router with cache
 	start_time1 := time.now()
 	mut cached_matches := 0
 	for _ in 0 .. iterations {
@@ -243,7 +243,7 @@ fn test_large_scale_performance() {
 	}
 	cached_time := time.since(start_time1)
 	
-	// 测试无缓存的路由器
+	// Test the router without cache
 	start_time2 := time.now()
 	mut no_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -276,7 +276,7 @@ fn test_complex_patterns_performance() {
 	mut cached_router := hono.ContextHybridRouter.new()
 	mut no_cache_router := NoCacheRouter.new()
 	
-	// 添加复杂的动态路由
+	//Add complex dynamic routing
 	complex_routes := [
 		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',
 		'/shop/:category/:subcategory/products/:product_id/reviews/:review_id',
@@ -296,7 +296,7 @@ fn test_complex_patterns_performance() {
 		no_cache_router.add_route('GET', handler, '')
 	}
 	
-	// 复杂测试路径
+	//Complex test path
 	test_paths := [
 		'/api/v1/users/123/posts/456/comments/789',
 		'/shop/electronics/phones/products/999/reviews/111',
@@ -307,7 +307,7 @@ fn test_complex_patterns_performance() {
 	
 	iterations := 3000
 	
-	// 测试有缓存的路由器
+	// Test the router with cache
 	start_time1 := time.now()
 	for _ in 0 .. iterations {
 		for path in test_paths {
@@ -316,7 +316,7 @@ fn test_complex_patterns_performance() {
 	}
 	cached_time := time.since(start_time1)
 	
-	// 测试无缓存的路由器
+	// Test the router without cache
 	start_time2 := time.now()
 	for _ in 0 .. iterations {
 		for path in test_paths {
@@ -347,7 +347,7 @@ fn test_cache_hit_rate() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加一些路由
+	//Add some routes
 	routes := ['/users/:id', '/posts/:id', '/files/:name']
 	for route in routes {
 		handler := hono.ContextHandler{
@@ -359,17 +359,17 @@ fn test_cache_hit_rate() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 重复访问相同的路径（应该命中缓存）
+	// Repeat access to the same path (should hit cache)
 	repeated_paths := ['/users/123', '/posts/456', '/files/test.txt']
 	
-	// 执行多次匹配
+	//Perform multiple matches
 	for _ in 0 .. 1000 {
 		for path in repeated_paths {
 			router.match_route('GET', path)
 		}
 	}
 	
-	// 显示缓存统计
+	// Display cache statistics
 	cache_size, cache_capacity := router.get_cache_stats()
 	regex_total, regex_compiled := router.get_regex_cache_stats()
 	
@@ -382,6 +382,6 @@ fn test_cache_hit_rate() {
 		println('  ❌ 正则表达式缓存未生效')
 	}
 	
-	// 显示性能分析
+	//Display performance analysis
 	router.analyze_router_performance()
 }

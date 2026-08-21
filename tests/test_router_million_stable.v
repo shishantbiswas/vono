@@ -5,13 +5,13 @@ import net.http
 fn main() {
 	println('=== 路由性能百万级基准测试 ===')
 	
-	// 测试1: 百万次路由匹配 - 小规模路由
+	// Test 1: Millions of route matches - small scale routing
 	test_million_matches_small_scale()
 	
-	// 测试2: 百万次路由匹配 - 中等规模路由
+	// Test 2: Millions of route matches - medium scale routing
 	test_million_matches_medium_scale()
 	
-	// 测试3: 百万次复杂路由匹配
+	//Test 3: Millions of complex route matches
 	test_million_complex_routes()
 	
 	println('\n🎯 百万级基准测试完成')
@@ -22,7 +22,7 @@ fn test_million_matches_small_scale() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加10个动态路由
+	//Add 10 dynamic routes
 	dynamic_routes := [
 		'/users/:id',
 		'/posts/:post_id/comments/:comment_id',
@@ -46,7 +46,7 @@ fn test_million_matches_small_scale() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/users/123',
 		'/posts/456/comments/789',
@@ -60,7 +60,7 @@ fn test_million_matches_small_scale() {
 		'/docs/api/authentication'
 	]
 	
-	iterations := 100000  // 100万次 = 100000 * 10路径
+	iterations := 100000  // 1 million times = 100000 * 10 paths
 	total_matches := iterations * test_paths.len
 	
 	println('  准备进行 ${total_matches} 次路由匹配测试...')
@@ -103,7 +103,7 @@ fn test_million_matches_medium_scale() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加50个动态路由
+	//Add 50 dynamic routes
 	for i in 0 .. 50 {
 		route := '/api/v${i}/resources/:id/items/:item_id'
 		handler := hono.ContextHandler{
@@ -115,7 +115,7 @@ fn test_million_matches_medium_scale() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/api/v1/resources/123/items/456',
 		'/api/v10/resources/789/items/101',
@@ -124,7 +124,7 @@ fn test_million_matches_medium_scale() {
 		'/api/v49/resources/555/items/666'
 	]
 	
-	iterations := 200000  // 100万次 = 200000 * 5路径
+	iterations := 200000  // 1 million times = 200000 * 5 paths
 	total_matches := iterations * test_paths.len
 	
 	println('  准备进行 ${total_matches} 次路由匹配测试...')
@@ -167,7 +167,7 @@ fn test_million_complex_routes() {
 	
 	mut router := hono.ContextHybridRouter.new()
 	
-	// 添加复杂的动态路由
+	//Add complex dynamic routing
 	complex_routes := [
 		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',
 		'/shop/:category/:subcategory/products/:product_id/reviews/:review_id',
@@ -186,7 +186,7 @@ fn test_million_complex_routes() {
 		router.add_route('GET', handler, '')
 	}
 	
-	// 复杂测试路径
+	//Complex test path
 	test_paths := [
 		'/api/v1/users/123/posts/456/comments/789',
 		'/shop/electronics/phones/products/999/reviews/111',
@@ -195,7 +195,7 @@ fn test_million_complex_routes() {
 		'/docs/en/v2/api/authentication/oauth'
 	]
 	
-	iterations := 200000  // 100万次 = 200000 * 5路径
+	iterations := 200000  // 1 million times = 200000 * 5 paths
 	total_matches := iterations * test_paths.len
 	
 	println('  准备进行 ${total_matches} 次复杂路由匹配测试...')
@@ -232,7 +232,7 @@ fn test_million_complex_routes() {
 		println('    ⚠️ 性能需要优化 (>= 50μs)')
 	}
 	
-	// 显示缓存统计
+	// Display cache statistics
 	println('\n  📈 缓存统计信息:')
 	cache_size, cache_capacity := router.get_cache_stats()
 	regex_total, regex_compiled := router.get_regex_cache_stats()

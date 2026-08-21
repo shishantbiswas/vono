@@ -1,4 +1,4 @@
-// 测试服务器 - 用于高并发测试
+//Test server - for high concurrency testing
 module main
 
 import meiseayoung.hono
@@ -7,13 +7,13 @@ import net.http
 fn main() {
 	mut app := hono.Hono.new()
 	
-	// 简单的测试路由
+	// Simple test routing
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('OK')
 	})
 	
 	app.get('/delay', fn (mut c hono.Context) http.Response {
-		// 模拟一些处理延迟
+		// Simulate some processing delays
 		return c.text('OK with delay')
 	})
 	

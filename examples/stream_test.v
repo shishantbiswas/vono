@@ -7,23 +7,23 @@ import strings
 fn main() {
 	println('=== 文件流式传输测试 ===')
 	
-	// 创建测试文件
+	//Create test file
 	create_test_files()
 	
-	// 创建应用
+	// Create application
 	mut app := &hono.Hono{}
 	
-	// 测试路由
+	// test route
 	setup_test_routes(mut app)
 	
-	// 在后台启动服务器
+	// Start the server in the background
 	spawn app.listen(':8081')
 	
-	// 等待服务器启动
+	// Wait for the server to start
 	time.sleep(2 * time.second)
 	println('服务器已启动在 http://127.0.0.1:8081')
 	
-	// 执行测试
+	//Execute test
 	run_tests()
 	
 	println('\n所有测试完成!')
@@ -32,12 +32,12 @@ fn main() {
 fn create_test_files() {
 	println('创建测试文件...')
 	
-	// 创建小文件 (1KB)
-	small_content := 'Hello World! '.repeat(80) // 约1KB
+	//Create small file (1KB)
+	small_content := 'Hello World! '.repeat(80) // About 1KB
 	os.write_file('test_small.txt', small_content) or { panic(err) }
 	println('  创建小文件: test_small.txt (${small_content.len} bytes)')
 	
-	// 创建中等文件 (1MB) 
+	//Create medium file (1MB)
 	mut medium_content := strings.new_builder(1024 * 1024)
 	for i in 0 .. 1000 {
 		medium_content.write_string('This is line ${i:04d} with some content to make it longer.\n')
@@ -46,10 +46,10 @@ fn create_test_files() {
 	os.write_file('test_medium.txt', medium_str) or { panic(err) }
 	println('  创建中等文件: test_medium.txt (${medium_str.len} bytes)')
 	
-	// 创建大文件 (模拟5MB)
+	//Create large file (emulates 5MB)
 	mut large_content := strings.new_builder(5 * 1024 * 1024)
 	base_line := 'This is a long line of text that will be repeated many times to create a large file for testing streaming functionality. '
-	for i in 0 .. 50000 {  // 约5MB
+	for i in 0 .. 50000 {  // About 5MB
 		large_content.write_string('${i:06d}: $base_line\n')
 	}
 	large_str := large_content.str()
@@ -58,42 +58,42 @@ fn create_test_files() {
 }
 
 fn setup_test_routes(mut app hono.Hono) {
-	// 传统文件服务（内存加载）
+	// Traditional file service (memory loading)
 	app.get('/traditional/:filename', fn (mut c hono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file(filename)
 	})
 	
-	// 流式文件服务
+	// Streaming file service
 	app.get('/stream/:filename', fn (mut c hono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file_stream(filename)
 	})
 	
-	// 智能文件服务（自动选择）
+	// Smart file service (automatic selection)
 	app.get('/smart/:filename', fn (mut c hono.Context) http.Response {
 		filename := c.params['filename']
 		return c.file_smart(filename)
 	})
 	
-	// 带自定义选项的流式服务
+	// Streaming service with custom options
 	app.get('/custom/:filename', fn (mut c hono.Context) http.Response {
 		filename := c.params['filename']
 		options := hono.FileOptions{
-			stream_threshold: 100 * 1024  // 100KB阈值
-			buffer_size: 4096             // 4KB缓冲区
+			stream_threshold: 100 * 1024  // 100KB threshold
+			buffer_size: 4096             // 4KB buffer
 			enable_range: true
 			max_age: 3600
 		}
 		return c.file_stream_with_options(filename, options)
 	})
 	
-	// Range请求测试
+	//Range request test
 	app.get('/range/:filename', fn (mut c hono.Context) http.Response {
 		filename := c.params['filename']
 		options := hono.FileOptions{
 			enable_range: true
-			stream_threshold: 1024  // 1KB阈值，强制使用流式传输
+			stream_threshold: 1024  // 1KB threshold, force streaming
 		}
 		return c.file_stream_with_options(filename, options)
 	})
@@ -102,26 +102,26 @@ fn setup_test_routes(mut app hono.Hono) {
 fn run_tests() {
 	println('\n开始性能测试...')
 	
-	// 测试1：小文件性能对比
+	//Test 1: Small file performance comparison
 	test_small_file_performance()
 	
-	// 测试2：中等文件性能对比  
+	//Test 2: Medium file performance comparison
 	test_medium_file_performance()
 	
-	// 测试3：大文件性能对比
+	//Test 3: Large file performance comparison
 	test_large_file_performance()
 	
-	// 测试4：Range请求测试
+	//Test 4: Range request test
 	test_range_requests()
 	
-	// 测试5：智能选择测试
+	//Test 5: Smart selection test
 	test_smart_selection()
 }
 
 fn test_small_file_performance() {
 	println('\n--- 小文件性能测试 ---')
 	
-	// 传统方式
+	// traditional way
 	start := time.now()
 	for i in 0 .. 100 {
 		_ = os.execute('curl -s http://127.0.0.1:8081/traditional/test_small.txt > nul')
@@ -129,7 +129,7 @@ fn test_small_file_performance() {
 	traditional_time := time.now() - start
 	println('传统方式 100次请求: $traditional_time')
 	
-	// 流式方式
+	// Streaming method
 	start2 := time.now()
 	for i in 0 .. 100 {
 		_ = os.execute('curl -s http://127.0.0.1:8081/stream/test_small.txt > nul')
@@ -137,7 +137,7 @@ fn test_small_file_performance() {
 	stream_time := time.now() - start2
 	println('流式方式 100次请求: $stream_time')
 	
-	// 智能方式
+	// smart way
 	start3 := time.now()
 	for i in 0 .. 100 {
 		_ = os.execute('curl -s http://127.0.0.1:8081/smart/test_small.txt > nul')
@@ -149,7 +149,7 @@ fn test_small_file_performance() {
 fn test_medium_file_performance() {
 	println('\n--- 中等文件性能测试 ---')
 	
-	// 传统方式
+	// traditional way
 	start := time.now()
 	for i in 0 .. 10 {
 		_ = os.execute('curl -s http://127.0.0.1:8081/traditional/test_medium.txt > nul')
@@ -157,7 +157,7 @@ fn test_medium_file_performance() {
 	traditional_time := time.now() - start
 	println('传统方式 10次请求: $traditional_time')
 	
-	// 流式方式
+	// Streaming method
 	start2 := time.now()
 	for i in 0 .. 10 {
 		_ = os.execute('curl -s http://127.0.0.1:8081/stream/test_medium.txt > nul')
@@ -169,7 +169,7 @@ fn test_medium_file_performance() {
 fn test_large_file_performance() {
 	println('\n--- 大文件性能测试 ---')
 	
-	// 只测试流式方式，避免内存问题
+	// Only test streaming mode to avoid memory problems
 	start := time.now()
 	for i in 0 .. 5 {
 		result := os.execute('curl -s http://127.0.0.1:8081/stream/test_large.txt > nul')
@@ -180,7 +180,7 @@ fn test_large_file_performance() {
 	stream_time := time.now() - start
 	println('流式方式 5次大文件请求: $stream_time')
 	
-	// 智能方式（应该自动选择流式传输）
+	// Smart way (streaming should be selected automatically)
 	start2 := time.now()
 	for i in 0 .. 5 {
 		result := os.execute('curl -s http://127.0.0.1:8081/smart/test_large.txt > nul')
@@ -195,7 +195,7 @@ fn test_large_file_performance() {
 fn test_range_requests() {
 	println('\n--- Range请求测试 ---')
 	
-	// 测试部分内容请求
+	//Test partial content request
 	result1 := os.execute('curl -s -H "Range: bytes=0-99" http://127.0.0.1:8081/range/test_medium.txt')
 	if result1.exit_code == 0 {
 		println('✅ Range请求 0-99: 成功')
@@ -214,7 +214,7 @@ fn test_range_requests() {
 fn test_smart_selection() {
 	println('\n--- 智能选择测试 ---')
 	
-	// 测试小文件（应该使用内存加载）
+	// Test small files (should be loaded using memory)
 	result1 := os.execute('curl -s http://127.0.0.1:8081/smart/test_small.txt')
 	if result1.exit_code == 0 {
 		println('✅ 智能选择小文件: 成功')
@@ -222,10 +222,10 @@ fn test_smart_selection() {
 		println('❌ 智能选择小文件: 失败')
 	}
 	
-	// 测试大文件（应该使用流式传输）
+	// Test large files (streaming should be used)
 	result2 := os.execute('curl -s -o large_output.txt http://127.0.0.1:8081/smart/test_large.txt')
 	if result2.exit_code == 0 {
-		// 检查下载的文件大小
+		// Check downloaded file size
 		if os.exists('large_output.txt') {
 			downloaded_size := os.file_size('large_output.txt')
 			original_size := os.file_size('test_large.txt')

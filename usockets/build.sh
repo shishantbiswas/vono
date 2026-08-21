@@ -1,8 +1,8 @@
 #!/bin/bash
-# uSockets 编译脚本
-# 用于重新编译 libusockets_full.a (包含 uSockets + libuv)
-# 支持: Windows (Git Bash/MSYS2), macOS (Intel/Apple Silicon), Linux
-# 输出到: usockets/lib/{platform}/libusockets_full.a
+# uSockets compilation script
+# Used to recompile libusockets_full.a (including uSockets + libuv)
+# Support: Windows (Git Bash/MSYS2), macOS (Intel/Apple Silicon), Linux
+#Output to: usockets/lib/{platform}/libusockets_full.a
 
 set -e
 
@@ -14,7 +14,7 @@ MERGE_DIR="/tmp/merge_libs"
 echo "=== uSockets 编译脚本 ==="
 echo "检测到系统: $OSTYPE"
 
-# 确定输出目录
+# Determine the output directory
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [[ $(uname -m) == "arm64" ]]; then
         OUTPUT_DIR="$SCRIPT_DIR/lib/macos-arm64"
@@ -32,19 +32,19 @@ fi
 echo "输出目录: $OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-# 检查是否有 uSockets 源码
+# Check if there is uSockets source code
 if [ ! -d "$USOCKETS_DIR" ]; then
     echo "克隆 uSockets..."
     git clone --depth 1 https://github.com/uNetworking/uSockets.git "$USOCKETS_DIR"
 fi
 
-# 检查是否有 libuv 源码
+# Check if there is libuv source code
 if [ ! -d "$LIBUV_DIR" ]; then
     echo "克隆 libuv..."
     git clone --depth 1 --branch v1.48.0 https://github.com/libuv/libuv.git "$LIBUV_DIR"
 fi
 
-# 应用 backlog 修改
+# Apply backlog modifications
 echo "应用 backlog=16384 修改..."
 if [ -f "$SCRIPT_DIR/src/bsd.c" ]; then
     cp "$SCRIPT_DIR/src/bsd.c" "$USOCKETS_DIR/src/bsd.c"
@@ -52,7 +52,7 @@ else
     sed -i.bak 's/listen(listenFd, 512)/listen(listenFd, 16384)/g' "$USOCKETS_DIR/src/bsd.c"
 fi
 
-# 编译 libuv
+# Compile libuv
 compile_libuv() {
     echo "编译 libuv..."
     cd "$LIBUV_DIR"
@@ -77,7 +77,7 @@ compile_libuv() {
     cmake --build . --config Release
 }
 
-# 编译 uSockets
+# Compile uSockets
 compile_usockets() {
     echo "编译 uSockets..."
     cd "$USOCKETS_DIR"
@@ -88,9 +88,9 @@ compile_usockets() {
     rm -f *.o
 }
 
-# 合并库文件
+# Merge library files
 merge_libraries() {
-    echo "合并库文件..."
+echo "Merge library files..."
     rm -rf "$MERGE_DIR"
     mkdir -p "$MERGE_DIR"
     
@@ -103,18 +103,18 @@ merge_libraries() {
     rm -rf "$MERGE_DIR"
 }
 
-# 执行编译
+# Execute compilation
 compile_libuv
 compile_usockets
 merge_libraries
 
-# 显示结果
+# show results
 LIB_SIZE=$(ls -lh "$OUTPUT_DIR/libusockets_full.a" | awk '{print $5}')
 echo ""
-echo "=== 编译完成 ==="
-echo "库文件: $OUTPUT_DIR/libusockets_full.a ($LIB_SIZE)"
+echo "=== Compilation completed ==="
+echo "Library file: $OUTPUT_DIR/libusockets_full.a ($LIB_SIZE)"
 echo ""
-echo "编译 v-hono 应用:"
+echo "Compile vono application:"
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "mingw"* ]]; then
     echo "  v -enable-globals -cc gcc -ldflags \"-ldbghelp\" -o app.exe app.v"
 else

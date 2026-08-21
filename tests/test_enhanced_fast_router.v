@@ -5,25 +5,25 @@ import net.http
 fn main() {
 	println('=== 增强版 FastRouter 功能测试 ===')
 	
-	// 测试1: 基本功能测试
+	//Test 1: Basic function test
 	test_basic_functionality()
 	
-	// 测试2: LRU 缓存功能测试
+	//Test 2: LRU cache function test
 	test_lru_cache_functionality()
 	
-	// 测试3: 路由复杂度排序测试
+	//Test 3: Routing complexity sorting test
 	test_route_complexity_sorting()
 	
-	// 测试4: 高级缓存管理测试
+	//Test 4: Advanced cache management test
 	test_advanced_cache_management()
 	
-	// 测试5: 性能对比测试
+	//Test 5: Performance comparison test
 	test_performance_comparison()
 	
-	// 测试6: 健康检查测试
+	//Test 6: Health check test
 	test_health_check()
 	
-	// 测试7: 智能预热测试
+	//Test 7: Intelligent preheating test
 	test_smart_warmup()
 	
 	println('\n🎯 增强版 FastRouter 测试完成')
@@ -34,7 +34,7 @@ fn test_basic_functionality() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加静态路由
+	//Add static route
 	static_handler := hono.ContextHandler{
 		path: '/static'
 		handler: fn (mut c hono.Context) http.Response {
@@ -46,7 +46,7 @@ fn test_basic_functionality() {
 		return
 	}
 	
-	// 添加动态路由
+	//Add dynamic route
 	dynamic_handler := hono.ContextHandler{
 		path: '/users/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -58,14 +58,14 @@ fn test_basic_functionality() {
 		return
 	}
 	
-	// 测试静态路由匹配
+	//Test static route matching
 	if _ := router.match_route('GET', '/static') {
 		println('  ✅ 静态路由匹配成功')
 	} else {
 		println('  ❌ 静态路由匹配失败')
 	}
 	
-	// 测试动态路由匹配
+	//Test dynamic route matching
 	if match_result := router.match_route('GET', '/users/123') {
 		println('  ✅ 动态路由匹配成功')
 		if match_result.params['id'] == '123' {
@@ -77,7 +77,7 @@ fn test_basic_functionality() {
 		println('  ❌ 动态路由匹配失败')
 	}
 	
-	// 显示基本统计
+	// Show basic statistics
 	static_count, dynamic_count, cache_count := router.get_stats()
 	println('  📈 统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 }
@@ -85,10 +85,10 @@ fn test_basic_functionality() {
 fn test_lru_cache_functionality() {
 	println('\n📊 LRU 缓存功能测试...')
 	
-	// 创建小缓存容量的路由器
+	//Create a router with small cache capacity
 	mut router := hono.FastRouter.new_with_cache_size(3)
 	
-	// 添加测试路由
+	//Add test route
 	for i in 0 .. 5 {
 		handler := hono.ContextHandler{
 			path: '/test${i}/:id'
@@ -101,7 +101,7 @@ fn test_lru_cache_functionality() {
 		}
 	}
 	
-	// 测试缓存填充
+	//Test cache filling
 	test_paths := ['/test0/123', '/test1/456', '/test2/789', '/test3/101', '/test4/202']
 	
 	for path in test_paths {
@@ -117,18 +117,18 @@ fn test_lru_cache_functionality() {
 		println('  ❌ LRU 缓存容量限制失效')
 	}
 	
-	// 测试缓存命中
+	//Test cache hit
 	start_time := time.now()
 	for _ in 0 .. 1000 {
-		router.match_route('GET', '/test4/202')  // 应该命中缓存
+		router.match_route('GET', '/test4/202')  // Should hit cache
 	}
 	cache_hit_time := time.since(start_time)
 	
-	// 清理缓存后测试
+	//Test after clearing cache
 	router.clear_cache()
 	start_time2 := time.now()
 	for _ in 0 .. 1000 {
-		router.match_route('GET', '/test4/202')  // 不会命中缓存
+		router.match_route('GET', '/test4/202')  // Will not hit cache
 	}
 	no_cache_time := time.since(start_time2)
 	
@@ -146,13 +146,13 @@ fn test_route_complexity_sorting() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加不同复杂度的路由
+	//Add routes of different complexity
 	routes := [
-		'/simple/:id',                                    // 简单路由
-		'/complex/:category/:subcategory/:id',           // 复杂路由
-		'/very/complex/:a/:b/:c/:d/:e',                  // 非常复杂
-		'/static/path',                                   // 静态路由
-		'/medium/:type/:id'                              // 中等复杂度
+		'/simple/:id',                                    // Simple routing
+		'/complex/:category/:subcategory/:id',           //Complex routing
+		'/very/complex/:a/:b/:c/:d/:e',                  // very complex
+		'/static/path',                                   // static routing
+		'/medium/:type/:id'                              // medium complexity
 	]
 	
 	for route in routes {
@@ -167,7 +167,7 @@ fn test_route_complexity_sorting() {
 		}
 	}
 	
-	// 获取路由按复杂度分组
+	// Get routes grouped by complexity
 	simple_routes, complex_routes := router.get_routes_by_complexity()
 	
 	println('  📊 路由复杂度分布:')
@@ -181,7 +181,7 @@ fn test_route_complexity_sorting() {
 		println('      ${route.pattern} (复杂度: ${route.complexity})')
 	}
 	
-	// 验证排序是否正确
+	// Verify that the sorting is correct
 	mut is_sorted := true
 	for i in 1 .. router.precompiled_routes.len {
 		if router.precompiled_routes[i-1].complexity > router.precompiled_routes[i].complexity {
@@ -202,7 +202,7 @@ fn test_advanced_cache_management() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加测试路由
+	//Add test route
 	handler := hono.ContextHandler{
 		path: '/test/:id'
 		handler: fn (mut c hono.Context) http.Response {
@@ -214,19 +214,19 @@ fn test_advanced_cache_management() {
 		return
 	}
 	
-	// 设置短 TTL 进行测试
-	router.set_cache_ttl(1)  // 1秒 TTL
+	// Set short TTL for testing
+	router.set_cache_ttl(1)  // 1 second TTL
 	
-	// 填充缓存
+	//Fill cache
 	router.match_route('GET', '/test/123')
 	
 	cache_size1, _ := router.get_cache_stats()
 	println('  📈 缓存填充后: ${cache_size1} 条目')
 	
-	// 等待 TTL 过期
+	// Wait for TTL to expire
 	time.sleep(1100 * time.millisecond)
 	
-	// 强制清理过期条目
+	// Force cleanup of expired entries
 	router.force_cleanup_expired()
 	
 	cache_size2, _ := router.get_cache_stats()
@@ -238,14 +238,14 @@ fn test_advanced_cache_management() {
 		println('  ⚠️  TTL 过期清理可能未生效')
 	}
 	
-	// 测试缓存健康检查
+	//Test cache health check
 	if router.is_healthy() {
 		println('  ✅ 缓存健康状态正常')
 	} else {
 		println('  ❌ 缓存健康状态异常')
 	}
 	
-	// 测试详细统计
+	// Test detailed statistics
 	detailed_stats := router.get_detailed_stats()
 	println('  📊 详细统计:')
 	for key, value in detailed_stats {
@@ -256,13 +256,13 @@ fn test_advanced_cache_management() {
 fn test_performance_comparison() {
 	println('\n📊 性能对比测试...')
 	
-	// 创建增强版 FastRouter
+	//Create an enhanced version of FastRouter
 	mut enhanced_router := hono.FastRouter.new()
 	
-	// 创建原始 HybridRouter 进行对比
+	//Create original HybridRouter for comparison
 	mut hybrid_router := hono.ContextHybridRouter.new()
 	
-	// 添加相同的路由
+	//Add the same route
 	test_routes := [
 		'/users/:id',
 		'/posts/:post_id/comments/:comment_id',
@@ -291,7 +291,7 @@ fn test_performance_comparison() {
 		hybrid_router.add_route('GET', hybrid_handler, '')
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/users/123',
 		'/posts/456/comments/789',
@@ -302,7 +302,7 @@ fn test_performance_comparison() {
 	
 	iterations := 5000
 	
-	// 测试增强版 FastRouter
+	// Test the enhanced version of FastRouter
 	start_time1 := time.now()
 	mut enhanced_matches := 0
 	for _ in 0 .. iterations {
@@ -314,7 +314,7 @@ fn test_performance_comparison() {
 	}
 	enhanced_time := time.since(start_time1)
 	
-	// 测试原始 HybridRouter
+	// Test the original HybridRouter
 	start_time2 := time.now()
 	mut hybrid_matches := 0
 	for _ in 0 .. iterations {
@@ -347,7 +347,7 @@ fn test_health_check() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加一些路由
+	//Add some routes
 	for i in 0 .. 10 {
 		handler := hono.ContextHandler{
 			path: '/test${i}/:id'
@@ -360,19 +360,19 @@ fn test_health_check() {
 		}
 	}
 	
-	// 填充缓存
+	//Fill cache
 	for i in 0 .. 10 {
 		router.match_route('GET', '/test${i}/123')
 	}
 	
-	// 检查健康状态
+	// Check health status
 	if router.is_healthy() {
 		println('  ✅ 路由器健康状态正常')
 	} else {
 		println('  ❌ 路由器健康状态异常')
 	}
 	
-	// 显示完整性能分析
+	// Show full performance analysis
 	router.analyze_performance()
 }
 
@@ -381,7 +381,7 @@ fn test_smart_warmup() {
 	
 	mut router := hono.FastRouter.new()
 	
-	// 添加不同复杂度的路由
+	//Add routes of different complexity
 	routes := [
 		'/simple/:id',
 		'/complex/:a/:b/:c',
@@ -401,7 +401,7 @@ fn test_smart_warmup() {
 		}
 	}
 	
-	// 准备样本路径
+	// Prepare sample path
 	sample_paths := [
 		'/simple/123',
 		'/complex/a/b/c',
@@ -409,10 +409,10 @@ fn test_smart_warmup() {
 		'/medium/type1/456'
 	]
 	
-	// 执行智能预热
+	//Perform smart preheating
 	router.smart_warmup(sample_paths)
 	
-	// 检查预热效果
+	// Check the preheating effect
 	cache_size, _ := router.get_cache_stats()
 	println('  📈 预热后缓存大小: ${cache_size}')
 	
@@ -422,7 +422,7 @@ fn test_smart_warmup() {
 		println('  ⚠️  智能预热效果不明显')
 	}
 	
-	// 测试预热后的性能
+	//Test the performance after preheating
 	start_time := time.now()
 	for _ in 0 .. 1000 {
 		for path in sample_paths {

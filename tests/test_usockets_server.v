@@ -1,4 +1,4 @@
-// uSockets 测试服务器
+// uSockets test server
 module main
 
 import net.http
@@ -7,7 +7,7 @@ import meiseayoung.hono
 fn main() {
 	mut app := hono.Hono.new()
 	
-	// 基本路由
+	//Basic routing
 	app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello from uSockets!')
 	})
@@ -16,12 +16,12 @@ fn main() {
 		return c.text('OK')
 	})
 	
-	// JSON 响应
+	// JSON response
 	app.get('/api/json', fn (mut c hono.Context) http.Response {
 		return c.json('{"message": "Hello JSON"}')
 	})
 	
-	// 动态路由
+	// dynamic routing
 	app.get('/api/users/:id', fn (mut c hono.Context) http.Response {
 		id := c.params['id'] or { '' }
 		return c.json('{"id": "${id}"}')
@@ -33,13 +33,13 @@ fn main() {
 		return c.json('{"user_id": "${user_id}", "post_id": "${post_id}"}')
 	})
 	
-	// 查询参数
+	// Query parameters
 	app.get('/api/search', fn (mut c hono.Context) http.Response {
 		q := c.query['q'] or { '' }
 		return c.json('{"query": "${q}"}')
 	})
 	
-	// 404 处理
+	// 404 processing
 	app.not_found(fn (mut c hono.Context) http.Response {
 		c.status(404)
 		return c.json('{"error": "Not Found"}')

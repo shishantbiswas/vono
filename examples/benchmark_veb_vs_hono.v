@@ -1,10 +1,10 @@
-// veb vs v-hono 性能对比测试
-// 运行: v run benchmark_veb_vs_hono.v
+// veb vs vono performance comparison test
+// Run: v run benchmark_veb_vs_hono.v
 // 
-// 测试内容:
-// 1. 路由匹配性能（纯路由，不启动服务器）
-// 2. 静态路由 vs 动态路由性能对比
-// 3. 缓存命中率分析
+//Test content:
+// 1. Route matching performance (pure routing, no server startup)
+// 2. Static routing vs dynamic routing performance comparison
+// 3. Cache hit rate analysis
 
 module main
 
@@ -13,12 +13,12 @@ import meiseayoung.hono
 import net.http
 
 // ============================================
-// 测试配置
+// test configuration
 // ============================================
 const iterations = 10000
 const warmup_iterations = 1000
 
-// 测试路径
+// test path
 const static_paths = [
 	'/',
 	'/api/health',
@@ -33,7 +33,7 @@ const dynamic_paths = [
 ]
 
 // ============================================
-// 简单路由器（模拟 veb 的路由匹配方式）
+// Simple router (simulates veb's route matching method)
 // ============================================
 struct SimpleRouter {
 mut:
@@ -61,14 +61,14 @@ fn (mut r SimpleRouter) add_dynamic(pattern string, param_names []string) {
 	r.dynamic_routes << DynamicRoute{pattern, param_names}
 }
 
-// 简单的动态路由匹配（模拟 veb 的线性扫描方式）
+// Simple dynamic route matching (simulating the linear scan method of veb)
 fn (r SimpleRouter) match_route(path string) (bool, map[string]string) {
-	// 1. 先尝试静态匹配
+	// 1. Try static matching first
 	if path in r.static_routes {
 		return true, map[string]string{}
 	}
 	
-	// 2. 动态路由匹配（线性扫描）
+	// 2. Dynamic route matching (linear scan)
 	path_parts := path.split('/').filter(it.len > 0)
 	
 	for route in r.dynamic_routes {
@@ -84,7 +84,7 @@ fn (r SimpleRouter) match_route(path string) (bool, map[string]string) {
 		
 		for i, part in pattern_parts {
 			if part.starts_with(':') {
-				// 参数匹配
+				//Parameter matching
 				if param_idx < route.param_names.len {
 					params[route.param_names[param_idx]] = path_parts[i]
 					param_idx++
@@ -104,7 +104,7 @@ fn (r SimpleRouter) match_route(path string) (bool, map[string]string) {
 }
 
 // ============================================
-// 基准测试函数
+//Benchmark function
 // ============================================
 struct BenchmarkResult {
 	name           string
@@ -121,12 +121,12 @@ fn benchmark(name string, iterations int, f fn () bool) BenchmarkResult {
 	mut min_time := i64(9223372036854775807)
 	mut max_time := i64(0)
 	
-	// 预热
+	// preheat
 	for _ in 0 .. warmup_iterations {
 		f()
 	}
 	
-	// 正式测试
+	//Formal testing
 	for _ in 0 .. iterations {
 		sw := time.new_stopwatch()
 		f()
@@ -175,7 +175,7 @@ fn print_result(r BenchmarkResult) {
 
 fn print_comparison(name string, simple_result BenchmarkResult, hono_result BenchmarkResult) {
 	speedup := f64(simple_result.avg_time_ns) / f64(hono_result.avg_time_ns)
-	winner := if speedup > 1.0 { 'v-hono' } else { 'SimpleRouter' }
+	winner := if speedup > 1.0 { 'vono' } else { 'SimpleRouter' }
 	ratio := if speedup > 1.0 { speedup } else { 1.0 / speedup }
 	
 	println('')
@@ -183,18 +183,18 @@ fn print_comparison(name string, simple_result BenchmarkResult, hono_result Benc
 	println(' ${name} 对比结果')
 	println('═══════════════════════════════════════════════════════════════')
 	println(' SimpleRouter: ${simple_result.avg_time_ns} ns/op (${simple_result.ops_per_sec:.0} ops/s)')
-	println(' v-hono:       ${hono_result.avg_time_ns} ns/op (${hono_result.ops_per_sec:.0} ops/s)')
+	println(' vono:       ${hono_result.avg_time_ns} ns/op (${hono_result.ops_per_sec:.0} ops/s)')
 	println(' 胜出:         ${winner} (快 ${ratio:.2}x)')
 	println('═══════════════════════════════════════════════════════════════')
 }
 
 // ============================================
-// 主测试函数
+// Main test function
 // ============================================
 fn main() {
 	println('')
 	println('╔═══════════════════════════════════════════════════════════════╗')
-	println('║         veb vs v-hono 路由性能对比测试                        ║')
+	println('║         veb vs vono 路由性能对比测试                        ║')
 	println('║         (SimpleRouter 模拟 veb 的路由匹配方式)                ║')
 	println('╠═══════════════════════════════════════════════════════════════╣')
 	println('║ 测试配置:                                                     ║')
@@ -203,7 +203,7 @@ fn main() {
 	println('╚═══════════════════════════════════════════════════════════════╝')
 	println('')
 	
-	// 初始化 SimpleRouter
+	//Initialize SimpleRouter
 	mut simple_router := SimpleRouter.new()
 	simple_router.add_static('/')
 	simple_router.add_static('/api/health')
@@ -213,7 +213,7 @@ fn main() {
 	simple_router.add_dynamic('/api/users/:user_id/posts/:post_id', ['user_id', 'post_id'])
 	simple_router.add_dynamic('/api/categories/:cat/items/:item', ['cat', 'item'])
 	
-	// 初始化 v-hono
+	//Initialize vono
 	mut hono_app := hono.Hono.new()
 	hono_app.get('/', fn (mut c hono.Context) http.Response {
 		return c.text('Hello World')
@@ -238,7 +238,7 @@ fn main() {
 	})
 	
 	// ============================================
-	// 测试 1: 静态路由性能
+	//Test 1: Static routing performance
 	// ============================================
 	println('\n【测试 1】静态路由匹配性能')
 	println('─────────────────────────────────────────────────────────────────')
@@ -251,7 +251,7 @@ fn main() {
 	})
 	print_result(simple_static_result)
 	
-	hono_static_result := benchmark('v-hono 静态路由', iterations, fn [mut hono_app] () bool {
+	hono_static_result := benchmark('vono 静态路由', iterations, fn [mut hono_app] () bool {
 		for path in static_paths {
 			hono_app.fast_router.match_route('GET', path) or { continue }
 		}
@@ -262,7 +262,7 @@ fn main() {
 	print_comparison('静态路由', simple_static_result, hono_static_result)
 	
 	// ============================================
-	// 测试 2: 动态路由性能
+	//Test 2: Dynamic routing performance
 	// ============================================
 	println('\n【测试 2】动态路由匹配性能')
 	println('─────────────────────────────────────────────────────────────────')
@@ -275,7 +275,7 @@ fn main() {
 	})
 	print_result(simple_dynamic_result)
 	
-	hono_dynamic_result := benchmark('v-hono 动态路由', iterations, fn [mut hono_app] () bool {
+	hono_dynamic_result := benchmark('vono 动态路由', iterations, fn [mut hono_app] () bool {
 		for path in dynamic_paths {
 			hono_app.fast_router.match_route('GET', path) or { continue }
 		}
@@ -286,7 +286,7 @@ fn main() {
 	print_comparison('动态路由', simple_dynamic_result, hono_dynamic_result)
 	
 	// ============================================
-	// 测试 3: 混合路由性能
+	// Test 3: Hybrid routing performance
 	// ============================================
 	println('\n【测试 3】混合路由匹配性能（静态 + 动态）')
 	println('─────────────────────────────────────────────────────────────────')
@@ -303,7 +303,7 @@ fn main() {
 	})
 	print_result(simple_mixed_result)
 	
-	hono_mixed_result := benchmark('v-hono 混合路由', iterations, fn [mut hono_app, all_paths] () bool {
+	hono_mixed_result := benchmark('vono 混合路由', iterations, fn [mut hono_app, all_paths] () bool {
 		for path in all_paths {
 			hono_app.fast_router.match_route('GET', path) or { continue }
 		}
@@ -314,13 +314,13 @@ fn main() {
 	print_comparison('混合路由', simple_mixed_result, hono_mixed_result)
 	
 	// ============================================
-	// 路由器统计信息
+	// Router statistics
 	// ============================================
 	println('\n【路由器统计信息】')
 	println('─────────────────────────────────────────────────────────────────')
 	
 	static_count, dynamic_count, cache_count, _ := hono_app.get_router_stats()
-	println('v-hono FastRouter:')
+	println('vono FastRouter:')
 	println('  - 静态路由数: ${static_count}')
 	println('  - 动态路由数: ${dynamic_count}')
 	println('  - 缓存条目数: ${cache_count}')
@@ -331,14 +331,14 @@ fn main() {
 	println('  - 动态路由数: ${simple_router.dynamic_routes.len}')
 	
 	// ============================================
-	// 总结
+	// Summarize
 	// ============================================
 	println('\n')
 	println('╔═══════════════════════════════════════════════════════════════╗')
 	println('║                        测试总结                               ║')
 	println('╠═══════════════════════════════════════════════════════════════╣')
 	println('║ 1. 静态路由: SimpleRouter 使用 map 直接查找，通常更快        ║')
-	println('║ 2. 动态路由: v-hono 使用 Trie + 缓存，性能更稳定             ║')
-	println('║ 3. v-hono 的优势在于动态路由性能一致，不随复杂度增加而下降   ║')
+	println('║ 2. 动态路由: vono 使用 Trie + 缓存，性能更稳定             ║')
+	println('║ 3. vono 的优势在于动态路由性能一致，不随复杂度增加而下降   ║')
 	println('╚═══════════════════════════════════════════════════════════════╝')
 }

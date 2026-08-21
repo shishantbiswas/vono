@@ -1,5 +1,5 @@
-// Swagger UI Demo for v-hono
-// This example demonstrates how to add interactive API documentation to your v-hono application
+// Swagger UI Demo for vono
+// This example demonstrates how to add interactive API documentation to your vono application
 // Run with: v -enable-globals run examples/swagger_demo.v (from project root)
 // Or: cd examples && v -enable-globals run swagger_demo.v
 // Then visit: http://127.0.0.1:3000/ui for Swagger UI
@@ -10,7 +10,7 @@ import net.http
 import x.json2
 import meiseayoung.hono
 
-// Pet 结构体 - 用于演示 API 数据
+// Pet structure - used to demonstrate API data
 struct Pet {
 	id   int
 	name string
@@ -23,13 +23,13 @@ fn (p Pet) as_map() map[string]string {
 		"tag": p.tag
 	}
 }
-// ErrorResponse - 错误响应结构体
+// ErrorResponse - error response structure
 struct ErrorResponse {
 	error string
 }
 
-// 使用全局变量实现共享状态
-// 注意：需要使用 -enable-globals 编译选项
+//Use global variables to implement shared state
+// Note: You need to use the -enable-globals compilation option
 __global (
 	g_pets = []Pet{}
 	g_next_id = 4
@@ -48,7 +48,7 @@ fn main() {
 	builder.openapi('3.0.0')
 	builder.title('Pet Store API')
 	builder.version('1.0.0')
-	builder.description('A sample Pet Store API demonstrating Swagger UI integration with v-hono')
+	builder.description('A sample Pet Store API demonstrating Swagger UI integration with vono')
 	builder.server('http://127.0.0.1:3000', 'Development server')
 	builder.tag('pets', 'Pet management operations')
 	builder.tag('users', 'User management operations')
@@ -259,8 +259,8 @@ fn main() {
 	// 4. Actual API Endpoints (for testing with Swagger UI)
 	// =========================================================================
 	
-	// 初始化全局宠物数据
-	// 使用全局变量可以在多个 handler 之间共享和修改数据
+	//Initialize global pet data
+	// Use global variables to share and modify data between multiple handlers
 	g_pets = [
 		Pet{id: 1, name: 'Fluffy', tag: 'cat'},
 		Pet{id: 2, name: 'Buddy', tag: 'dog'},

@@ -4,52 +4,52 @@ import net.http
 import os
 
 fn main() {
-	println('=== V-Hono 综合集成测试 ===')
+	println('=== vono 综合集成测试 ===')
 	
-	// 测试1: FastRouter集成测试
+	//Test 1: FastRouter integration test
 	test_fast_router_integration()
 	
-	// 测试2: 配置管理集成测试
+	//Test 2: Configuration management integration test
 	test_config_integration()
 	
-	// 测试3: 日志系统集成测试
+	//Test 3: Log system integration test
 	test_logger_integration()
 	
-	// 测试4: 错误处理集成测试
+	//Test 4: Error handling integration test
 	test_error_handling_integration()
 	
-	// 测试5: 安全验证集成测试
+	//Test 5: Security verification integration test
 	test_security_integration()
 	
-	// 测试6: 性能基准集成测试
+	//Test 6: Performance benchmark integration test
 	test_performance_integration()
 	
-	// 测试7: 内存管理集成测试
+	//Test 7: Memory management integration test
 	test_memory_management_integration()
 	
-	println('✅ V-Hono 综合集成测试完成')
+	println('✅ vono 综合集成测试完成')
 }
 
 fn test_fast_router_integration() {
 	println('\n📊 FastRouter集成测试...')
 	
-	// 创建应用实例
+	//Create application instance
 	mut app := hono.Hono.new()
 	
-	// 验证FastRouter默认启用
+	// Verify that FastRouter is enabled by default
 	if !app.use_fast_router {
 		println('  ❌ FastRouter未默认启用')
 		return
 	}
 	println('  ✅ FastRouter默认启用')
 	
-	// 添加各种类型的路由
+	//Add various types of routes
 	test_routes := [
-		'/static/path',                                    // 静态路由
-		'/users/:id',                                      // 单参数动态路由
-		'/users/:id/posts/:post_id',                      // 多参数动态路由
-		'/api/:version/users/:user_id/posts/:post_id',    // 复杂动态路由
-		'/files/:year/:month/:day/:filename'              // 深层动态路由
+		'/static/path',                                    // static routing
+		'/users/:id',                                      //Single parameter dynamic routing
+		'/users/:id/posts/:post_id',                      //Multi-parameter dynamic routing
+		'/api/:version/users/:user_id/posts/:post_id',    //Complex dynamic routing
+		'/files/:year/:month/:day/:filename'              //Deep dynamic routing
 	]
 	
 	for route in test_routes {
@@ -58,11 +58,11 @@ fn test_fast_router_integration() {
 		})
 	}
 	
-	// 验证路由统计
+	//Verify routing statistics
 	static_count, dynamic_count, cache_count, _ := app.get_router_stats()
 	println('  路由统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 	
-	// 测试路由匹配
+	//Test route matching
 	test_paths := [
 		'/static/path',
 		'/users/123',
@@ -84,7 +84,7 @@ fn test_fast_router_integration() {
 		println('  ❌ 路由匹配失败 (${match_count}/${test_paths.len})')
 	}
 	
-	// 测试FastRouter开关
+	//Test FastRouter switch
 	app.set_fast_router_enabled(false)
 	if app.use_fast_router {
 		println('  ❌ FastRouter开关失效')
@@ -99,7 +99,7 @@ fn test_fast_router_integration() {
 		println('  ✅ FastRouter重新启用成功')
 	}
 	
-	// 性能分析
+	//Performance analysis
 	println('  性能分析:')
 	app.analyze_router_performance()
 }
@@ -107,7 +107,7 @@ fn test_fast_router_integration() {
 fn test_config_integration() {
 	println('\n📊 配置管理集成测试...')
 	
-	// 测试默认配置
+	//Test default configuration
 	config := hono.default_config()
 	if config.server.host == '0.0.0.0' && config.server.port == 8080 {
 		println('  ✅ 默认配置正确')
@@ -115,14 +115,14 @@ fn test_config_integration() {
 		println('  ❌ 默认配置错误')
 	}
 	
-	// 测试配置验证
+	//Test configuration verification
 	hono.validate_config(config) or {
 		println('  ❌ 配置验证失败: ${err}')
 		return
 	}
 	println('  ✅ 配置验证通过')
 	
-	// 测试配置保存和加载
+	//Test configuration save and load
 	test_config_file := 'test_config.json'
 	
 	hono.save_config(config, test_config_file) or {
@@ -137,10 +137,10 @@ fn test_config_integration() {
 	}
 	println('  ✅ 配置加载成功')
 	
-	// 清理测试文件
+	// Clean test files
 	os.rm(test_config_file) or {}
 	
-	// 验证配置内容
+	//Verify configuration content
 	if loaded_config.server.host == config.server.host {
 		println('  ✅ 配置内容一致')
 	} else {
@@ -151,14 +151,14 @@ fn test_config_integration() {
 fn test_logger_integration() {
 	println('\n📊 日志系统集成测试...')
 	
-	// 创建日志器配置
+	//Create logger configuration
 	config := hono.LoggerConfig{
 		level: .info
 		output: .console
 	}
 	mut logger := hono.new_logger(config)
 	
-	// 测试各级别日志
+	//Test logs at each level
 	logger.debug('Debug message')
 	logger.info('Info message')
 	logger.warn('Warning message')
@@ -166,11 +166,11 @@ fn test_logger_integration() {
 	
 	println('  ✅ 日志级别测试完成')
 	
-	// 测试带模块的日志
+	//Test the log with module
 	logger.info_with_module('Module message', 'test_module')
 	println('  ✅ 模块日志测试完成')
 	
-	// 测试带字段的日志
+	//Test logs with fields
 	fields := {
 		'user_id': '123'
 		'action': 'login'
@@ -178,7 +178,7 @@ fn test_logger_integration() {
 	logger.info_with_fields('User login', fields)
 	println('  ✅ 结构化日志测试完成')
 	
-	// 测试带请求ID的日志
+	//Test the log with request ID
 	logger.info_with_request('Request processed', 'req-12345')
 	println('  ✅ 请求日志测试完成')
 }
@@ -186,7 +186,7 @@ fn test_logger_integration() {
 fn test_error_handling_integration() {
 	println('\n📊 错误处理集成测试...')
 	
-	// 测试错误响应
+	//Test error response
 	error_response_400 := hono.Response.error(400, 'Bad request test')
 	if error_response_400.status_code == 400 {
 		println('  ✅ 400 Bad Request 错误响应正确')
@@ -214,7 +214,7 @@ fn test_error_handling_integration() {
 fn test_security_integration() {
 	println('\n📊 安全验证集成测试...')
 	
-	// 测试路径验证
+	//Test path verification
 	dangerous_paths := [
 		'../../../etc/passwd',
 		'..\\..\\windows\\system32',
@@ -241,7 +241,7 @@ fn test_security_integration() {
 		println('  ⚠️  部分危险路径未被阻止 (${blocked_count}/${dangerous_paths.len})')
 	}
 	
-	// 测试安全路径
+	//Test safe path
 	safe_paths := [
 		'documents/report.pdf',
 		'images/photo.jpg',
@@ -265,10 +265,10 @@ fn test_security_integration() {
 fn test_performance_integration() {
 	println('\n📊 性能基准集成测试...')
 	
-	// 创建测试应用
+	//Create test application
 	mut app := hono.Hono.new()
 	
-	// 添加多种路由
+	//Add multiple routes
 	performance_routes := [
 		'/api/v1/users/:id',
 		'/api/v1/users/:id/posts',
@@ -283,7 +283,7 @@ fn test_performance_integration() {
 		})
 	}
 	
-	// 性能测试路径
+	//Performance test path
 	test_paths := [
 		'/api/v1/users/123',
 		'/api/v1/users/123/posts',
@@ -294,7 +294,7 @@ fn test_performance_integration() {
 	
 	iterations := 1000
 	
-	// 测试FastRouter性能
+	//Test FastRouter performance
 	start_time := time.now()
 	mut match_count := 0
 	for _ in 0 .. iterations {
@@ -309,7 +309,7 @@ fn test_performance_integration() {
 	avg_time := f64(total_time.microseconds()) / f64(match_count)
 	println('  FastRouter性能: ${total_time} (${match_count}次匹配, 平均${avg_time:.3f}μs)')
 	
-	if avg_time < 20.0 {  // 期望平均时间小于20μs
+	if avg_time < 20.0 {  // Expect average time to be less than 20μs
 		println('  ✅ 性能测试通过 (平均${avg_time:.3f}μs < 20μs)')
 	} else {
 		println('  ❌ 性能测试未达标 (平均${avg_time:.3f}μs >= 20μs)')
@@ -319,10 +319,10 @@ fn test_performance_integration() {
 fn test_memory_management_integration() {
 	println('\n📊 内存管理集成测试...')
 	
-	// 测试LRU缓存
+	//Test LRU cache
 	mut cache := hono.ContextLRUCache.new(100)
 	
-	// 添加测试数据
+	//Add test data
 	test_data := hono.ContextRouteMatch{
 		handler: hono.ContextHandler{
 			path: '/test'
@@ -335,7 +335,7 @@ fn test_memory_management_integration() {
 		base_path: ''
 	}
 	
-	// 测试缓存操作
+	//Test caching operation
 	cache.put('test_key', test_data)
 	
 	if _ := cache.get('test_key') {
@@ -344,18 +344,18 @@ fn test_memory_management_integration() {
 		println('  ❌ 缓存存储或获取失败')
 	}
 	
-	// 测试缓存健康检查
+	//Test cache health check
 	if cache.is_healthy() {
 		println('  ✅ 缓存健康检查通过')
 	} else {
 		println('  ❌ 缓存健康检查失败')
 	}
 	
-	// 测试缓存统计
+	//Test cache statistics
 	size, capacity := cache.get_stats()
 	println('  缓存统计: 大小=${size}, 容量=${capacity}')
 	
-	// 测试缓存清理
+	//Test cache cleanup
 	cache.clear()
 	size_after_clear, _ := cache.get_stats()
 	
@@ -366,7 +366,7 @@ fn test_memory_management_integration() {
 	}
 }
 
-// 创建模拟Context用于测试
+//Create a mock Context for testing
 fn create_mock_context() hono.Context {
 	req := http.Request{
 		method: http.Method.get

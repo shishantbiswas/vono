@@ -2,7 +2,7 @@ module hono
 
 import io
 
-// 存储操作结果
+//Storage operation results
 pub struct StorageResult {
 pub:
 	success    bool
@@ -12,7 +12,7 @@ pub:
 	error_msg  string
 }
 
-// 文件对象信息
+//File object information
 pub struct ObjectInfo {
 pub:
 	key           string
@@ -23,7 +23,7 @@ pub:
 	metadata      map[string]string
 }
 
-// 列表选项
+// list options
 pub struct ListOptions {
 pub:
 	prefix      string
@@ -32,7 +32,7 @@ pub:
 	start_after string
 }
 
-// 列表结果
+// list results
 pub struct ListResult {
 pub:
 	objects         []ObjectInfo
@@ -41,15 +41,15 @@ pub:
 	next_marker     string
 }
 
-// 预签名URL选项
+// Pre-signed URL options
 pub struct PresignOptions {
 pub:
-	expires_in   int    = 3600 // 秒
+	expires_in   int    = 3600 // Second
 	method       string = 'GET'
 	content_type string
 }
 
-// 分片信息
+// shard information
 pub struct PartInfo {
 pub:
 	part_number int
@@ -58,37 +58,37 @@ pub:
 }
 
 
-// 统一存储接口
+// Unified storage interface
 pub interface StorageProvider {
 mut:
-	// 基本操作
+	//Basic operations
 	upload(bucket string, key string, data []u8, content_type string) !StorageResult
 	upload_stream(bucket string, key string, mut reader io.Reader, size i64, content_type string) !StorageResult
 	download(bucket string, key string) ![]u8
 	download_stream(bucket string, key string, mut writer io.Writer) !i64
 	delete(bucket string, key string) !
 	exists(bucket string, key string) !bool
-	// 元数据操作
+	// Metadata operations
 	head(bucket string, key string) !ObjectInfo
 	copy(src_bucket string, src_key string, dst_bucket string, dst_key string) !StorageResult
-	// 列表操作
+	// list operations
 	list(bucket string, options ListOptions) !ListResult
-	// 预签名URL
+	// Pre-signed URL
 	presign_url(bucket string, key string, options PresignOptions) !string
-	// 分片上传
-	init_multipart(bucket string, key string, content_type string) !string // 返回 upload_id
-	upload_part(bucket string, key string, upload_id string, part_number int, data []u8) !string // 返回 etag
+	//Multiple upload
+	init_multipart(bucket string, key string, content_type string) !string //return upload_id
+	upload_part(bucket string, key string, upload_id string, part_number int, data []u8) !string //return etag
 	complete_multipart(bucket string, key string, upload_id string, parts []PartInfo) !StorageResult
 	abort_multipart(bucket string, key string, upload_id string) !
-	// Bucket 操作
+	// Bucket operations
 	create_bucket(bucket string) !
 	delete_bucket(bucket string) !
 	bucket_exists(bucket string) !bool
-	// 获取提供者名称
+	// Get provider name
 	provider_name() string
 }
 
-// 创建成功的存储结果
+//Create successful stored result
 pub fn new_storage_result(object_key string, etag string, size i64) StorageResult {
 	return StorageResult{
 		success: true
@@ -99,7 +99,7 @@ pub fn new_storage_result(object_key string, etag string, size i64) StorageResul
 	}
 }
 
-// 创建失败的存储结果
+//Create failed stored results
 pub fn new_storage_error_result(error_msg string) StorageResult {
 	return StorageResult{
 		success: false
@@ -110,7 +110,7 @@ pub fn new_storage_error_result(error_msg string) StorageResult {
 	}
 }
 
-// 创建对象信息
+//Create object information
 pub fn new_object_info(key string, size i64, etag string, content_type string, last_modified i64) ObjectInfo {
 	return ObjectInfo{
 		key: key
@@ -122,7 +122,7 @@ pub fn new_object_info(key string, size i64, etag string, content_type string, l
 	}
 }
 
-// 创建带元数据的对象信息
+//Create object information with metadata
 pub fn new_object_info_with_metadata(key string, size i64, etag string, content_type string, last_modified i64, metadata map[string]string) ObjectInfo {
 	return ObjectInfo{
 		key: key
@@ -134,7 +134,7 @@ pub fn new_object_info_with_metadata(key string, size i64, etag string, content_
 	}
 }
 
-// 创建空的列表结果
+//Create an empty list of results
 pub fn new_empty_list_result() ListResult {
 	return ListResult{
 		objects: []ObjectInfo{}
@@ -144,7 +144,7 @@ pub fn new_empty_list_result() ListResult {
 	}
 }
 
-// 创建列表结果
+//Create list results
 pub fn new_list_result(objects []ObjectInfo, common_prefixes []string, is_truncated bool, next_marker string) ListResult {
 	return ListResult{
 		objects: objects
@@ -154,7 +154,7 @@ pub fn new_list_result(objects []ObjectInfo, common_prefixes []string, is_trunca
 	}
 }
 
-// 创建分片信息
+//Create shard information
 pub fn new_part_info(part_number int, etag string, size i64) PartInfo {
 	return PartInfo{
 		part_number: part_number

@@ -4,7 +4,7 @@ import db.sqlite
 import time
 import crypto.rand
 
-// 文件信息结构（扩展版本，支持多存储提供者）
+//File information structure (extended version, supports multiple storage providers)
 pub struct FileInfo {
 pub:
 	id           int
@@ -13,15 +13,15 @@ pub:
 	file_name    string
 	file_size    i64
 	file_type    string
-	storage_type string // 存储类型 (local/s3/oss/cos)
-	bucket       string // 存储桶名称
-	object_key   string // 对象键（存储路径）
+	storage_type string // Storage type (local/s3/oss/cos)
+	bucket       string // Bucket name
+	object_key   string //Object key (storage path)
 	created_at   i64
 	updated_at   i64
-	metadata     string // JSON 格式的额外元数据
+	metadata     string // Additional metadata in JSON format
 }
 
-// 分片上传状态
+//Multiple upload status
 pub struct MultipartUpload {
 pub:
 	id           int
@@ -39,7 +39,7 @@ pub:
 	updated_at   i64
 }
 
-// 已上传分片记录
+// Uploaded fragment records
 pub struct UploadedPart {
 pub:
 	id          int
@@ -50,7 +50,7 @@ pub:
 	uploaded_at i64
 }
 
-// 文件列表查询选项
+//File list query options
 pub struct FileListOptions {
 pub:
 	bucket       string
@@ -62,7 +62,7 @@ pub:
 	order_desc   bool   = true
 }
 
-// 文件列表查询结果
+//File list query results
 pub struct FileListResult {
 pub:
 	files       []FileInfo
@@ -71,19 +71,19 @@ pub:
 }
 
 
-// 数据库管理器
+// database manager
 pub struct DatabaseManager {
 mut:
 	db sqlite.DB
 }
 
-// 创建数据库管理器
+//Create database manager
 pub fn new_database_manager(db_path string) !DatabaseManager {
 	mut db := sqlite.connect(db_path) or {
 		return error('Failed to connect to database: ${err}')
 	}
 
-	// 创建文件信息表（扩展版本，支持多存储提供者）
+	//Create file information table (extended version, supports multiple storage providers)
 	db.exec('CREATE TABLE IF NOT EXISTS file_info (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		file_uuid TEXT UNIQUE NOT NULL,
@@ -99,7 +99,7 @@ pub fn new_database_manager(db_path string) !DatabaseManager {
 		metadata TEXT
 	);') or { return error('Failed to create file_info table: ${err}') }
 
-	// 创建索引
+	//Create index
 	db.exec('CREATE INDEX IF NOT EXISTS idx_file_hash ON file_info(file_hash);') or {
 		return error('Failed to create idx_file_hash index: ${err}')
 	}
@@ -113,7 +113,7 @@ pub fn new_database_manager(db_path string) !DatabaseManager {
 		return error('Failed to create idx_storage_type index: ${err}')
 	}
 
-	// 创建分片上传状态表
+	//Create a multipart upload status table
 	db.exec("CREATE TABLE IF NOT EXISTS multipart_uploads (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		upload_id TEXT UNIQUE NOT NULL,
@@ -130,7 +130,7 @@ pub fn new_database_manager(db_path string) !DatabaseManager {
 		updated_at INTEGER NOT NULL
 	);") or { return error('Failed to create multipart_uploads table: ${err}') }
 
-	// 创建已上传分片记录表
+	// Create uploaded fragment record table
 	db.exec('CREATE TABLE IF NOT EXISTS uploaded_parts (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		upload_id TEXT NOT NULL,
@@ -150,12 +150,12 @@ pub fn new_database_manager(db_path string) !DatabaseManager {
 	}
 }
 
-// 生成文件UUID
+// Generate file UUID
 pub fn generate_file_uuid() string {
-	// 生成16字节的随机数据
+	// Generate 16 bytes of random data
 	random_bytes := rand.bytes(16) or { return '' }
 
-	// 转换为UUID格式 (8-4-4-4-12)
+	//Convert to UUID format (8-4-4-4-12)
 	mut uuid := ''
 	for i, b in random_bytes {
 		if i == 4 || i == 6 || i == 8 || i == 10 {
@@ -167,7 +167,7 @@ pub fn generate_file_uuid() string {
 	return uuid
 }
 
-// 生成上传ID (用于数据库记录)
+// Generate upload ID (for database records)
 pub fn generate_db_upload_id() string {
 	random_bytes := rand.bytes(16) or { return '' }
 	mut id := ''
@@ -178,9 +178,9 @@ pub fn generate_db_upload_id() string {
 }
 
 
-// ============ 文件元数据 CRUD 操作 ============
+// ============ File metadata CRUD operations ============
 
-// 插入文件信息
+//Insert file information
 pub fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	now := time.now().unix()
 	file_uuid := if file.file_uuid != '' { file.file_uuid } else { generate_file_uuid() }
@@ -205,7 +205,7 @@ pub fn (mut dm DatabaseManager) insert_file(file FileInfo) !FileInfo {
 	}
 }
 
-// 根据UUID获取文件信息
+// Get file information based on UUID
 pub fn (dm DatabaseManager) get_file_by_uuid(file_uuid string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE file_uuid = '${file_uuid}'") or {
 		return error('Failed to query file info: ${err}')
@@ -232,7 +232,7 @@ pub fn (dm DatabaseManager) get_file_by_uuid(file_uuid string) !FileInfo {
 	return error('File not found')
 }
 
-// 根据hash获取文件信息
+// Get file information based on hash
 pub fn (dm DatabaseManager) get_file_by_hash(file_hash string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE file_hash = '${file_hash}'") or {
 		return error('Failed to query file info: ${err}')
@@ -259,7 +259,7 @@ pub fn (dm DatabaseManager) get_file_by_hash(file_hash string) !FileInfo {
 	return error('File not found')
 }
 
-// 根据hash获取所有匹配的文件
+// Get all matching files based on hash
 pub fn (dm DatabaseManager) get_files_by_hash(file_hash string) ![]FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE file_hash = '${file_hash}'") or {
 		return error('Failed to query files: ${err}')
@@ -286,7 +286,7 @@ pub fn (dm DatabaseManager) get_files_by_hash(file_hash string) ![]FileInfo {
 	return files
 }
 
-// 更新文件信息
+//Update file information
 pub fn (mut dm DatabaseManager) update_file(file_uuid string, file_name string, file_type string, metadata string) !FileInfo {
 	now := time.now().unix()
 
@@ -297,14 +297,14 @@ pub fn (mut dm DatabaseManager) update_file(file_uuid string, file_name string, 
 	return dm.get_file_by_uuid(file_uuid)
 }
 
-// 删除文件信息
+//Delete file information
 pub fn (mut dm DatabaseManager) delete_file(file_uuid string) ! {
 	dm.db.exec("DELETE FROM file_info WHERE file_uuid = '${file_uuid}'") or {
 		return error('Failed to delete file info: ${err}')
 	}
 }
 
-// 检查文件是否存在
+// Check if the file exists
 pub fn (dm DatabaseManager) file_exists(file_uuid string) bool {
 	rows := dm.db.exec("SELECT 1 FROM file_info WHERE file_uuid = '${file_uuid}' LIMIT 1") or {
 		return false
@@ -313,7 +313,7 @@ pub fn (dm DatabaseManager) file_exists(file_uuid string) bool {
 }
 
 
-// 分页列表查询
+//Paging list query
 pub fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult {
 	mut where_clauses := []string{}
 	
@@ -331,13 +331,13 @@ pub fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult 
 	order_dir := if options.order_desc { 'DESC' } else { 'ASC' }
 	order_sql := 'ORDER BY ${options.order_by} ${order_dir}'
 
-	// 获取总数
+	// Get the total number
 	count_rows := dm.db.exec('SELECT COUNT(*) FROM file_info ${where_sql}') or {
 		return error('Failed to count files: ${err}')
 	}
 	total_count := if count_rows.len > 0 { count_rows[0].vals[0].int() } else { 0 }
 
-	// 获取分页数据
+	// Get pagination data
 	limit := if options.limit > 0 { options.limit } else { 100 }
 	rows := dm.db.exec('SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info ${where_sql} ${order_sql} LIMIT ${limit} OFFSET ${options.offset}') or {
 		return error('Failed to list files: ${err}')
@@ -368,15 +368,15 @@ pub fn (dm DatabaseManager) list_files(options FileListOptions) !FileListResult 
 	}
 }
 
-// 获取所有文件
+// Get all files
 pub fn (dm DatabaseManager) get_all_files() ![]FileInfo {
 	result := dm.list_files(FileListOptions{ limit: 10000 })!
 	return result.files
 }
 
-// ============ 分片上传状态管理 ============
+// ============ Multipart upload status management ============
 
-// 创建分片上传记录
+//Create multipart upload record
 pub fn (mut dm DatabaseManager) create_multipart_upload(upload MultipartUpload) !MultipartUpload {
 	now := time.now().unix()
 	upload_id := if upload.upload_id != '' { upload.upload_id } else { generate_db_upload_id() }
@@ -403,7 +403,7 @@ pub fn (mut dm DatabaseManager) create_multipart_upload(upload MultipartUpload) 
 	}
 }
 
-// 获取分片上传状态
+// Get the status of multipart upload
 pub fn (dm DatabaseManager) get_multipart_upload(upload_id string) !MultipartUpload {
 	rows := dm.db.exec("SELECT id, upload_id, file_uuid, file_name, file_size, chunk_size, total_chunks, bucket, object_key, content_type, status, created_at, updated_at FROM multipart_uploads WHERE upload_id = '${upload_id}'") or {
 		return error('Failed to query multipart upload: ${err}')
@@ -431,7 +431,7 @@ pub fn (dm DatabaseManager) get_multipart_upload(upload_id string) !MultipartUpl
 	return error('Multipart upload not found')
 }
 
-// 更新分片上传状态
+//Update multipart upload status
 pub fn (mut dm DatabaseManager) update_multipart_status(upload_id string, status string) ! {
 	now := time.now().unix()
 	dm.db.exec("UPDATE multipart_uploads SET status = '${status}', updated_at = ${now} WHERE upload_id = '${upload_id}'") or {
@@ -439,19 +439,19 @@ pub fn (mut dm DatabaseManager) update_multipart_status(upload_id string, status
 	}
 }
 
-// 删除分片上传记录
+//Delete multipart upload records
 pub fn (mut dm DatabaseManager) delete_multipart_upload(upload_id string) ! {
-	// 先删除分片记录
+	//Delete shard records first
 	dm.db.exec("DELETE FROM uploaded_parts WHERE upload_id = '${upload_id}'") or {
 		return error('Failed to delete uploaded parts: ${err}')
 	}
-	// 再删除上传记录
+	// Delete the upload record again
 	dm.db.exec("DELETE FROM multipart_uploads WHERE upload_id = '${upload_id}'") or {
 		return error('Failed to delete multipart upload: ${err}')
 	}
 }
 
-// 列出所有进行中的分片上传
+// List all ongoing multipart uploads
 pub fn (dm DatabaseManager) list_pending_multipart_uploads() ![]MultipartUpload {
 	rows := dm.db.exec("SELECT id, upload_id, file_uuid, file_name, file_size, chunk_size, total_chunks, bucket, object_key, content_type, status, created_at, updated_at FROM multipart_uploads WHERE status = 'uploading' ORDER BY created_at DESC") or {
 		return error('Failed to list pending uploads: ${err}')
@@ -480,18 +480,18 @@ pub fn (dm DatabaseManager) list_pending_multipart_uploads() ![]MultipartUpload 
 }
 
 
-// ============ 分片记录管理 ============
+// ============ Shard record management ============
 
-// 记录已上传的分片
+//Record uploaded fragments
 pub fn (mut dm DatabaseManager) record_uploaded_part(upload_id string, part_number int, etag string, size i64) !UploadedPart {
 	now := time.now().unix()
 
-	// 使用 INSERT OR REPLACE 来处理重复上传的分片
+	//Use INSERT OR REPLACE to handle repeatedly uploaded shards
 	dm.db.exec("INSERT OR REPLACE INTO uploaded_parts (upload_id, part_number, etag, size, uploaded_at) VALUES ('${upload_id}', ${part_number}, '${etag}', ${size}, ${now})") or {
 		return error('Failed to record uploaded part: ${err}')
 	}
 
-	// 更新分片上传的更新时间
+	//Update the update time of multipart upload
 	dm.db.exec("UPDATE multipart_uploads SET updated_at = ${now} WHERE upload_id = '${upload_id}'") or {}
 
 	return UploadedPart{
@@ -504,7 +504,7 @@ pub fn (mut dm DatabaseManager) record_uploaded_part(upload_id string, part_numb
 	}
 }
 
-// 获取已上传的分片列表
+// Get the uploaded shard list
 pub fn (dm DatabaseManager) get_uploaded_parts(upload_id string) ![]UploadedPart {
 	rows := dm.db.exec("SELECT id, upload_id, part_number, etag, size, uploaded_at FROM uploaded_parts WHERE upload_id = '${upload_id}' ORDER BY part_number ASC") or {
 		return error('Failed to get uploaded parts: ${err}')
@@ -525,7 +525,7 @@ pub fn (dm DatabaseManager) get_uploaded_parts(upload_id string) ![]UploadedPart
 	return parts
 }
 
-// 获取已上传分片数量
+// Get the number of uploaded fragments
 pub fn (dm DatabaseManager) get_uploaded_parts_count(upload_id string) int {
 	rows := dm.db.exec("SELECT COUNT(*) FROM uploaded_parts WHERE upload_id = '${upload_id}'") or {
 		return 0
@@ -536,7 +536,7 @@ pub fn (dm DatabaseManager) get_uploaded_parts_count(upload_id string) int {
 	return 0
 }
 
-// 检查分片是否已上传
+// Check whether the fragment has been uploaded
 pub fn (dm DatabaseManager) is_part_uploaded(upload_id string, part_number int) bool {
 	rows := dm.db.exec("SELECT 1 FROM uploaded_parts WHERE upload_id = '${upload_id}' AND part_number = ${part_number} LIMIT 1") or {
 		return false
@@ -544,45 +544,45 @@ pub fn (dm DatabaseManager) is_part_uploaded(upload_id string, part_number int) 
 	return rows.len > 0
 }
 
-// 获取上传进度（已上传分片数 / 总分片数）
+// Get the upload progress (number of uploaded fragments / total number of fragments)
 pub fn (dm DatabaseManager) get_upload_progress(upload_id string) !(int, int) {
 	upload := dm.get_multipart_upload(upload_id)!
 	uploaded_count := dm.get_uploaded_parts_count(upload_id)
 	return uploaded_count, upload.total_chunks
 }
 
-// 删除分片记录
+//Delete shard records
 pub fn (mut dm DatabaseManager) delete_uploaded_part(upload_id string, part_number int) ! {
 	dm.db.exec("DELETE FROM uploaded_parts WHERE upload_id = '${upload_id}' AND part_number = ${part_number}") or {
 		return error('Failed to delete uploaded part: ${err}')
 	}
 }
 
-// ============ 辅助函数 ============
+// ============ Auxiliary functions ============
 
-// SQL 字符串转义
+// SQL string escape
 fn escape_sql(s string) string {
 	return s.replace("'", "''")
 }
 
-// 关闭数据库连接
+//Close database connection
 pub fn (mut dm DatabaseManager) close() {
 	dm.db.close() or {}
 }
 
-// ============ 向后兼容的接口 ============
+// ============ Backwards compatible interface ============
 
-// 插入或更新文件（兼容旧接口，支持扩展参数）
+// Insert or update files (compatible with old interfaces, supports extended parameters)
 pub fn (mut dm DatabaseManager) insert_or_update_file(file_hash string, file_name string, file_size i64, file_type string, storage_type string, bucket string, object_key string) !FileInfo {
-	// 检查是否已存在相同的 file_hash 和 bucket/object_key
+	// Check if the same file_hash and bucket/object_key already exist
 	existing := dm.get_file_by_hash(file_hash) or { FileInfo{} }
 
 	if existing.file_uuid != '' && existing.bucket == bucket && existing.object_key == object_key {
-		// 更新现有记录
+		// Update existing record
 		return dm.update_file(existing.file_uuid, file_name, file_type, existing.metadata)
 	}
 
-	// 创建新记录
+	//Create new record
 	return dm.insert_file(FileInfo{
 		file_hash: file_hash
 		file_name: file_name
@@ -595,12 +595,12 @@ pub fn (mut dm DatabaseManager) insert_or_update_file(file_hash string, file_nam
 	})
 }
 
-// 简化版插入或更新文件（完全向后兼容旧接口）
+// Simplified version to insert or update files (fully backwards compatible with the old interface)
 pub fn (mut dm DatabaseManager) insert_or_update_file_simple(file_hash string, file_name string, file_size i64, file_type string) !FileInfo {
 	return dm.insert_or_update_file(file_hash, file_name, file_size, file_type, 'local', 'default', file_name)
 }
 
-// 根据 bucket 和 object_key 获取文件
+// Get files based on bucket and object_key
 pub fn (dm DatabaseManager) get_file_by_key(bucket string, object_key string) !FileInfo {
 	rows := dm.db.exec("SELECT id, file_uuid, file_hash, file_name, file_size, file_type, storage_type, bucket, object_key, created_at, updated_at, metadata FROM file_info WHERE bucket = '${bucket}' AND object_key = '${escape_sql(object_key)}'") or {
 		return error('Failed to query file info: ${err}')

@@ -4,7 +4,7 @@ import os
 import time
 import x.json2
 
-// 日志级别枚举
+// Log level enumeration
 pub enum LogLevel {
 	debug = 0
 	info  = 1
@@ -12,7 +12,7 @@ pub enum LogLevel {
 	error = 3
 }
 
-// 日志级别字符串映射
+// Log level string mapping
 const log_level_strings = {
 	LogLevel.debug: 'DEBUG'
 	LogLevel.info:  'INFO'
@@ -20,14 +20,14 @@ const log_level_strings = {
 	LogLevel.error: 'ERROR'
 }
 
-// 日志输出类型
+//Log output type
 pub enum LogOutput {
 	console
 	file
 	both
 }
 
-// 日志条目结构
+// Log entry structure
 pub struct LogEntry {
 pub mut:
 	timestamp string
@@ -41,7 +41,7 @@ pub mut:
 	request_id string
 }
 
-// 日志配置
+//Log configuration
 pub struct LoggerConfig {
 pub mut:
 	level            LogLevel = LogLevel.info
@@ -54,21 +54,21 @@ pub mut:
 	time_format      string = '2006-01-02 15:04:05'
 }
 
-// 日志器结构
+// Logger structure
 pub struct Logger {
 pub mut:
 	config LoggerConfig
 	current_file_size u64
 }
 
-// 创建新的日志器实例
+//Create a new logger instance
 pub fn new_logger(config LoggerConfig) &Logger {
 	return &Logger{
 		config: config
 	}
 }
 
-// 字符串转日志级别
+//Convert string to log level
 pub fn parse_log_level(level_str string) LogLevel {
 	match level_str.to_lower() {
 		'debug' { return LogLevel.debug }
@@ -79,43 +79,43 @@ pub fn parse_log_level(level_str string) LogLevel {
 	}
 }
 
-// 日志级别转字符串
+// Convert log level to string
 pub fn log_level_to_string(level LogLevel) string {
 	return log_level_strings[level] or { 'INFO' }
 }
 
-// 检查日志级别是否应该输出
+// Check if the log level should be output
 fn (l &Logger) should_log(level LogLevel) bool {
 	return int(level) >= int(l.config.level)
 }
 
-// 格式化时间戳
+//Format timestamp
 fn format_timestamp() string {
 	now := time.now()
 	return now.format_ss()
 }
 
-// 获取ANSI颜色代码
+// Get ANSI color code
 fn get_color_code(level LogLevel) string {
 	match level {
-		.debug { return '\033[36m' }  // 青色
-		.info { return '\033[32m' }   // 绿色
-		.warn { return '\033[33m' }   // 黄色
-		.error { return '\033[31m' }  // 红色
+		.debug { return '\033[36m' }  // cyan
+		.info { return '\033[32m' }   // green
+		.warn { return '\033[33m' }   // yellow
+		.error { return '\033[31m' }  // red
 	}
 }
 
-// 重置ANSI颜色
+//Reset ANSI colors
 const color_reset = '\033[0m'
 
-// 格式化日志消息（文本格式）
+//Format log message (text format)
 fn (l &Logger) format_text_log(entry LogEntry) string {
 	mut parts := []string{}
 	
-	// 时间戳
+	// timestamp
 	parts << '[${entry.timestamp}]'
 	
-	// 日志级别（带颜色）
+	//Log level (with color)
 	if l.config.enable_colors {
 		color := get_color_code(parse_log_level(entry.level))
 		parts << '${color}${entry.level}${color_reset}'
@@ -123,15 +123,15 @@ fn (l &Logger) format_text_log(entry LogEntry) string {
 		parts << entry.level
 	}
 	
-	// 模块信息
+	//Module information
 	if entry.module != '' {
 		parts << '[${entry.module}]'
 	}
 	
-	// 消息
+	// information
 	parts << entry.message
 	
-	// 附加字段
+	// additional fields
 	if entry.fields.len > 0 {
 		mut field_parts := []string{}
 		for key, value in entry.fields {
@@ -140,7 +140,7 @@ fn (l &Logger) format_text_log(entry LogEntry) string {
 		parts << '{${field_parts.join(', ')}}'
 	}
 	
-	// 请求ID
+	// Request ID
 	if entry.request_id != '' {
 		parts << '[req:${entry.request_id}]'
 	}
@@ -148,14 +148,14 @@ fn (l &Logger) format_text_log(entry LogEntry) string {
 	return parts.join(' ')
 }
 
-// 格式化日志消息（JSON格式）
+//Format log message (JSON format)
 fn (l &Logger) format_json_log(entry LogEntry) string {
 	return json2.encode[LogEntry](entry)
 }
 
-// 写入日志到文件
+//Write log to file
 fn (mut l Logger) write_to_file(content string) {
-	// 确保日志目录存在
+	// Make sure the log directory exists
 	log_dir := os.dir(l.config.file_path)
 	if !os.exists(log_dir) {
 		os.mkdir_all(log_dir) or {
@@ -164,7 +164,7 @@ fn (mut l Logger) write_to_file(content string) {
 		}
 	}
 	
-	// 检查文件大小，必要时轮转
+	// Check file size, rotate if necessary
 	if l.config.max_file_size > 0 {
 		if os.exists(l.config.file_path) {
 			file_size := os.file_size(l.config.file_path)
@@ -174,7 +174,7 @@ fn (mut l Logger) write_to_file(content string) {
 		}
 	}
 	
-	// 写入日志
+	//Write to log
 	mut file := os.open_append(l.config.file_path) or {
 		eprintln('无法打开日志文件: ${err}')
 		return
@@ -188,15 +188,15 @@ fn (mut l Logger) write_to_file(content string) {
 	}
 }
 
-// 轮转日志文件
+//Rotate log files
 fn (l &Logger) rotate_log_file() {
-	// 删除最旧的备份文件
+	// Delete the oldest backup file
 	oldest_backup := '${l.config.file_path}.${l.config.max_backup_files}'
 	if os.exists(oldest_backup) {
 		os.rm(oldest_backup) or {}
 	}
 	
-	// 移动现有备份文件
+	//Move existing backup files
 	for i := l.config.max_backup_files - 1; i >= 1; i-- {
 		old_file := '${l.config.file_path}.${i}'
 		new_file := '${l.config.file_path}.${i + 1}'
@@ -205,14 +205,14 @@ fn (l &Logger) rotate_log_file() {
 		}
 	}
 	
-	// 移动当前日志文件为第一个备份
+	//Move the current log file to the first backup
 	if os.exists(l.config.file_path) {
 		backup_file := '${l.config.file_path}.1'
 		os.mv(l.config.file_path, backup_file) or {}
 	}
 }
 
-// 核心日志方法
+// Core logging method
 fn (mut l Logger) log(level LogLevel, message string, mod_name string, fields map[string]string, request_id string) {
 	if !l.should_log(level) {
 		return
@@ -227,14 +227,14 @@ fn (mut l Logger) log(level LogLevel, message string, mod_name string, fields ma
 		request_id: request_id
 	}
 	
-	// 格式化日志内容
+	//Format log content
 	content := if l.config.enable_json {
 		l.format_json_log(entry)
 	} else {
 		l.format_text_log(entry)
 	}
 	
-	// 输出日志
+	//output log
 	match l.config.output {
 		.console {
 			println(content)
@@ -249,7 +249,7 @@ fn (mut l Logger) log(level LogLevel, message string, mod_name string, fields ma
 	}
 }
 
-// 公共日志方法
+//Public log method
 pub fn (mut l Logger) debug(message string) {
 	l.log(LogLevel.debug, message, '', {}, '')
 }
@@ -266,7 +266,7 @@ pub fn (mut l Logger) error(message string) {
 	l.log(LogLevel.error, message, '', {}, '')
 }
 
-// 带模块的日志方法
+// Log method with module
 pub fn (mut l Logger) debug_with_module(message string, mod_name string) {
 	l.log(LogLevel.debug, message, mod_name, {}, '')
 }
@@ -283,7 +283,7 @@ pub fn (mut l Logger) error_with_module(message string, mod_name string) {
 	l.log(LogLevel.error, message, mod_name, {}, '')
 }
 
-// 带字段的日志方法
+// Log method with fields
 pub fn (mut l Logger) debug_with_fields(message string, fields map[string]string) {
 	l.log(LogLevel.debug, message, '', fields, '')
 }
@@ -300,7 +300,7 @@ pub fn (mut l Logger) error_with_fields(message string, fields map[string]string
 	l.log(LogLevel.error, message, '', fields, '')
 }
 
-// 带请求ID的日志方法
+// Log method with request ID
 pub fn (mut l Logger) debug_with_request(message string, request_id string) {
 	l.log(LogLevel.debug, message, '', {}, request_id)
 }
@@ -317,18 +317,18 @@ pub fn (mut l Logger) error_with_request(message string, request_id string) {
 	l.log(LogLevel.error, message, '', {}, request_id)
 }
 
-// 完整的日志方法
+// Complete logging method
 pub fn (mut l Logger) log_full(level LogLevel, message string, mod_name string, fields map[string]string, request_id string) {
 	l.log(level, message, mod_name, fields, request_id)
 }
 
-// HTTP请求日志结构
+//HTTP request log structure
 pub struct RequestLog {
 pub mut:
 	method        string
 	path          string
 	status_code   int
-	response_time f64  // 毫秒
+	response_time f64  // milliseconds
 	user_agent    string
 	remote_addr   string
 	request_size  u64
@@ -336,7 +336,7 @@ pub mut:
 	request_id    string
 }
 
-// 记录HTTP请求日志
+// Record HTTP request log
 pub fn log_request(mut logger Logger, req_log RequestLog) {
 	fields := {
 		'method': req_log.method
@@ -353,14 +353,14 @@ pub fn log_request(mut logger Logger, req_log RequestLog) {
 	logger.log_full(LogLevel.info, message, 'HTTP', fields, req_log.request_id)
 }
 
-// 性能监控日志
+//Performance monitoring log
 pub fn log_performance(mut logger Logger, operation string, duration f64, details map[string]string) {
 	mut fields := {
 		'operation': operation
 		'duration': '${duration:.2f}ms'
 	}
 	
-	// 合并详细信息
+	//Merge details
 	for key, value in details {
 		fields[key] = value
 	}
@@ -369,7 +369,7 @@ pub fn log_performance(mut logger Logger, operation string, duration f64, detail
 	logger.log_full(LogLevel.info, message, 'PERF', fields, '')
 }
 
-// 错误日志（带堆栈信息）
+// Error log (with stack information)
 pub fn log_error_with_stack(mut logger Logger, message string, err_details string, mod_name string) {
 	fields := {
 		'error_details': err_details

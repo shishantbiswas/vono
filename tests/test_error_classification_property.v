@@ -5,7 +5,7 @@ import time
 
 // ============================================================================
 // Property 8: Error Classification
-// Feature: v-hono-upload-integration, Property 8: Error Classification
+// Feature: vono-upload-integration, Property 8: Error Classification
 // Validates: Requirements 9.4
 //
 // *For any* storage operation failure, the error should be correctly classified
@@ -19,15 +19,15 @@ const test_iterations = 100
 // Type definitions (copied from storage_errors.v for standalone testing)
 // ============================================================================
 
-// 存储错误类型枚举
+//Storage error type enumeration
 enum StorageErrorKind {
-	// 可重试错误 - 网络和临时性问题
+	// Retryable errors - network and temporary issues
 	network_timeout
 	service_unavailable
 	rate_limited
 	connection_reset
 	temporary_failure
-	// 不可重试错误 - 配置和权限问题
+	// Non-retryable error - configuration and permission issues
 	invalid_credentials
 	access_denied
 	bucket_not_found
@@ -40,11 +40,11 @@ enum StorageErrorKind {
 	object_already_exists
 	invalid_range
 	checksum_mismatch
-	// 其他错误
+	// other errors
 	unknown
 }
 
-// 重试尝试记录
+//Retry attempt record
 struct RetryAttempt {
 pub:
 	attempt_number int
@@ -53,7 +53,7 @@ pub:
 	delay_ms       int
 }
 
-// 存储错误结构
+//Storage error structure
 struct StorageError {
 pub:
 	kind        StorageErrorKind
@@ -68,7 +68,7 @@ pub mut:
 }
 
 
-// 判断错误是否可重试
+// Determine whether the error can be retried
 fn (e StorageError) is_retryable() bool {
 	return e.kind in [
 		.network_timeout,
@@ -79,7 +79,7 @@ fn (e StorageError) is_retryable() bool {
 	]
 }
 
-// 获取建议的重试延迟（毫秒）
+// Get the recommended retry delay (milliseconds)
 fn (e StorageError) suggested_retry_delay() int {
 	base_delay := match e.kind {
 		.rate_limited { 5000 }
@@ -92,7 +92,7 @@ fn (e StorageError) suggested_retry_delay() int {
 	return base_delay
 }
 
-// 获取错误类别描述
+// Get error category description
 fn (e StorageError) category() string {
 	if e.is_retryable() {
 		return 'retryable'
@@ -100,12 +100,12 @@ fn (e StorageError) category() string {
 	return 'non_retryable'
 }
 
-// 实现 IError 接口
+// Implement the IError interface
 fn (e StorageError) msg() string {
 	return '${e.provider}/${e.operation}: ${e.message} (kind: ${e.kind}, http_status: ${e.http_status})'
 }
 
-// 添加重试记录
+//Add retry record
 fn (mut e StorageError) add_retry_attempt(attempt_number int, error_message string, delay_ms int) {
 	e.retry_history << RetryAttempt{
 		attempt_number: attempt_number
@@ -115,7 +115,7 @@ fn (mut e StorageError) add_retry_attempt(attempt_number int, error_message stri
 	}
 }
 
-// 获取重试历史摘要
+// Get retry history summary
 fn (e StorageError) retry_summary() string {
 	if e.retry_history.len == 0 {
 		return 'No retry attempts'
@@ -127,7 +127,7 @@ fn (e StorageError) retry_summary() string {
 	return summary
 }
 
-// 创建存储错误的辅助函数
+//Create a helper function to store errors
 fn new_storage_error(kind StorageErrorKind, message string, provider string, operation string) StorageError {
 	return StorageError{
 		kind: kind
@@ -143,7 +143,7 @@ fn new_storage_error(kind StorageErrorKind, message string, provider string, ope
 
 
 // ============================================================================
-// HTTP 状态码到错误类型的映射
+// Mapping of HTTP status codes to error types
 // ============================================================================
 
 fn error_kind_from_http_status(status int) StorageErrorKind {
@@ -165,7 +165,7 @@ fn error_kind_from_http_status(status int) StorageErrorKind {
 }
 
 // ============================================================================
-// 提供者特定的错误映射
+// Provider-specific error mapping
 // ============================================================================
 
 fn map_s3_error_code(error_code string, http_status int) StorageErrorKind {
@@ -253,7 +253,7 @@ fn map_tencent_cos_error_code(error_code string, http_status int) StorageErrorKi
 
 
 // ============================================================================
-// XML 错误解析
+// XML error parsing
 // ============================================================================
 
 fn extract_error_code_from_xml(body string) string {
@@ -311,7 +311,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 生成随机字符串
+// Generate random string
 fn generate_random_string(min_len int, max_len int) string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	len := rand.int_in_range(min_len, max_len) or { min_len }
@@ -323,14 +323,14 @@ fn generate_random_string(min_len int, max_len int) string {
 	return result
 }
 
-// 生成随机提供者名称
+// Generate random provider name
 fn generate_random_provider() string {
 	providers := ['local', 's3', 'aliyun_oss', 'tencent_cos']
 	idx := rand.int_in_range(0, providers.len) or { 0 }
 	return providers[idx]
 }
 
-// 生成随机操作名称
+// Generate random operation name
 fn generate_random_operation() string {
 	operations := ['upload', 'download', 'delete', 'exists', 'head', 'list', 'copy', 'presign_url']
 	idx := rand.int_in_range(0, operations.len) or { 0 }
@@ -784,7 +784,7 @@ fn test_property_8_10_retry_history_tracking() bool {
 
 fn main() {
 	println('🚀 开始 Error Classification 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 8: Error Classification')
+	println('Feature: vono-upload-integration, Property 8: Error Classification')
 	println('Validates: Requirements 9.4')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

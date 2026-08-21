@@ -5,7 +5,7 @@ import crypto.rand
 import time
 import x.json2
 
-// 用户角色枚举
+//User role enumeration
 pub enum UserRole {
 	admin
 	manager
@@ -13,7 +13,7 @@ pub enum UserRole {
 	guest
 }
 
-// 用户结构
+//User structure
 pub struct User {
 pub:
 	id            int
@@ -26,7 +26,7 @@ pub:
 	updated_at    int
 }
 
-// 菜单项结构
+//Menu item structure
 pub struct MenuItem {
 pub:
 	id          int
@@ -43,7 +43,7 @@ mut:
 	children []MenuItem
 }
 
-// 用户会话结构
+//User session structure
 pub struct UserSession {
 pub:
 	user_id    int
@@ -52,22 +52,22 @@ pub:
 	created_at int
 }
 
-// 认证管理器
+// Authentication manager
 pub struct AuthManager {
 mut:
 	db DatabaseManager
 }
 
-// 创建认证管理器
+//Create authentication manager
 pub fn new_auth_manager(db DatabaseManager) AuthManager {
 	return AuthManager{
 		db: db
 	}
 }
 
-// 初始化认证相关表
+//Initialize authentication related table
 pub fn (mut auth AuthManager) init_tables() ! {
-	// 创建用户表
+	//Create user table
 	auth.db.db.exec('CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		username TEXT UNIQUE NOT NULL,
@@ -81,7 +81,7 @@ pub fn (mut auth AuthManager) init_tables() ! {
 		return error('Failed to create users table: $err')
 	}
 
-	// 创建菜单表
+	//Create menu table
 	auth.db.db.exec('CREATE TABLE IF NOT EXISTS menu_items (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
@@ -97,7 +97,7 @@ pub fn (mut auth AuthManager) init_tables() ! {
 		return error('Failed to create menu_items table: $err')
 	}
 
-	// 创建用户会话表
+	//Create user session table
 	auth.db.db.exec('CREATE TABLE IF NOT EXISTS user_sessions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
@@ -109,7 +109,7 @@ pub fn (mut auth AuthManager) init_tables() ! {
 		return error('Failed to create user_sessions table: $err')
 	}
 
-	// 创建索引
+	//Create index
 	auth.db.db.exec('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);') or {
 		return error('Failed to create index: $err')
 	}
@@ -124,12 +124,12 @@ pub fn (mut auth AuthManager) init_tables() ! {
 	}
 }
 
-// 密码哈希
+//Password hash
 fn hash_password(password string) string {
 	return sha256.sum(password.bytes()).hex()
 }
 
-// 生成随机令牌
+// Generate random token
 fn generate_token() string {
 	random_bytes := rand.bytes(32) or { return '' }
 	mut token := ''
@@ -139,7 +139,7 @@ fn generate_token() string {
 	return token
 }
 
-// 创建用户
+//Create user
 pub fn (mut auth AuthManager) create_user(username string, email string, password string, role UserRole) !User {
 	now := int(time.now().unix())
 	password_hash := hash_password(password)
@@ -154,7 +154,7 @@ pub fn (mut auth AuthManager) create_user(username string, email string, passwor
 		now.str(),
 	]) or { return error('Failed to create user: $err') }
 
-	// 获取插入的用户ID
+	// Get the inserted user ID
 	rows := auth.db.db.exec('SELECT last_insert_rowid()') or {
 		return error('Failed to get user ID: $err')
 	}
@@ -172,7 +172,7 @@ pub fn (mut auth AuthManager) create_user(username string, email string, passwor
 	}
 }
 
-// 用户登录
+//User login
 pub fn (mut auth AuthManager) login(username string, password string) !UserSession {
 	password_hash := hash_password(password)
 
@@ -188,12 +188,12 @@ pub fn (mut auth AuthManager) login(username string, password string) !UserSessi
 	user := rows[0]
 	user_id := user.vals[0].int()
 
-	// 生成会话令牌
+	// Generate session token
 	token := generate_token()
 	now := int(time.now().unix())
-	expires_at := now + (24 * 60 * 60) // 24小时后过期
+	expires_at := now + (24 * 60 * 60) //Expires after 24 hours
 
-	// 保存会话
+	// save session
 	auth.db.db.exec('INSERT INTO user_sessions (user_id, token, expires_at, created_at) VALUES ($user_id, "$token", $expires_at, $now)') or {
 		return error('Failed to create session: $err')
 	}
@@ -206,7 +206,7 @@ pub fn (mut auth AuthManager) login(username string, password string) !UserSessi
 	}
 }
 
-// 验证令牌
+// Verify token
 pub fn (auth AuthManager) verify_token(token string) !User {
 	rows := auth.db.db.exec('SELECT u.id, u.username, u.email, u.password_hash, u.role, u.status FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = "$token" AND s.expires_at > ${int(time.now().unix())} AND u.status = 1') or {
 		return error('Failed to verify token: $err')
@@ -238,14 +238,14 @@ pub fn (auth AuthManager) verify_token(token string) !User {
 	}
 }
 
-// 注销会话
+//Log out session
 pub fn (mut auth AuthManager) logout(token string) ! {
 	auth.db.db.exec('DELETE FROM user_sessions WHERE token = "$token"') or {
 		return error('Failed to logout: $err')
 	}
 }
 
-// 创建菜单项
+//Create menu item
 pub fn (mut auth AuthManager) create_menu_item(name string, path string, icon string, parent_id int, sort_order int, permissions []string) !MenuItem {
 	now := int(time.now().unix())
 	permissions_json := json2.encode[[]string](permissions)
@@ -258,7 +258,7 @@ pub fn (mut auth AuthManager) create_menu_item(name string, path string, icon st
 		return error('Failed to create menu item: $err')
 	}
 
-	// 获取插入的菜单ID
+	// Get the inserted menu ID
 	rows := auth.db.db.exec('SELECT last_insert_rowid()') or {
 		return error('Failed to get menu ID: $err')
 	}
@@ -278,7 +278,7 @@ pub fn (mut auth AuthManager) create_menu_item(name string, path string, icon st
 	}
 }
 
-// 获取所有菜单项
+// Get all menu items
 pub fn (auth AuthManager) get_all_menu_items() ![]MenuItem {
 	rows := auth.db.db.exec('SELECT id, name, path, icon, parent_id, sort_order, permissions, status FROM menu_items ORDER BY parent_id, sort_order') or {
 		return error('Failed to query all menu items: $err')
@@ -306,17 +306,17 @@ pub fn (auth AuthManager) get_all_menu_items() ![]MenuItem {
 	return menus
 }
 
-// 获取用户菜单
+// Get user menu
 pub fn (auth AuthManager) get_user_menus(user User) ![]MenuItem {
-	// 根据用户角色获取菜单
+	// Get menu based on user role
 	role_permissions := match user.role {
-		.admin { ['*'] } // 管理员拥有所有权限
+		.admin { ['*'] } //Administrator has all permissions
 		.manager { ['read', 'write', 'manage'] }
 		.user { ['read', 'write'] }
 		.guest { ['read'] }
 	}
 
-	// 构建权限查询条件
+	//Construct permission query conditions
 	mut permission_conditions := []string{}
 	for permission in role_permissions {
 		if permission == '*' {
@@ -353,20 +353,20 @@ pub fn (auth AuthManager) get_user_menus(user User) ![]MenuItem {
 	return menus
 }
 
-// 构建菜单树
+//Build menu tree
 pub fn (auth AuthManager) build_menu_tree(menus []MenuItem) []MenuItem {
 	mut menu_map := map[int]MenuItem{}
 	mut root_menus := []MenuItem{}
 
-	// 创建菜单映射
+	//Create menu mapping
 	for menu in menus {
 		menu_map[menu.id] = menu
 	}
 
-	// 构建树结构
+	// Build tree structure
 	for menu in menus {
 		if menu.parent_id == 0 {
-			// 根菜单
+			// root menu
 			mut root_menu := menu
 			root_menu.children = auth.get_children(menu.id, menu_map)
 			root_menus << root_menu
@@ -376,7 +376,7 @@ pub fn (auth AuthManager) build_menu_tree(menus []MenuItem) []MenuItem {
 	return root_menus
 }
 
-// 获取子菜单
+// Get submenu
 fn (auth AuthManager) get_children(parent_id int, menu_map map[int]MenuItem) []MenuItem {
 	mut children := []MenuItem{}
 
@@ -391,17 +391,17 @@ fn (auth AuthManager) get_children(parent_id int, menu_map map[int]MenuItem) []M
 	return children
 }
 
-// 检查用户权限
+// Check user permissions
 pub fn (auth AuthManager) check_permission(user User, required_permission string) bool {
 	return match user.role {
-		.admin { true } // 管理员拥有所有权限
+		.admin { true } //Administrator has all permissions
 		.manager { required_permission in ['read', 'write', 'manage'] }
 		.user { required_permission in ['read', 'write'] }
 		.guest { required_permission == 'read' }
 	}
 }
 
-// 获取菜单id（通过path）
+// Get the menu id (via path)
 pub fn (auth AuthManager) get_menu_id_by_path(path string) int {
 	rows := auth.db.db.exec('SELECT id FROM menu_items WHERE path = "$path"') or { return 0 }
 	if rows.len > 0 {

@@ -1,16 +1,16 @@
-// 高并发测试 (5000-10000 并发)
+// High concurrency test (5000-10000 concurrency)
 //
-// 使用方法:
-// 1. 启动服务器 (必须设置 ulimit): ulimit -n 65535 && ./bench_server_usockets
-// 2. 运行测试: ulimit -n 65535 && go run v-hono/tests/test_high_concurrency.go
-// 3. 单独测试某个级别: ulimit -n 65535 && go run v-hono/tests/test_high_concurrency.go 8000
+// How to use:
+// 1. Start the server (ulimit must be set): ulimit -n 65535 && ./bench_server_usockets
+// 2. Run the test: ulimit -n 65535 && go run vono/tests/test_high_concurrency.go
+// 3. Test a certain level individually: ulimit -n 65535 && go run vono/tests/test_high_concurrency.go 8000
 //
-// 重要提示:
-// - 服务器和客户端都需要设置 ulimit -n 65535
-// - 连续测试多个并发级别时，建议每次测试前重启服务器
-// - TIME_WAIT 连接会影响后续测试，建议等待 10 秒后再测试下一个级别
+// IMPORTANT NOTE:
+// - Both server and client need to set ulimit -n 65535
+// - When testing multiple concurrency levels continuously, it is recommended to restart the server before each test
+// - TIME_WAIT connection will affect subsequent tests. It is recommended to wait 10 seconds before testing the next level.
 //
-// 系统配置要求 (macOS):
+// System requirements (macOS):
 //   sudo sysctl -w kern.ipc.somaxconn=8192
 //   ulimit -n 65535
 
@@ -42,10 +42,10 @@ func main() {
 	baseURL := "http://127.0.0.1:8080/"
 	duration := 10 * time.Second
 
-	// 默认测试级别: 5000, 6000, 7000, 8000, 9000, 10000
+	//Default test levels: 5000, 6000, 7000, 8000, 9000, 10000
 	concurrencyLevels := []int{5000, 6000, 7000, 8000, 9000, 10000}
 
-	// 支持命令行参数指定单个并发级别
+	// Support command line parameters to specify a single concurrency level
 	if len(os.Args) > 1 {
 		level, err := strconv.Atoi(os.Args[1])
 		if err == nil {
@@ -54,11 +54,11 @@ func main() {
 	}
 
 	fmt.Println("╔═══════════════════════════════════════════════════════════════════════════╗")
-	fmt.Println("║              v-hono 高并发测试 (5000-10000 并发)                          ║")
+	fmt.Println("║              vono 高并发测试 (5000-10000 并发)                          ║")
 	fmt.Println("╚═══════════════════════════════════════════════════════════════════════════╝")
 	fmt.Println()
 
-	// 检查服务器是否运行
+	// Check if the server is running
 	if !checkServer(baseURL) {
 		fmt.Println("❌ 服务器未运行")
 		fmt.Println("   请先启动: ./bench_server_usockets")
@@ -77,15 +77,15 @@ func main() {
 		result := runBenchmark(baseURL, conns, duration)
 		results = append(results, result)
 
-		// 测试间隔，让系统恢复 (TIME_WAIT 连接需要时间释放)
-		// macOS TIME_WAIT 默认 15-30 秒，建议等待 60 秒
+		// Test interval to allow the system to recover (TIME_WAIT connection takes time to release)
+		// macOS TIME_WAIT defaults to 15-30 seconds, it is recommended to wait 60 seconds
 		if len(concurrencyLevels) > 1 {
 			fmt.Println("   ⏳ 等待 60 秒让系统恢复 (TIME_WAIT 连接释放)...")
 			time.Sleep(60 * time.Second)
 		}
 	}
 
-	// 输出汇总报告
+	// Output summary report
 	printSummary(results)
 }
 
@@ -126,7 +126,7 @@ func runBenchmark(baseURL string, conns int, duration time.Duration) BenchResult
 	stop := make(chan struct{})
 	start := time.Now()
 
-	// 同时启动所有连接
+	// Start all connections at the same time
 	for i := 0; i < conns; i++ {
 		wg.Add(1)
 		go func() {
@@ -166,7 +166,7 @@ func runBenchmark(baseURL string, conns int, duration time.Duration) BenchResult
 
 	elapsed := time.Since(start)
 
-	// 计算 P99
+	// Calculate P99
 	sort.Slice(latencies, func(i, j int) bool { return latencies[i] < latencies[j] })
 	p99 := int64(0)
 	if len(latencies) > 0 {
@@ -178,7 +178,7 @@ func runBenchmark(baseURL string, conns int, duration time.Duration) BenchResult
 	rps := float64(total) / elapsed.Seconds()
 	successRate := float64(success) / float64(total) * 100
 
-	// 判断测试结果
+	// Determine test results
 	status := "✅"
 	if successRate < 99.0 {
 		status = "⚠️"
@@ -235,7 +235,7 @@ func printSummary(results []BenchResult) {
 	fmt.Println()
 
 	if allPassed {
-		fmt.Println("🎉 所有高并发测试通过！v-hono uSockets 后端表现优秀！")
+		fmt.Println("🎉 所有高并发测试通过！vono uSockets 后端表现优秀！")
 	} else {
 		fmt.Println("⚠️  部分测试未达到 99% 成功率，请检查系统配置")
 		fmt.Println("   - macOS: sudo sysctl -w kern.ipc.somaxconn=8192")

@@ -1,7 +1,7 @@
 import meiseayoung.hono
 import net.http
 
-// 重定向功能测试
+// Redirect function test
 fn redirect_basic_test() bool {
 	mut c := hono.Context.new(
 		http.Request{
@@ -157,7 +157,7 @@ fn redirect_with_existing_headers_test() bool {
 	return true
 }
 
-// 测试统计结构
+//Test statistics structure
 struct TestStats {
 mut:
 	total_tests int
@@ -196,13 +196,13 @@ fn main() {
 	
 	mut stats := TestStats{}
 	
-	// 运行所有重定向测试
+	//Run all redirect tests
 	stats.run_test('基本重定向 (302)', redirect_basic_test)
 	stats.run_test('自定义状态码重定向 (301)', redirect_with_status_test)
 	stats.run_test('多种状态码测试', redirect_multiple_status_codes_test)
 	stats.run_test('相对路径重定向', redirect_relative_url_test)
 	stats.run_test('保持现有头部信息', redirect_with_existing_headers_test)
 	
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

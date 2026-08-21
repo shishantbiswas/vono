@@ -1,5 +1,5 @@
-// middleware_demo.v - 中间件使用示例
-// 本示例展示了 v-hono 框架所有内置中间件的基本用法
+// middleware_demo.v - middleware usage example
+// This example shows the basic usage of all built-in middleware of the vono framework
 module main
 
 import hono
@@ -10,102 +10,102 @@ fn main() {
 	mut app := hono.Hono.new()
 	
 	// ============================================================================
-	// 1. CORS 中间件示例
+	// 1. CORS middleware example
 	// ============================================================================
-	// 基本用法：允许所有来源
+	//Basic usage: allow all sources
 	app.use(hono.cors())
 	
-	// 高级配置示例（注释掉以避免重复）
+	// Advanced configuration example (commented out to avoid duplication)
 	// app.use(hono.cors(hono.CorsOptions{
-	//     origin: 'https://example.com'  // 只允许特定域名
-	//     credentials: true               // 允许携带凭证
-	//     max_age: 600                    // 预检请求缓存 10 分钟
+	// origin: 'https://example.com' // Only allow specific domain names
+	// credentials: true // Allow credentials to be carried
+	// max_age: 600 // Preflight request cache for 10 minutes
 	//     allow_methods: ['GET', 'POST', 'PUT', 'DELETE']
 	//     allow_headers: ['Content-Type', 'Authorization']
 	// }))
 	
 	// ============================================================================
-	// 2. 压缩中间件示例
+	// 2. Compression middleware example
 	// ============================================================================
-	// 使用 gzip 压缩（默认）
+	// Use gzip compression (default)
 	app.use(hono.gzip())
 	
-	// 或者使用 deflate 压缩
+	// Or use deflate compression
 	// app.use(hono.deflate_compress())
 	
-	// 自定义压缩配置
+	// Custom compression configuration
 	// app.use(hono.compress(hono.CompressOptions{
 	//     encoding: .gzip
-	//     threshold: 2048  // 只压缩大于 2KB 的响应
-	//     level: 9         // 最高压缩级别
+	// threshold: 2048 // Only compress responses larger than 2KB
+	// level: 9 // Highest compression level
 	// }))
 	
 	// ============================================================================
-	// 3. 安全响应头中间件示例
+	// 3. Security response header middleware example
 	// ============================================================================
 	app.use(hono.secure_headers())
 	
 	// ============================================================================
-	// 4. 请求 ID 中间件示例
+	// 4. Request ID middleware example
 	// ============================================================================
 	app.use(hono.request_id())
 	
 	// ============================================================================
-	// 5. 请求计时中间件示例
+	// 5. Request timing middleware example
 	// ============================================================================
 	app.use(hono.timing())
 	
 	// ============================================================================
-	// 6. 限流中间件示例
+	// 6. Current limiting middleware example
 	// ============================================================================
-	// 创建内存存储
+	//Create memory storage
 	store := hono.MemoryStore.new()
 	
-	// 应用限流中间件：每分钟最多 100 个请求
+	//Apply throttling middleware: up to 100 requests per minute
 	app.use(hono.rate_limiter(hono.RateLimitOptions{
 		store: store
-		window_ms: 60000  // 1 分钟
-		limit: 100        // 最多 100 个请求
-		headers: true     // 添加限流响应头
+		window_ms: 60000  // 1 minute
+		limit: 100        // Max 100 requests
+		headers: true     //Add current limiting response header
 	}))
 	
 	// ============================================================================
-	// 路由示例
+	//Routing example
 	// ============================================================================
 	
-	// 基本路由
+	//Basic routing
 	app.get('/', fn (mut c hono.Context) http.Response {
-		return c.json('{"message": "Welcome to v-hono middleware demo!"}')
+		return c.json('{"message": "Welcome to vono middleware demo!"}')
 	})
 	
-	// 获取请求信息
+	// Get request information
 	app.get('/info', fn (mut c hono.Context) http.Response {
-		// 获取请求 ID
+		// Get request ID
 		request_id := c.get('request_id') or { 'unknown' }
-		// 获取客户端 IP
+		// Get client IP
 		client_ip := c.get_client_ip()
 		
 		return c.json('{"request_id": "${request_id}", "client_ip": "${client_ip}"}')
 	})
 	
 	// ============================================================================
-	// 7. Cookie Helper 示例
+	// 7. Cookie Helper example
 	// ============================================================================
 	
-	// 设置 Cookie
+	//Set Cookie
 	app.get('/cookie/set', fn (mut c hono.Context) http.Response {
-		// 设置普通 Cookie
+		//Set normal cookies
 		hono.set_cookie(mut c, 'session_id', 'abc123', hono.CookieOptions{
 			http_only: true
-			secure: false  // 开发环境设为 false
-			max_age: 3600  // 1 小时
+			secure: false  // Set development environment to false
+			max_age: 3600  // 1 hour
 			path: '/'
 		})
 		
 		return c.json('{"message": "Cookie set successfully"}')
 	})
 	
-	// 获取 Cookie
+	// Get Cookie
 	app.get('/cookie/get', fn (mut c hono.Context) http.Response {
 		if session_id := hono.get_cookie(c, 'session_id') {
 			return c.json('{"session_id": "${session_id}"}')
@@ -113,7 +113,7 @@ fn main() {
 		return c.json('{"error": "Cookie not found"}')
 	})
 	
-	// 获取所有 Cookie
+	// Get all cookies
 	app.get('/cookie/all', fn (mut c hono.Context) http.Response {
 		cookies := hono.get_all_cookies(c)
 		mut parts := []string{}
@@ -123,13 +123,13 @@ fn main() {
 		return c.json('{${parts.join(", ")}}')
 	})
 	
-	// 删除 Cookie
+	//Delete Cookie
 	app.get('/cookie/delete', fn (mut c hono.Context) http.Response {
 		hono.delete_cookie(mut c, 'session_id')
 		return c.json('{"message": "Cookie deleted"}')
 	})
 	
-	// 签名 Cookie 示例
+	//Signed Cookie Example
 	app.get('/cookie/signed/set', fn (mut c hono.Context) http.Response {
 		secret := 'my-secret-key-for-signing'
 		hono.set_signed_cookie(mut c, 'user_data', 'user123', secret) or {
@@ -149,19 +149,19 @@ fn main() {
 	})
 	
 	// ============================================================================
-	// 8. JWT 中间件示例
+	// 8. JWT middleware example
 	// ============================================================================
 	
-	// 生成 JWT Token
+	// Generate JWT Token
 	app.post('/auth/login', fn (mut c hono.Context) http.Response {
-		// 在实际应用中，这里应该验证用户凭证
+		// In actual applications, user credentials should be verified here
 		secret := 'my-jwt-secret-key'
 		
-		// 创建 JWT payload
+		//Create JWT payload
 		payload := hono.JwtPayload{
 			sub: 'user123'
-			iss: 'v-hono-demo'
-			exp: time.now().unix() + 3600  // 1 小时后过期
+			iss: 'vono-demo'
+			exp: time.now().unix() + 3600  // Expires in 1 hour
 			iat: time.now().unix()
 			claims: {
 				'role': 'admin'
@@ -169,7 +169,7 @@ fn main() {
 			}
 		}
 		
-		// 签名 JWT
+		//Sign JWT
 		token := hono.sign_jwt(payload, secret, .hs256) or {
 			c.status(500)
 			return c.json('{"error": "Failed to generate token"}')
@@ -178,11 +178,11 @@ fn main() {
 		return c.json('{"token": "${token}"}')
 	})
 	
-	// 验证 JWT Token（手动验证示例）
+	//Verify JWT Token (manual verification example)
 	app.get('/auth/verify', fn (mut c hono.Context) http.Response {
 		secret := 'my-jwt-secret-key'
 		
-		// 从 Authorization 头获取 token
+		// Get token from Authorization header
 		auth_header := c.req.header.get_custom('Authorization') or {
 			c.status(401)
 			return c.json('{"error": "Missing Authorization header"}')
@@ -195,7 +195,7 @@ fn main() {
 		
 		token := auth_header[7..]
 		
-		// 验证 token
+		//Verify token
 		payload := hono.verify_jwt(token, secret, .hs256) or {
 			c.status(401)
 			return c.json('{"error": "Invalid token: ${err}"}')
@@ -205,32 +205,32 @@ fn main() {
 	})
 	
 	// ============================================================================
-	// 9. Bearer Auth 中间件示例（保护特定路由）
+	// 9. Bearer Auth middleware example (protecting specific routes)
 	// ============================================================================
 	
-	// 创建受保护的子应用
+	//Create a protected sub-application
 	mut protected_app := hono.Hono.new()
 	
-	// 应用 Bearer Auth 中间件
+	// Apply Bearer Auth middleware
 	protected_app.use(hono.bearer(hono.BearerAuthOptions{
-		token: 'my-api-token'  // 简单的静态 token
+		token: 'my-api-token'  // Simple static token
 		realm: 'Protected API'
 	}))
 	
 	protected_app.get('/data', fn (mut c hono.Context) http.Response {
-		// 获取已验证的 token
+		// Get the verified token
 		token := hono.get_bearer_token(c) or { 'unknown' }
 		return c.json('{"message": "Protected data", "token": "${token}"}')
 	})
 	
-	// 挂载受保护的路由
+	//Mount the protected route
 	app.route('/api', mut protected_app)
 	
 	// ============================================================================
-	// 10. 请求验证示例
+	// 10. Request verification example
 	// ============================================================================
 	
-	// JSON body 验证
+	// JSON body validation
 	app.post('/users', 
 		hono.validate_json(hono.v_object({
 			'name':  hono.v_string().required().min(2).max(50)
@@ -238,7 +238,7 @@ fn main() {
 			'age':   hono.v_int().min(0).max(150)
 		})),
 		fn (mut c hono.Context) http.Response {
-			// 获取验证后的数据
+			// Get verified data
 			data := hono.get_validated_data(c)
 			name := data['name'] or { '' }
 			email := data['email'] or { '' }
@@ -247,7 +247,7 @@ fn main() {
 		}
 	)
 	
-	// Query 参数验证
+	// Query parameter verification
 	app.get('/search',
 		hono.validate_query(hono.v_object({
 			'q':    hono.v_string().required().min(1)
@@ -263,17 +263,17 @@ fn main() {
 	)
 	
 	// ============================================================================
-	// 11. 中间件组合示例
+	// 11. Middleware combination example
 	// ============================================================================
 	
-	// 组合多个中间件
+	// Combine multiple middlewares
 	combined := hono.combine_middlewares([
 		hono.cors_middleware(),
 		hono.secure_headers(),
 		hono.timing(),
 	])
 	
-	// 创建使用组合中间件的子应用
+	//Create a sub-application using composite middleware
 	mut combined_app := hono.Hono.new()
 	combined_app.use(combined)
 	
@@ -285,10 +285,10 @@ fn main() {
 	app.route('/combined', mut combined_app)
 	
 	// ============================================================================
-	// 启动服务器
+	// Start the server
 	// ============================================================================
 	
-	println('=== v-hono Middleware Demo ===')
+	println('=== vono Middleware Demo ===')
 	println('')
 	println('Available endpoints:')
 	println('  GET  /                    - Welcome message')

@@ -2,7 +2,7 @@ module hono
 
 import time
 
-// Context LRU 缓存节点
+// Context LRU cache node
 @[heap]
 struct ContextLRUCacheNode {
 pub mut:
@@ -10,11 +10,11 @@ pub mut:
 	value      ContextRouteMatch
 	prev       &ContextLRUCacheNode = unsafe { nil }
 	next       &ContextLRUCacheNode = unsafe { nil }
-	created_at i64  // 添加创建时间戳
-	last_access i64 // 添加最后访问时间
+	created_at i64  //Add creation timestamp
+	last_access i64 //Add last access time
 }
 
-// Context LRU 缓存
+// Context LRU cache
 pub struct ContextLRUCache {
 mut:
 	capacity        int
@@ -22,12 +22,12 @@ mut:
 	cache          map[string]&ContextLRUCacheNode
 	head           &ContextLRUCacheNode = unsafe { nil }
 	tail           &ContextLRUCacheNode = unsafe { nil }
-	ttl_seconds    i64 = 3600  // TTL: 1小时，0表示不过期
-	last_cleanup   i64         // 上次清理过期条目的时间
-	cleanup_interval i64 = 300 // 清理间隔: 5分钟
+	ttl_seconds    i64 = 3600  // TTL: 1 hour, 0 means no expiration
+	last_cleanup   i64         // The time when expired entries were last cleaned
+	cleanup_interval i64 = 300 // Cleanup interval: 5 minutes
 }
 
-// ContextLRUCache 构造函数
+//ContextLRUCache constructor
 pub fn ContextLRUCache.new(capacity int) ContextLRUCache {
 	return ContextLRUCache{
 		capacity: capacity
@@ -39,7 +39,7 @@ pub fn ContextLRUCache.new(capacity int) ContextLRUCache {
 	}
 }
 
-// 创建带自定义TTL的缓存
+//Create cache with custom TTL
 pub fn ContextLRUCache.new_with_ttl(capacity int, ttl_seconds i64) ContextLRUCache {
 	return ContextLRUCache{
 		capacity: capacity
@@ -51,19 +51,19 @@ pub fn ContextLRUCache.new_with_ttl(capacity int, ttl_seconds i64) ContextLRUCac
 	}
 }
 
-// 获取缓存值
+// Get cached value
 pub fn (mut cache ContextLRUCache) get(key string) ?ContextRouteMatch {
-	// 定期清理过期条目
+	// Periodically clean up expired entries
 	cache.cleanup_expired_if_needed()
 	
 	if mut node := cache.cache[key] {
-		// 检查是否过期
+		// Check if it has expired
 		if cache.is_expired(node) {
 			cache.remove_node(mut node)
 			return none
 		}
 		
-		// 更新访问时间
+		//Update access time
 		node.last_access = time.now().unix()
 		cache.move_to_front(mut node)
 		return node.value
@@ -71,25 +71,25 @@ pub fn (mut cache ContextLRUCache) get(key string) ?ContextRouteMatch {
 	return none
 }
 
-// 设置缓存值
+//Set cache value
 pub fn (mut cache ContextLRUCache) put(key string, value ContextRouteMatch) {
-	// 定期清理过期条目
+	// Periodically clean up expired entries
 	cache.cleanup_expired_if_needed()
 	
 	if mut node := cache.cache[key] {
-		// 更新现有节点
+		// Update existing node
 		node.value = value
 		node.last_access = time.now().unix()
 		cache.move_to_front(mut node)
 		return
 	}
 	
-	// 如果超出容量，先移除最久未使用的节点
+	// If capacity is exceeded, remove the node that has not been used for the longest time first
 	if cache.size >= cache.capacity {
 		cache.remove_tail()
 	}
 	
-	// 创建新节点
+	//Create new node
 	now := time.now().unix()
 	mut new_node := &ContextLRUCacheNode{
 		key: key
@@ -103,14 +103,14 @@ pub fn (mut cache ContextLRUCache) put(key string, value ContextRouteMatch) {
 	cache.size++
 }
 
-// 移动到链表头部
+//Move to the head of the linked list
 fn (mut cache ContextLRUCache) move_to_front(mut node ContextLRUCacheNode) {
-	// 如果已经是头节点，直接返回
+	// If it is already the head node, return directly
 	if unsafe { voidptr(node) == voidptr(cache.head) } {
 		return
 	}
 	
-	// 安全地从当前位置移除
+	// Safely remove from current location
 	if node.prev != unsafe { nil } {
 		mut prev := node.prev
 		prev.next = node.next
@@ -120,16 +120,16 @@ fn (mut cache ContextLRUCache) move_to_front(mut node ContextLRUCacheNode) {
 		next.prev = node.prev
 	}
 	
-	// 如果是尾节点，更新尾指针
+	// If it is a tail node, update the tail pointer
 	if unsafe { voidptr(node) == voidptr(cache.tail) } {
 		cache.tail = node.prev
 	}
 	
-	// 添加到头部
+	//Add to header
 	cache.add_to_front(mut node)
 }
 
-// 添加到链表头部
+//Add to the head of the linked list
 fn (mut cache ContextLRUCache) add_to_front(mut node ContextLRUCacheNode) {
 	node.next = cache.head
 	node.prev = unsafe { nil }
@@ -146,32 +146,32 @@ fn (mut cache ContextLRUCache) add_to_front(mut node ContextLRUCacheNode) {
 	}
 }
 
-// 移除链表尾部（内存安全版本）
+// Remove the tail of the linked list (memory safe version)
 fn (mut cache ContextLRUCache) remove_tail() {
 	if cache.tail == unsafe { nil } {
 		return
 	}
 	
-	// 使用通用的节点移除方法
+	// Use common node removal methods
 	mut tail_node := cache.tail
 	cache.remove_node(mut tail_node)
 }
 
-// 安全移除指定节点
+// Safely remove the specified node
 fn (mut cache ContextLRUCache) remove_node(mut node ContextLRUCacheNode) {
 	if node.key == '' {
-		return // 避免移除已被清理的节点
+		return // Avoid removing nodes that have been cleaned
 	}
 	
-	// 先从哈希表中移除，避免悬空指针
+	// Remove from the hash table first to avoid dangling pointers
 	cache.cache.delete(node.key)
 	
-	// 安全更新链表指针
+	// Safely update linked list pointers
 	if node.prev != unsafe { nil } {
 		mut prev := node.prev
 		prev.next = node.next
 	} else {
-		// 这是头节点
+		// This is the head node
 		cache.head = node.next
 	}
 	
@@ -179,34 +179,34 @@ fn (mut cache ContextLRUCache) remove_node(mut node ContextLRUCacheNode) {
 		mut next := node.next
 		next.prev = node.prev
 	} else {
-		// 这是尾节点
+		// This is the tail node
 		cache.tail = node.prev
 	}
 	
-	// 彻底清理节点引用，防止内存泄漏
+	// Completely clean up node references to prevent memory leaks
 	node.prev = unsafe { nil }
 	node.next = unsafe { nil }
-	node.key = '' // 清空key作为已清理的标记
+	node.key = '' // Clear key as cleared mark
 	
-	// 更新大小计数
+	//Update size count
 	if cache.size > 0 {
 		cache.size--
 	}
 }
 
-// 获取缓存统计信息
+// Get cache statistics
 pub fn (cache ContextLRUCache) get_stats() (int, int) {
 	return cache.size, cache.capacity
 }
 
-// 获取详细的缓存统计信息
+// Get detailed cache statistics
 pub fn (mut cache ContextLRUCache) get_detailed_stats() map[string]i64 {
-	// 先清理过期条目再统计
+	// Clean up expired entries first and then count them
 	cache.cleanup_expired_if_needed()
 	
 	mut expired_count := i64(0)
 	
-	// 统计过期条目数量
+	// Count the number of expired entries
 	if cache.ttl_seconds > 0 {
 		for _, node in cache.cache {
 			if cache.is_expired(node) {
@@ -222,44 +222,44 @@ pub fn (mut cache ContextLRUCache) get_detailed_stats() map[string]i64 {
 		'ttl_seconds': cache.ttl_seconds
 		'last_cleanup': cache.last_cleanup
 		'cleanup_interval': cache.cleanup_interval
-		'memory_usage_estimate': i64(cache.size * 200) // 粗略估算，每个节点约200字节
+		'memory_usage_estimate': i64(cache.size * 200) // Rough estimate, each node is about 200 bytes
 	}
 }
 
-// 设置TTL
+//Set TTL
 pub fn (mut cache ContextLRUCache) set_ttl(ttl_seconds i64) {
 	cache.ttl_seconds = ttl_seconds
 }
 
-// 设置清理间隔
+//Set the cleaning interval
 pub fn (mut cache ContextLRUCache) set_cleanup_interval(interval_seconds i64) {
 	cache.cleanup_interval = interval_seconds
 }
 
-// 检查缓存是否健康
+// Check if the cache is healthy
 pub fn (mut cache ContextLRUCache) is_healthy() bool {
-	// 检查基本状态
+	// Check basic status
 	if cache.size == 0 {
 		return cache.head == unsafe { nil } && cache.tail == unsafe { nil } && cache.cache.len == 0
 	}
 	
-	// 检查头尾指针
+	// Check the head and tail pointers
 	if cache.head == unsafe { nil } || cache.tail == unsafe { nil } {
 		return false
 	}
 	
-	// 检查哈希表和链表大小一致
+	// Check that the size of the hash table and linked list are consistent
 	if cache.cache.len != cache.size {
 		return false
 	}
 	
-	// 检查链表完整性
+	// Check the integrity of the linked list
 	mut count := 0
 	mut current := cache.head
 	for current != unsafe { nil } {
 		count++
 		if count > cache.size {
-			return false // 检测到循环引用
+			return false // Circular reference detected
 		}
 		current = current.next
 	}
@@ -267,16 +267,16 @@ pub fn (mut cache ContextLRUCache) is_healthy() bool {
 	return count == cache.size
 }
 
-// 检查节点是否过期
+// Check if the node is expired
 fn (cache ContextLRUCache) is_expired(node &ContextLRUCacheNode) bool {
 	if cache.ttl_seconds <= 0 {
-		return false // TTL为0表示不过期
+		return false // TTL of 0 means no expiration
 	}
 	now := time.now().unix()
 	return (now - node.last_access) > cache.ttl_seconds
 }
 
-// 如果需要，清理过期条目
+// Clean up expired entries if necessary
 fn (mut cache ContextLRUCache) cleanup_expired_if_needed() {
 	now := time.now().unix()
 	if (now - cache.last_cleanup) > cache.cleanup_interval {
@@ -285,22 +285,22 @@ fn (mut cache ContextLRUCache) cleanup_expired_if_needed() {
 	}
 }
 
-// 清理所有过期条目
+// Clean up all expired entries
 fn (mut cache ContextLRUCache) cleanup_expired_entries() {
 	if cache.ttl_seconds <= 0 {
-		return // TTL为0表示不过期
+		return // TTL of 0 means no expiration
 	}
 	
 	mut expired_keys := []string{}
 	
-	// 收集过期的key
+	//Collect expired keys
 	for key, node in cache.cache {
 		if cache.is_expired(node) {
 			expired_keys << key
 		}
 	}
 	
-	// 移除过期节点
+	//Remove expired nodes
 	for key in expired_keys {
 		if mut node := cache.cache[key] {
 			cache.remove_node(mut node)
@@ -308,28 +308,28 @@ fn (mut cache ContextLRUCache) cleanup_expired_entries() {
 	}
 }
 
-// 强制清理所有过期条目（公开方法）
+// Force cleanup of all expired entries (public method)
 pub fn (mut cache ContextLRUCache) force_cleanup_expired() {
 	cache.cleanup_expired_entries()
 }
 
-// 安全清理所有缓存（内存安全版本）
+// Safely clear all caches (memory safe version)
 pub fn (mut cache ContextLRUCache) clear() {
-	// 逐个安全清理节点引用
+	// Safely clean up node references one by one
 	mut current := cache.head
 	for current != unsafe { nil } {
 		mut next := current.next
 		
-		// 彻底清理当前节点的所有引用
+		// Completely clean up all references to the current node
 		current.prev = unsafe { nil }
 		current.next = unsafe { nil }
 		current.key = ''
-		// 清空 value 中的数据（如果需要的话）
+		// Clear the data in value (if necessary)
 		
 		current = next
 	}
 	
-	// 清空哈希表和指针
+	// Clear the hash table and pointers
 	cache.cache.clear()
 	cache.head = unsafe { nil }
 	cache.tail = unsafe { nil }
@@ -339,13 +339,13 @@ pub fn (mut cache ContextLRUCache) clear() {
 
 
 // ============================================================================
-// 高性能路由缓存 - 专为路由匹配优化
+// High-performance route cache - optimized for route matching
 // ============================================================================
-// 特点：
-// 1. 无 TTL 检查（路由不会过期）
-// 2. 无 LRU 移动（简单 map 查找）
-// 3. 固定大小，满了就清空重建
-// 4. 零开销的 get 操作
+// Features:
+// 1. No TTL check (route will not expire)
+// 2. No LRU movement (simple map lookup)
+// 3. Fixed size, empty and rebuild when full.
+// 4. Zero-overhead get operation
 
 pub struct FastRouteCache {
 mut:
@@ -362,7 +362,7 @@ pub fn FastRouteCache.new(capacity int) FastRouteCache {
 	}
 }
 
-// 快速获取 - 零开销
+// Fast retrieval - zero overhead
 @[inline]
 pub fn (cache &FastRouteCache) get(key string) ?ContextRouteMatch {
 	if !cache.enabled {
@@ -374,30 +374,30 @@ pub fn (cache &FastRouteCache) get(key string) ?ContextRouteMatch {
 	return none
 }
 
-// 快速设置
+//Quick settings
 @[inline]
 pub fn (mut cache FastRouteCache) put(key string, value ContextRouteMatch) {
 	if !cache.enabled {
 		return
 	}
-	// 如果满了，清空重建（比 LRU 淘汰更快）
+	// If full, flush and rebuild (faster than LRU eviction)
 	if cache.cache.len >= cache.capacity {
 		cache.cache.clear()
 	}
 	cache.cache[key] = value
 }
 
-// 获取统计
+// Get statistics
 pub fn (cache &FastRouteCache) get_stats() (int, int) {
 	return cache.cache.len, cache.capacity
 }
 
-// 清空缓存
+// clear cache
 pub fn (mut cache FastRouteCache) clear() {
 	cache.cache.clear()
 }
 
-// 启用/禁用
+// enable/disable
 pub fn (mut cache FastRouteCache) set_enabled(enabled bool) {
 	cache.enabled = enabled
 	if !enabled {

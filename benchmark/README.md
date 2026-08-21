@@ -1,20 +1,20 @@
-# V-Hono Benchmark
+# vono Benchmark
 
-Performance benchmarks for V-Hono web framework.
+Performance benchmarks for vono web framework.
 
 ## Framework Comparison (500 connections, 100K requests)
 
 | Framework | RPS | Errors | Avg Latency | P50 | P95 | P99 |
 |-----------|-----|--------|-------------|-----|-----|-----|
-| **v-hono (uSockets)** | **20,231** | **0** | **24.62ms** | **23.65ms** | **33.82ms** | **57.29ms** |
-| v-hono (picoev) | 16,177 | 0 | 30.75ms | 26.25ms | 35.37ms | 111.38ms |
+| **vono (uSockets)** | **20,231** | **0** | **24.62ms** | **23.65ms** | **33.82ms** | **57.29ms** |
+| vono (picoev) | 16,177 | 0 | 30.75ms | 26.25ms | 35.37ms | 111.38ms |
 | veb (V官方) | 7,278 | 772 | 68.06ms | 55.79ms | 71.62ms | 98.90ms |
 
 ### Performance Summary
 
-- **v-hono (uSockets) vs veb**: **2.78x faster**, zero errors
-- **v-hono (uSockets) vs picoev**: **25% faster**, better P99 latency
-- **v-hono (picoev) vs veb**: **2.22x faster**, zero errors
+- **vono (uSockets) vs veb**: **2.78x faster**, zero errors
+- **vono (uSockets) vs picoev**: **25% faster**, better P99 latency
+- **vono (picoev) vs veb**: **2.22x faster**, zero errors
 
 ## Running Benchmarks
 

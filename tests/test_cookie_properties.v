@@ -3,7 +3,7 @@ import net.http
 import rand
 import time
 
-// Cookie Helper 属性测试
+// Cookie Helper attribute test
 // Property-Based Testing for Cookie functionality
 
 const test_iterations = 100
@@ -41,7 +41,7 @@ fn (stats PropertyTestStats) print_summary() {
 	}
 }
 
-// 创建带 Cookie 头的测试 Context
+//Create a test Context with Cookie header
 fn create_context_with_cookies(cookie_header string) hono.Context {
 	mut headers := http.new_header()
 	if cookie_header.len > 0 {
@@ -56,7 +56,7 @@ fn create_context_with_cookies(cookie_header string) hono.Context {
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 创建空的测试 Context
+//Create an empty test Context
 fn create_empty_context() hono.Context {
 	req := http.Request{
 		method: .get
@@ -66,7 +66,7 @@ fn create_empty_context() hono.Context {
 }
 
 
-// 生成随机的 Cookie 名称（只包含有效字符）
+// Generate a random cookie name (containing only valid characters)
 fn generate_random_cookie_name() string {
 	valid_chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'
 	len := rand.int_in_range(1, 20) or { 5 }
@@ -78,9 +78,9 @@ fn generate_random_cookie_name() string {
 	return name
 }
 
-// 生成随机的 Cookie 值（不包含分号和等号）
+// Generate random cookie values ​​(excluding semicolons and equal signs)
 fn generate_random_cookie_value() string {
-	// 使用安全的字符集，避免特殊字符
+	// Use a safe character set and avoid special characters
 	valid_chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.'
 	len := rand.int_in_range(1, 50) or { 10 }
 	mut value := ''
@@ -91,7 +91,7 @@ fn generate_random_cookie_value() string {
 	return value
 }
 
-// 生成随机的密钥
+// Generate a random key
 fn generate_random_secret() string {
 	chars := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
 	len := rand.int_in_range(16, 64) or { 32 }
@@ -118,17 +118,17 @@ fn test_property_3_cookie_roundtrip() bool {
 		name := generate_random_cookie_name()
 		value := generate_random_cookie_value()
 		
-		// 设置 Cookie
+		//Set Cookie
 		mut ctx := create_empty_context()
 		hono.set_cookie(mut ctx, name, value)
 		
-		// 获取 Set-Cookie 头中的值
+		// Get the value in the Set-Cookie header
 		set_cookie_header := ctx.headers['Set-Cookie'] or {
 			println('  Iteration ${i}: Failed to get Set-Cookie header')
 			return false
 		}
 		
-		// 提取 Cookie 值
+		//Extract cookie value
 		mut cookie_value := ''
 		parts := set_cookie_header.split(';')
 		if parts.len > 0 {
@@ -140,10 +140,10 @@ fn test_property_3_cookie_roundtrip() bool {
 			cookie_value = name_value[eq_pos + 1..]
 		}
 		
-		// 创建带 Cookie 的 Context 来验证
+		//Create a Context with Cookie to verify
 		verify_ctx := create_context_with_cookies('${name}=${cookie_value}')
 		
-		// 获取 Cookie 并验证
+		// Get Cookie and verify
 		retrieved := hono.get_cookie(verify_ctx, name) or {
 			println('  Iteration ${i}: Failed to get cookie')
 			return false
@@ -175,20 +175,20 @@ fn test_property_4_signed_cookie_roundtrip() bool {
 		value := generate_random_cookie_value()
 		secret := generate_random_secret()
 		
-		// 设置签名 Cookie
+		// Set signed cookie
 		mut ctx := create_empty_context()
 		hono.set_signed_cookie(mut ctx, name, value, secret) or {
 			println('  Iteration ${i}: Failed to set signed cookie: ${err}')
 			return false
 		}
 		
-		// 获取 Set-Cookie 头中的值
+		// Get the value in the Set-Cookie header
 		set_cookie_header := ctx.headers['Set-Cookie'] or {
 			println('  Iteration ${i}: Failed to get Set-Cookie header')
 			return false
 		}
 		
-		// 提取 Cookie 值（包含签名）
+		//Extract Cookie value (including signature)
 		mut cookie_value := ''
 		parts := set_cookie_header.split(';')
 		if parts.len > 0 {
@@ -200,10 +200,10 @@ fn test_property_4_signed_cookie_roundtrip() bool {
 			cookie_value = name_value[eq_pos + 1..]
 		}
 		
-		// 创建带签名 Cookie 的 Context 来验证
+		//Create a Context with signed cookie for verification
 		verify_ctx := create_context_with_cookies('${name}=${cookie_value}')
 		
-		// 获取并验证签名 Cookie
+		// Get and verify the signed cookie
 		retrieved := hono.get_signed_cookie(verify_ctx, name, secret) or {
 			println('  Iteration ${i}: Failed to get signed cookie: ${err}')
 			return false
@@ -234,20 +234,20 @@ fn test_property_5_signed_cookie_tamper_detection() bool {
 		value := generate_random_cookie_value()
 		secret := generate_random_secret()
 		
-		// 设置签名 Cookie
+		// Set signed cookie
 		mut ctx := create_empty_context()
 		hono.set_signed_cookie(mut ctx, name, value, secret) or {
 			println('  Iteration ${i}: Failed to set signed cookie: ${err}')
 			return false
 		}
 		
-		// 获取 Set-Cookie 头中的值
+		// Get the value in the Set-Cookie header
 		set_cookie_header := ctx.headers['Set-Cookie'] or {
 			println('  Iteration ${i}: Failed to get Set-Cookie header')
 			return false
 		}
 		
-		// 提取 Cookie 值（包含签名）
+		//Extract Cookie value (including signature)
 		mut cookie_value := ''
 		parts := set_cookie_header.split(';')
 		if parts.len > 0 {
@@ -259,19 +259,19 @@ fn test_property_5_signed_cookie_tamper_detection() bool {
 			cookie_value = name_value[eq_pos + 1..]
 		}
 		
-		// 篡改 Cookie 值（修改第一个字符）
+		// Tamper with Cookie value (modify the first character)
 		if cookie_value.len > 1 {
-			// 找到签名分隔符
+			// Find the signature delimiter
 			dot_pos := cookie_value.last_index('.') or {
 				println('  Iteration ${i}: No signature separator found')
 				return false
 			}
 			
-			// 篡改值部分
+			// Tamper with the value part
 			original_value_part := cookie_value[..dot_pos]
 			signature_part := cookie_value[dot_pos..]
 			
-			// 修改值的第一个字符
+			//Modify the first character of the value
 			mut tampered_value := ''
 			if original_value_part.len > 0 {
 				first_char := original_value_part[0]
@@ -281,10 +281,10 @@ fn test_property_5_signed_cookie_tamper_detection() bool {
 				tampered_value = 'x' + signature_part
 			}
 			
-			// 创建带篡改 Cookie 的 Context
+			//Create a Context with tampered cookies
 			verify_ctx := create_context_with_cookies('${name}=${tampered_value}')
 			
-			// 验证应该失败
+			// validation should fail
 			if _ := hono.get_signed_cookie(verify_ctx, name, secret) {
 				println('  Iteration ${i}: Tampered cookie was accepted (should have been rejected)')
 				return false
@@ -302,7 +302,7 @@ fn main() {
 
 	mut stats := PropertyTestStats{}
 
-	// 运行属性测试
+	//Run property tests
 	// Feature: builtin-middleware, Property 3: Cookie Round-Trip Consistency
 	// Validates: Requirements 2.1, 2.3
 	stats.run_property_test('Property 3: Cookie Round-Trip Consistency', test_property_3_cookie_roundtrip)
@@ -315,6 +315,6 @@ fn main() {
 	// Validates: Requirements 2.9
 	stats.run_property_test('Property 5: Signed Cookie Tamper Detection', test_property_5_signed_cookie_tamper_detection)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

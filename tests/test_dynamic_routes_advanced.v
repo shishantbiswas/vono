@@ -4,25 +4,25 @@ import net.http
 fn main() {
 	println('=== 高级动态路由测试用例 ===')
 	
-	// 测试1: 复杂嵌套参数路由
+	//Test 1: Complex nested parameter routing
 	test_complex_nested_routes()
 	
-	// 测试2: RESTful API 路由模式
+	//Test 2: RESTful API routing mode
 	test_restful_api_patterns()
 	
-	// 测试3: 版本化API路由
+	//Test 3: Versioned API routing
 	test_versioned_api_routes()
 	
-	// 测试4: 文件路径路由
+	//Test 4: File path routing
 	test_file_path_routes()
 	
-	// 测试5: 多语言路由
+	//Test 5: Multi-language routing
 	test_multilingual_routes()
 	
-	// 测试6: 子域名路由模拟
+	//Test 6: Subdomain name routing simulation
 	test_subdomain_simulation()
 	
-	// 测试7: 动态中间件路由
+	//Test 7: Dynamic middleware routing
 	test_dynamic_middleware_routes()
 	
 	println('✅ 高级动态路由测试完成')
@@ -33,32 +33,32 @@ fn test_complex_nested_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 复杂嵌套路由定义
+	// Complex nested route definition
 	complex_routes := [
-		// 电商平台路由
+		// E-commerce platform routing
 		'/shop/:region/:city/stores/:store_id/products/:category/:product_id',
 		'/shop/:region/:city/stores/:store_id/orders/:order_id/items/:item_id',
 		'/shop/:region/:city/stores/:store_id/reviews/:review_id/replies/:reply_id',
 		
-		// 社交媒体路由
+		// social media routing
 		'/social/:platform/users/:user_id/posts/:post_id/comments/:comment_id/likes',
 		'/social/:platform/groups/:group_id/events/:event_id/attendees/:user_id',
 		'/social/:platform/pages/:page_id/posts/:post_id/shares/:share_id',
 		
-		// 企业管理路由
+		//Enterprise management routing
 		'/enterprise/:org_id/departments/:dept_id/teams/:team_id/members/:member_id',
 		'/enterprise/:org_id/projects/:project_id/tasks/:task_id/subtasks/:subtask_id',
 		'/enterprise/:org_id/budgets/:budget_id/categories/:category_id/items/:item_id'
 	]
 	
-	// 添加路由
+	//Add route
 	for route in complex_routes {
 		app.get(route, fn (mut c hono.Context) http.Response {
 			return c.text('Complex route response')
 		})
 	}
 	
-	// 测试路径
+	// test path
 	test_cases := [
 		{
 			'route': '/shop/:region/:city/stores/:store_id/products/:category/:product_id'
@@ -80,7 +80,7 @@ fn test_complex_nested_routes() {
 	mut success_count := 0
 	for test_case in test_cases {
 		if match_result := app.fast_router.match_route('GET', test_case['path']) {
-			// 验证参数提取
+			// Verify parameter extraction
 			mut param_check_passed := true
 			expected_params := test_case['expected_params'].split(',')
 			
@@ -121,34 +121,34 @@ fn test_restful_api_patterns() {
 	
 	mut app := hono.Hono.new()
 	
-	// RESTful 资源路由
+	// RESTful resource routing
 	restful_patterns := [
-		// 用户资源
-		'/api/users',                           // GET: 列表, POST: 创建
-		'/api/users/:id',                       // GET: 详情, PUT: 更新, DELETE: 删除
-		'/api/users/:id/profile',               // GET: 用户资料
-		'/api/users/:id/settings',              // GET/PUT: 用户设置
+		//User resources
+		'/api/users',                           // GET: list, POST: create
+		'/api/users/:id',                       // GET: details, PUT: update, DELETE: delete
+		'/api/users/:id/profile',               // GET: User information
+		'/api/users/:id/settings',              // GET/PUT: User settings
 		
-		// 嵌套资源
-		'/api/users/:user_id/posts',            // GET: 用户文章列表, POST: 创建文章
-		'/api/users/:user_id/posts/:post_id',   // GET: 文章详情, PUT: 更新, DELETE: 删除
-		'/api/users/:user_id/posts/:post_id/comments',  // GET: 评论列表, POST: 添加评论
-		'/api/users/:user_id/posts/:post_id/comments/:comment_id',  // GET/PUT/DELETE: 评论操作
+		// Nested resources
+		'/api/users/:user_id/posts',            // GET: User article list, POST: Create article
+		'/api/users/:user_id/posts/:post_id',   // GET: article details, PUT: update, DELETE: delete
+		'/api/users/:user_id/posts/:post_id/comments',  // GET: comment list, POST: add comment
+		'/api/users/:user_id/posts/:post_id/comments/:comment_id',  // GET/PUT/DELETE: comment operation
 		
-		// 关系资源
-		'/api/users/:user_id/followers',        // GET: 关注者列表
-		'/api/users/:user_id/following',        // GET: 关注列表
-		'/api/users/:user_id/follow/:target_id', // POST: 关注, DELETE: 取消关注
+		//Relationship resources
+		'/api/users/:user_id/followers',        // GET: Follower list
+		'/api/users/:user_id/following',        // GET: Watchlist
+		'/api/users/:user_id/follow/:target_id', // POST: Follow, DELETE: Unfollow
 		
-		// 搜索和过滤
-		'/api/search/users/:query',             // GET: 搜索用户
-		'/api/search/posts/:query',             // GET: 搜索文章
-		'/api/filter/posts/:category/:tag',     // GET: 按分类和标签过滤
+		//Search and filter
+		'/api/search/users/:query',             // GET: Search for users
+		'/api/search/posts/:query',             // GET: Search for articles
+		'/api/filter/posts/:category/:tag',     // GET: Filter by category and tag
 	]
 	
-	// 添加所有RESTful路由
+	//Add all RESTful routes
 	for pattern in restful_patterns {
-		// 模拟不同HTTP方法
+		// Simulate different HTTP methods
 		app.get(pattern, fn (mut c hono.Context) http.Response {
 			return c.text('GET response')
 		})
@@ -163,7 +163,7 @@ fn test_restful_api_patterns() {
 		})
 	}
 	
-	// 测试RESTful操作
+	// Test RESTful operations
 	restful_tests := [
 		{
 			'method': 'GET'
@@ -215,28 +215,28 @@ fn test_versioned_api_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 版本化API路由
+	// Versioned API routing
 	versioned_routes := [
-		// 版本1 API
+		// Version 1 API
 		'/api/v1/users/:id',
 		'/api/v1/posts/:id',
 		'/api/v1/auth/login',
 		
-		// 版本2 API (向后兼容)
+		// Version 2 API (backwards compatible)
 		'/api/v2/users/:id',
 		'/api/v2/users/:id/profile',
 		'/api/v2/posts/:id',
 		'/api/v2/posts/:id/analytics',
 		'/api/v2/auth/oauth/:provider',
 		
-		// 版本3 API (最新)
+		// Version 3 API (latest)
 		'/api/v3/users/:id',
 		'/api/v3/users/:id/preferences',
 		'/api/v3/posts/:id',
 		'/api/v3/posts/:id/engagement',
 		'/api/v3/auth/sso/:provider/:tenant',
 		
-		// 通用版本路由
+		//Universal version routing
 		'/api/:version/health',
 		'/api/:version/status',
 		'/api/:version/metrics/:metric_type'
@@ -248,7 +248,7 @@ fn test_versioned_api_routes() {
 		})
 	}
 	
-	// 版本兼容性测试
+	//Version compatibility testing
 	version_tests := [
 		{
 			'path': '/api/v1/users/123'
@@ -275,7 +275,7 @@ fn test_versioned_api_routes() {
 	mut version_success := 0
 	for test in version_tests {
 		if match_result := app.fast_router.match_route('GET', test['path']) {
-			// 检查版本参数
+			// Check version parameters
 			if version := match_result.params['version'] {
 				if version == test['expected_version'] {
 					version_success++
@@ -284,7 +284,7 @@ fn test_versioned_api_routes() {
 					println('  ❌ ${test['path']} - 版本不匹配: 期望${test['expected_version']}, 实际${version}')
 				}
 			} else {
-				// 固定版本路由
+				// Fixed version routing
 				if test['path'].contains(test['expected_version']) {
 					version_success++
 					println('  ✅ ${test['path']} - 固定版本${test['expected_version']}')
@@ -303,30 +303,30 @@ fn test_file_path_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 文件系统路由
+	//File system routing
 	file_routes := [
-		// 基础文件路由
+		//Basic file routing
 		'/files/:filename',
 		'/files/:category/:filename',
 		'/files/:year/:month/:filename',
 		'/files/:year/:month/:day/:filename',
 		
-		// 用户文件路由
+		// User file routing
 		'/users/:user_id/files/:filename',
 		'/users/:user_id/files/:folder/:filename',
 		'/users/:user_id/files/:folder/:subfolder/:filename',
 		
-		// 项目文件路由
+		//Project file routing
 		'/projects/:project_id/files/:path/:filename',
 		'/projects/:project_id/versions/:version/files/:filename',
 		'/projects/:project_id/branches/:branch/files/:path/:filename',
 		
-		// 媒体文件路由
+		//Media file routing
 		'/media/:type/:resolution/:filename',
 		'/media/:type/:year/:month/:day/:filename',
 		'/media/thumbnails/:size/:filename',
 		
-		// 文档路由
+		// Document routing
 		'/docs/:language/:category/:filename',
 		'/docs/:version/:language/:section/:filename'
 	]
@@ -337,7 +337,7 @@ fn test_file_path_routes() {
 		})
 	}
 	
-	// 文件路径测试用例
+	//File path test case
 	file_tests := [
 		{
 			'path': '/files/document.pdf'
@@ -412,30 +412,30 @@ fn test_multilingual_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 多语言路由
+	//Multi-language routing
 	multilingual_routes := [
-		// 基础多语言路由
+		//Basic multi-language routing
 		'/:lang/home',
 		'/:lang/about',
 		'/:lang/contact',
 		
-		// 多语言内容路由
+		//Multi-language content routing
 		'/:lang/articles/:id',
 		'/:lang/articles/:category/:slug',
 		'/:lang/products/:id',
 		'/:lang/products/:category/:product_id',
 		
-		// 多语言用户路由
+		//Multi-language user routing
 		'/:lang/users/:id/profile',
 		'/:lang/users/:id/settings',
 		'/:lang/auth/login',
 		'/:lang/auth/register',
 		
-		// 多语言API路由
+		//Multi-language API routing
 		'/api/:lang/search/:query',
 		'/api/:lang/translate/:from/:to/:text',
 		
-		// 地区化路由
+		// Regional routing
 		'/:country/:lang/stores',
 		'/:country/:lang/stores/:store_id',
 		'/:country/:lang/checkout/:step'
@@ -447,7 +447,7 @@ fn test_multilingual_routes() {
 		})
 	}
 	
-	// 多语言测试用例
+	//Multi-language test cases
 	multilingual_tests := [
 		{
 			'path': '/en/home'
@@ -488,7 +488,7 @@ fn test_multilingual_routes() {
 		if match_result := app.fast_router.match_route('GET', test['path']) {
 			mut params_correct := true
 			
-			// 检查语言参数
+			// Check language parameters
 			if expected_lang := test['expected_lang'] {
 				if actual_lang := match_result.params['lang'] {
 					if actual_lang != expected_lang {
@@ -499,7 +499,7 @@ fn test_multilingual_routes() {
 				}
 			}
 			
-			// 检查其他参数
+			// Check other parameters
 			test_params := ['expected_category', 'expected_slug', 'expected_id', 'expected_query', 'expected_country', 'expected_store_id', 'expected_step']
 			param_names := ['category', 'slug', 'id', 'query', 'country', 'store_id', 'step']
 			
@@ -537,29 +537,29 @@ fn test_subdomain_simulation() {
 	
 	mut app := hono.Hono.new()
 	
-	// 模拟子域名路由 (通过路径前缀)
+	// Simulate subdomain routing (via path prefix)
 	subdomain_routes := [
-		// API子域名
+		//API subdomain name
 		'/api.example.com/v1/users/:id',
 		'/api.example.com/v1/posts/:id',
 		'/api.example.com/health',
 		
-		// 管理子域名
+		//Manage subdomain names
 		'/admin.example.com/dashboard',
 		'/admin.example.com/users/:id',
 		'/admin.example.com/settings/:section',
 		
-		// 用户子域名
+		//User subdomain name
 		'/:username.example.com/profile',
 		'/:username.example.com/posts',
 		'/:username.example.com/posts/:post_id',
 		
-		// 多租户子域名
+		//Multi-tenant subdomain name
 		'/:tenant.app.com/dashboard',
 		'/:tenant.app.com/users/:user_id',
 		'/:tenant.app.com/projects/:project_id',
 		
-		// 地区子域名
+		//Regional subdomain name
 		'/:region.shop.com/products',
 		'/:region.shop.com/products/:category',
 		'/:region.shop.com/stores/:store_id'
@@ -571,7 +571,7 @@ fn test_subdomain_simulation() {
 		})
 	}
 	
-	// 子域名测试用例
+	// Subdomain name test case
 	subdomain_tests := [
 		{
 			'path': '/api.example.com/v1/users/123'
@@ -607,7 +607,7 @@ fn test_subdomain_simulation() {
 		if match_result := app.fast_router.match_route('GET', test['path']) {
 			mut params_correct := true
 			
-			// 检查参数
+			// Check parameters
 			if expected_id := test['expected_id'] {
 				if actual_id := match_result.params['id'] {
 					if actual_id != expected_id {
@@ -697,29 +697,29 @@ fn test_dynamic_middleware_routes() {
 	
 	mut app := hono.Hono.new()
 	
-	// 需要不同中间件的路由
+	//Routes that require different middleware
 	middleware_routes := [
-		// 需要认证的路由
+		//Routes that require authentication
 		'/auth/profile/:id',
 		'/auth/settings/:section',
 		'/auth/admin/:action',
 		
-		// 需要权限检查的路由
+		//Routes that require permission checking
 		'/protected/users/:id/edit',
 		'/protected/posts/:id/delete',
 		'/protected/admin/:resource/:action',
 		
-		// 需要限流的路由
+		//Routes that require current limiting
 		'/rate-limited/api/:endpoint',
 		'/rate-limited/upload/:type',
 		'/rate-limited/search/:query',
 		
-		// 需要缓存的路由
+		//Routes that need to be cached
 		'/cached/articles/:id',
 		'/cached/products/:category/:id',
 		'/cached/static/:resource',
 		
-		// 需要日志记录的路由
+		//Routes that require logging
 		'/logged/transactions/:id',
 		'/logged/audit/:action/:resource',
 		'/logged/security/:event/:details'
@@ -731,7 +731,7 @@ fn test_dynamic_middleware_routes() {
 		})
 	}
 	
-	// 中间件路由测试
+	// Middleware routing test
 	middleware_tests := [
 		{
 			'path': '/auth/profile/user123'
@@ -771,7 +771,7 @@ fn test_dynamic_middleware_routes() {
 		if match_result := app.fast_router.match_route('GET', test['path']) {
 			mut params_correct := true
 			
-			// 验证参数提取
+			// Verify parameter extraction
 			if expected_id := test['expected_id'] {
 				if actual_id := match_result.params['id'] {
 					if actual_id != expected_id {

@@ -9,7 +9,7 @@ import net.urllib
 // ============================================================================
 // Property 1: Upload-Download Round Trip (S3)
 // Property 4: Presigned URL Validity (S3)
-// Feature: v-hono-upload-integration, Property 1 & 4
+// Feature: vono-upload-integration, Property 1 & 4
 // Validates: Requirements 3.4, 3.5
 //
 // Since we cannot test against a real S3 server without credentials,
@@ -741,7 +741,7 @@ fn test_property_7_presigned_url_methods() bool {
 
 fn main() {
 	println('🚀 开始 S3 Storage 属性测试...')
-	println('Feature: v-hono-upload-integration, Property 1 & 4: Upload-Download Round Trip (S3) & Presigned URL Validity')
+	println('Feature: vono-upload-integration, Property 1 & 4: Upload-Download Round Trip (S3) & Presigned URL Validity')
 	println('Validates: Requirements 3.4, 3.5')
 	println('每个属性测试运行 ${test_iterations} 次迭代\n')
 

@@ -5,16 +5,16 @@ import net.http
 fn main() {
 	println('=== 快速路由器性能基准测试 ===')
 	
-	// 测试1: 单路由性能对比
+	//Test 1: Single route performance comparison
 	test_single_route_performance()
 	
-	// 测试2: 多路由性能对比
+	//Test 2: Multi-routing performance comparison
 	test_multiple_routes_performance()
 	
-	// 测试3: 大规模路由性能对比
+	//Test 3: Large-scale routing performance comparison
 	test_large_scale_performance()
 	
-	// 测试4: 缓存效果对比
+	//Test 4: Cache effect comparison
 	test_cache_effectiveness()
 	
 	println('✅ 快速路由器基准测试完成')
@@ -26,7 +26,7 @@ fn test_single_route_performance() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// 创建原始路由器
+	//Create original router
 	mut old_router := hono.ContextHybridRouter.new()
 	old_handler := hono.ContextHandler{
 		path: route_path
@@ -36,7 +36,7 @@ fn test_single_route_performance() {
 	}
 	old_router.add_route('GET', old_handler, '')
 	
-	// 创建快速路由器
+	//Create a fast router
 	mut fast_router := hono.FastRouter.new()
 	fast_handler := hono.ContextHandler{
 		path: route_path
@@ -51,7 +51,7 @@ fn test_single_route_performance() {
 	
 	iterations := 10000
 	
-	// 测试原始路由器（第一次匹配）
+	// Test the original router (first match)
 	old_router.clear_cache()
 	old_router.clear_regex_cache()
 	
@@ -66,7 +66,7 @@ fn test_single_route_performance() {
 	}
 	old_first_time := time.since(start_time1)
 	
-	// 测试快速路由器（第一次匹配）
+	// Test fast router (first match)
 	fast_router.clear_cache()
 	
 	start_time2 := time.now()
@@ -98,7 +98,7 @@ fn test_single_route_performance() {
 		}
 	}
 	
-	// 测试缓存匹配性能
+	//Test cache matching performance
 	start_time3 := time.now()
 	mut old_cache_matches := 0
 	for _ in 0 .. iterations {
@@ -140,7 +140,7 @@ fn test_single_route_performance() {
 fn test_multiple_routes_performance() {
 	println('\n📊 多路由性能对比...')
 	
-	// 定义测试路由
+	//Define test route
 	test_routes := [
 		{
 			'route': '/users/:id'
@@ -164,7 +164,7 @@ fn test_multiple_routes_performance() {
 		}
 	]
 	
-	// 创建原始路由器
+	//Create original router
 	mut old_router := hono.ContextHybridRouter.new()
 	for route_info in test_routes {
 		handler := hono.ContextHandler{
@@ -176,7 +176,7 @@ fn test_multiple_routes_performance() {
 		old_router.add_route('GET', handler, '')
 	}
 	
-	// 创建快速路由器
+	//Create a fast router
 	mut fast_router := hono.FastRouter.new()
 	for route_info in test_routes {
 		handler := hono.ContextHandler{
@@ -193,7 +193,7 @@ fn test_multiple_routes_performance() {
 	
 	iterations := 5000
 	
-	// 测试原始路由器
+	//Test the original router
 	old_router.clear_cache()
 	old_router.clear_regex_cache()
 	
@@ -208,7 +208,7 @@ fn test_multiple_routes_performance() {
 	}
 	old_time := time.since(start_time1)
 	
-	// 测试快速路由器
+	//Test fast router
 	fast_router.clear_cache()
 	
 	start_time2 := time.now()
@@ -241,7 +241,7 @@ fn test_multiple_routes_performance() {
 		}
 	}
 	
-	// 显示统计信息
+	// Display statistics
 	old_static, old_dynamic := old_router.get_all_routes()
 	fast_static, fast_dynamic := fast_router.get_all_routes()
 	
@@ -253,7 +253,7 @@ fn test_multiple_routes_performance() {
 fn test_large_scale_performance() {
 	println('\n📊 大规模路由性能对比...')
 	
-	// 创建大量路由
+	//Create a large number of routes
 	mut old_router := hono.ContextHybridRouter.new()
 	mut fast_router := hono.FastRouter.new()
 	
@@ -281,7 +281,7 @@ fn test_large_scale_performance() {
 		}
 	}
 	
-	// 测试路径
+	// test path
 	test_paths := [
 		'/api/v1/resources/123/items/456',
 		'/api/v25/resources/789/items/101',
@@ -292,7 +292,7 @@ fn test_large_scale_performance() {
 	
 	iterations := 2000
 	
-	// 测试原始路由器
+	//Test the original router
 	start_time1 := time.now()
 	mut old_matches := 0
 	for _ in 0 .. iterations {
@@ -304,7 +304,7 @@ fn test_large_scale_performance() {
 	}
 	old_time := time.since(start_time1)
 	
-	// 测试快速路由器
+	//Test fast router
 	start_time2 := time.now()
 	mut fast_matches := 0
 	for _ in 0 .. iterations {
@@ -342,7 +342,7 @@ fn test_cache_effectiveness() {
 	route_path := '/api/:version/users/:user_id/posts/:post_id'
 	test_path := '/api/v1/users/123/posts/456'
 	
-	// 创建快速路由器
+	//Create a fast router
 	mut fast_router := hono.FastRouter.new()
 	handler := hono.ContextHandler{
 		path: route_path
@@ -357,7 +357,7 @@ fn test_cache_effectiveness() {
 	
 	iterations := 10000
 	
-	// 测试启用缓存
+	//Test enabled caching
 	fast_router.set_cache_enabled(true)
 	fast_router.clear_cache()
 	
@@ -370,7 +370,7 @@ fn test_cache_effectiveness() {
 	}
 	cache_time := time.since(start_time1)
 	
-	// 测试禁用缓存
+	//Test disabling caching
 	fast_router.set_cache_enabled(false)
 	
 	start_time2 := time.now()
@@ -401,7 +401,7 @@ fn test_cache_effectiveness() {
 		}
 	}
 	
-	// 显示统计
+	// show statistics
 	fast_router.set_cache_enabled(true)
 	fast_router.analyze_performance()
 }

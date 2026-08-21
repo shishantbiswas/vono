@@ -2,9 +2,9 @@ module main
 
 import time
 
-// 测试 HTTP 解析优化
+//Test HTTP parsing optimization
 
-// 原始版本 - 使用 split 和 index
+//Original version - using split and index
 fn parse_path_and_query_original(full_path string) (string, map[string]string) {
 	mut query_map := map[string]string{}
 	
@@ -23,7 +23,7 @@ fn parse_path_and_query_original(full_path string) (string, map[string]string) {
 	return full_path, query_map
 }
 
-// 优化版本 - 零分配单次遍历
+// Optimized version - zero allocation single pass
 fn parse_path_and_query_optimized(full_path string) (string, map[string]string) {
 	mut query_map := map[string]string{}
 	len := full_path.len
@@ -32,7 +32,7 @@ fn parse_path_and_query_optimized(full_path string) (string, map[string]string) 
 		return full_path, query_map
 	}
 	
-	// 1. 查找 '?' 位置（单次遍历）
+	// 1. Find the '?' position (single traversal)
 	mut query_start := -1
 	for i in 0 .. len {
 		if full_path[i] == `?` {
@@ -41,36 +41,36 @@ fn parse_path_and_query_optimized(full_path string) (string, map[string]string) 
 		}
 	}
 	
-	// 没有查询参数，直接返回
+	// No query parameters, return directly
 	if query_start == -1 {
 		return full_path, query_map
 	}
 	
 	path := full_path[..query_start]
 	
-	// 2. 解析查询参数（单次遍历，避免 split）
+	// 2. Parse query parameters (single traversal, avoid split)
 	mut key_start := query_start + 1
 	mut key_end := -1
 	mut value_start := -1
 	
 	for i := query_start + 1; i <= len; i++ {
-		ch := if i < len { full_path[i] } else { `&` } // 末尾视为分隔符
+		ch := if i < len { full_path[i] } else { `&` } // The end is treated as a separator
 		
 		if ch == `=` && key_end == -1 {
 			key_end = i
 			value_start = i + 1
 		} else if ch == `&` {
-			// 完成一个键值对
+			//Complete a key-value pair
 			if key_end > key_start && value_start > 0 {
 				key := full_path[key_start..key_end]
 				value := if value_start < i { full_path[value_start..i] } else { '' }
 				query_map[key] = value
 			} else if key_end == -1 && i > key_start {
-				// 只有 key 没有 value（如 ?foo&bar=1）
+				// Only key without value (such as ?foo&bar=1)
 				key := full_path[key_start..i]
 				query_map[key] = ''
 			}
-			// 重置状态
+			//Reset state
 			key_start = i + 1
 			key_end = -1
 			value_start = -1
@@ -80,12 +80,12 @@ fn parse_path_and_query_optimized(full_path string) (string, map[string]string) 
 	return path, query_map
 }
 
-// Keep-Alive 检查 - 原始版本
+// Keep-Alive check - original version
 fn check_keepalive_original(name string, value string) bool {
 	return name.to_lower() == 'connection' && value.to_lower().contains('keep-alive')
 }
 
-// 大小写不敏感比较
+// Case-insensitive comparison
 @[inline]
 fn eq_ignore_case(a string, b string) bool {
 	if a.len != b.len {
@@ -103,7 +103,7 @@ fn eq_ignore_case(a string, b string) bool {
 	return true
 }
 
-// 大小写不敏感 contains
+//Case insensitive contains
 @[inline]
 fn contains_ignore_case(haystack string, needle string) bool {
 	if needle.len > haystack.len {
@@ -129,12 +129,12 @@ fn contains_ignore_case(haystack string, needle string) bool {
 	return false
 }
 
-// Keep-Alive 检查 - 优化版本
+// Keep-Alive check - optimized version
 fn check_keepalive_optimized(name string, value string) bool {
 	return name.len == 10 && eq_ignore_case(name, 'connection') && contains_ignore_case(value, 'keep-alive')
 }
 
-// 测试正确性
+// Test for correctness
 fn test_correctness() {
 	println('=== 测试正确性 ===')
 	
@@ -192,29 +192,29 @@ fn test_correctness() {
 	}
 }
 
-// 性能基准测试
+//Performance benchmark test
 fn benchmark_performance() {
 	println('\n=== 性能基准测试 ===')
 	
-	// 测试用例
+	// test case
 	test_paths := [
-		'/api/users',                                    // 无查询参数
-		'/api/users?id=123',                             // 单个参数
-		'/api/users?id=123&name=test&active=true',       // 多个参数
-		'/search?q=hello+world&page=1&limit=10&sort=desc&filter=active', // 复杂查询
+		'/api/users',                                    // No query parameters
+		'/api/users?id=123',                             // single parameter
+		'/api/users?id=123&name=test&active=true',       //Multiple parameters
+		'/search?q=hello+world&page=1&limit=10&sort=desc&filter=active', //Complex query
 	]
 	
 	iterations := 100000
 	
 	for test_path in test_paths {
-		// 原始版本
+		// original version
 		sw_orig := time.new_stopwatch()
 		for _ in 0 .. iterations {
 			_, _ := parse_path_and_query_original(test_path)
 		}
 		time_orig := sw_orig.elapsed().microseconds()
 		
-		// 优化版本
+		//Optimized version
 		sw_opt := time.new_stopwatch()
 		for _ in 0 .. iterations {
 			_, _ := parse_path_and_query_optimized(test_path)
@@ -230,7 +230,7 @@ fn benchmark_performance() {
 	}
 }
 
-// 测试 Keep-Alive 检查优化
+//Test Keep-Alive check optimization
 fn test_keepalive_optimization() {
 	println('\n=== Keep-Alive 检查优化测试 ===')
 	
@@ -244,7 +244,7 @@ fn test_keepalive_optimization() {
 	
 	iterations := 100000
 	
-	// 原始版本
+	// original version
 	sw_orig := time.new_stopwatch()
 	for _ in 0 .. iterations {
 		for tc in test_cases {
@@ -253,7 +253,7 @@ fn test_keepalive_optimization() {
 	}
 	time_orig := sw_orig.elapsed().microseconds()
 	
-	// 优化版本
+	//Optimized version
 	sw_opt := time.new_stopwatch()
 	for _ in 0 .. iterations {
 		for tc in test_cases {

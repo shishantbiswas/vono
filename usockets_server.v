@@ -1,25 +1,25 @@
-// uSockets Server Backend for V-Hono
+// uSockets Server Backend for vono
 // 
-// 这个文件提供 V-Hono 的 uSockets 高性能服务器后端
+// This file provides vono's uSockets high-performance server backend
 // 
-// 安装步骤:
-// 1. 将 usockets 目录复制到 V-Hono 项目目录
-// 2. 将此文件复制到 V-Hono 项目根目录
-// 3. 修改 usockets/usockets.v 中的路径为绝对路径
+//Installation steps:
+// 1. Copy the usockets directory to the vono project directory
+// 2. Copy this file to the vono project root directory
+// 3. Modify the path in usockets/usockets.v to an absolute path
 //
-// 使用方法:
-//   app.listen_usockets(3000)  // 使用 uSockets 后端
-//   app.listen(":3000")        // 使用默认 picoev 后端
+// How to use:
+// app.listen_usockets(3000) // Use uSockets backend
+// app.listen(":3000") // Use the default picoev backend
 //
-// 编译命令:
+//Compilation command:
 //   v -cc gcc -ldflags "-ldbghelp" your_app.v -o app.exe
 //
-// 性能对比 (200连接, 100K请求):
-//   uSockets: ~22,000 RPS (高并发优化)
+// Performance comparison (200 connections, 100K requests):
+// uSockets: ~22,000 RPS (high concurrency optimization)
 //   picoev:   ~15,000 RPS
 //   
-// 注意: uSockets 在高并发场景下优势明显 (~50% 提升)
-//       低并发时两者性能相近
+// Note: uSockets has obvious advantages in high concurrency scenarios (~50% improvement)
+//The performance of the two is similar when concurrency is low
 
 module hono
 
@@ -27,7 +27,7 @@ import usockets
 import net.http
 import strings
 
-// uSockets 服务器配置
+// uSockets server configuration
 pub struct UsocketsConfig {
 pub:
 	port              int    = 8080
@@ -36,44 +36,44 @@ pub:
 	max_keepalive_req int    = 10000
 }
 
-// uSockets 上下文扩展数据 - 存储应用引用和配置
+// uSockets context extension data - stores application references and configuration
 struct UsocketsContextExt {
 mut:
 	app    &Hono = unsafe { nil }
 	config UsocketsConfig
 }
 
-// 从 socket 获取上下文扩展数据
+// Get context extension data from socket
 @[inline]
 fn get_usockets_ext(s usockets.Socket) &UsocketsContextExt {
 	ctx := s.context()
 	return unsafe { &UsocketsContextExt(ctx.ext()) }
 }
 
-// 使用 uSockets 启动服务器
+// Start the server using uSockets
 pub fn (mut app Hono) listen_usockets(port int) {
 	app.listen_usockets_with_config(UsocketsConfig{
 		port: port
 	})
 }
 
-// 使用 uSockets 启动服务器（带配置）
+// Start the server using uSockets (with configuration)
 pub fn (mut app Hono) listen_usockets_with_config(config UsocketsConfig) {
-	// 优化：预计算中间件前缀排序
+	// Optimization: Precomputed middleware prefix sorting
 	app.precompute_middleware_prefixes()
 
-	// 创建 uSockets 事件循环
+	// Create uSockets event loop
 	loop := usockets.create_loop()
 	
-	// 创建带扩展数据的 socket context
+	//Create a socket context with extended data
 	ctx := usockets.create_socket_context_with_ext(loop, int(sizeof(UsocketsContextExt)))
 	
-	// 初始化扩展数据
+	//Initialize extended data
 	mut ext := unsafe { &UsocketsContextExt(ctx.ext()) }
 	ext.app = unsafe { &app }
 	ext.config = config
 
-	// 设置回调
+	//Set callback
 	ctx.on_open(usockets_on_open)
 	ctx.on_data(usockets_on_data)
 	ctx.on_close(usockets_on_close)
@@ -81,18 +81,18 @@ pub fn (mut app Hono) listen_usockets_with_config(config UsocketsConfig) {
 	ctx.on_timeout(usockets_on_timeout)
 	ctx.on_end(usockets_on_end)
 
-	// 开始监听
+	// Start listening
 	listener := ctx.listen(config.port)
 	if listener.is_valid() {
 		host_str := if config.host == '' { '127.0.0.1' } else { config.host }
-		println('[v-hono] Listening on http://${host_str}:${config.port}/ (uSockets)')
+		println('[vono] Listening on http://${host_str}:${config.port}/ (uSockets)')
 		loop.run()
 	} else {
-		eprintln('[v-hono] Failed to listen on port ${config.port}')
+		eprintln('[vono] Failed to listen on port ${config.port}')
 	}
 }
 
-// uSockets 回调函数
+// uSockets callback function
 fn usockets_on_open(s usockets.Socket, is_client int, ip &char, ip_length int) usockets.Socket {
 	return s
 }
@@ -233,7 +233,7 @@ fn handle_usockets_ws_upgrade(s usockets.Socket, raw_data string, route_match Co
 }
 
 fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
-	// 从 socket context 获取应用引用
+	// Get application reference from socket context
 	ext := get_usockets_ext(s)
 	mut app := ext.app
 	
@@ -242,7 +242,7 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 		return s
 	}
 
-	// 解析 HTTP 请求
+	// Parse HTTP request
 	raw_data := unsafe { tos(&u8(data), length) }
 	method, path, query_map, body, is_http11 := parse_http_request_usockets(raw_data)
 	
@@ -254,7 +254,7 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 	// Check if this is a WebSocket upgrade request
 	is_ws_upgrade := is_usockets_ws_upgrade(raw_data)
 
-	// 路由匹配 - 优先使用快速路由器
+	// Route matching - use fast routers first
 	mut response_sent := false
 
 	if app.use_fast_router {
@@ -273,7 +273,7 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 				return s
 			}
 			
-			// 优化1：零中间件快速路径
+			// Optimization 1: Zero middleware fast path
 			if !app.has_middlewares {
 				response := route_match.handler.handle(mut hono_ctx)
 				send_usockets_response(s, hono_ctx, response, is_http11)
@@ -286,7 +286,7 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 		}
 	}
 
-	// 回退到混合路由器
+	// Fallback to hybrid router
 	if !response_sent {
 		if route_match := app.context_hybrid_router.match_route(method, path) {
 			mut hono_ctx := create_usockets_context(method, path, route_match.params, query_map, body)
@@ -303,7 +303,7 @@ fn usockets_on_data(s usockets.Socket, data &char, length int) usockets.Socket {
 				return s
 			}
 			
-			// 优化1：零中间件快速路径
+			// Optimization 1: Zero middleware fast path
 			if !app.has_middlewares {
 				response := route_match.handler.handle(mut hono_ctx)
 				send_usockets_response(s, hono_ctx, response, is_http11)
@@ -353,9 +353,9 @@ fn usockets_on_end(s usockets.Socket) usockets.Socket {
 }
 
 
-// 解析 HTTP 请求 - 零分配优化版
-// 使用指针遍历避免创建临时数组
-// 返回: (method, path, query_map, body, is_http11)
+// Parse HTTP requests - zero-allocation optimized version
+// Use pointer traversal to avoid creating temporary arrays
+// Return: (method, path, query_map, body, is_http11)
 fn parse_http_request_usockets(raw string) (string, string, map[string]string, string, bool) {
 	mut method := ''
 	mut path := ''
@@ -368,7 +368,7 @@ fn parse_http_request_usockets(raw string) (string, string, map[string]string, s
 		return method, path, query_map, body, is_http11
 	}
 	
-	// 1. 查找第一行结束位置（\r\n）
+	// 1. Find the end of the first line (\r\n)
 	mut line_end := -1
 	for i in 0 .. len - 1 {
 		if raw[i] == `\r` && raw[i + 1] == `\n` {
@@ -380,7 +380,7 @@ fn parse_http_request_usockets(raw string) (string, string, map[string]string, s
 		return method, path, query_map, body, is_http11
 	}
 	
-	// 2. 解析 method（到第一个空格）
+	// 2. Parse method (to the first space)
 	mut method_end := 0
 	for method_end < line_end && raw[method_end] != ` ` {
 		method_end++
@@ -390,9 +390,9 @@ fn parse_http_request_usockets(raw string) (string, string, map[string]string, s
 	}
 	method = raw[..method_end]
 	
-	// 3. 解析 path 和 query（从空格后到下一个空格）
+	// 3. Parse path and query (from after the space to the next space)
 	mut path_start := method_end + 1
-	// 跳过多余空格
+	// Skip extra spaces
 	for path_start < line_end && raw[path_start] == ` ` {
 		path_start++
 	}
@@ -408,31 +408,31 @@ fn parse_http_request_usockets(raw string) (string, string, map[string]string, s
 	
 	if query_start > 0 {
 		path = raw[path_start..query_start - 1]
-		// 解析 query string（单次遍历）
+		// Parse query string (single traversal)
 		query_map = parse_query_string_fast(raw, query_start, path_end)
 	} else {
 		path = raw[path_start..path_end]
 	}
 	
-	// 4. 检测 HTTP 版本 - "HTTP/1.0" vs "HTTP/1.1"
-	// 请求行格式: "GET /path HTTP/1.1\r\n"
-	// HTTP/1.x 版本字符串固定为 8 字符，直接检查第 8 个字符
+	// 4. Detect HTTP version - "HTTP/1.0" vs "HTTP/1.1"
+	// Request line format: "GET /path HTTP/1.1\r\n"
+	// HTTP/1.x version string is fixed to 8 characters, check the 8th character directly
 	mut version_start := path_end + 1
 	for version_start < line_end && raw[version_start] == ` ` {
 		version_start++
 	}
-	// "HTTP/1.0" 或 "HTTP/1.1"，检查索引 7 的字符（0-based）
+	// "HTTP/1.0" or "HTTP/1.1", check the character at index 7 (0-based)
 	if version_start + 7 < line_end {
 		is_http11 = raw[version_start + 7] != `0`
 	}
 	
-	// 对于 HTTP/1.0，检查 Connection 头是否包含 keep-alive
-	// 参考 Go net/http: wantsHttp10KeepAlive() 只检查 Connection 头的值
+	// For HTTP/1.0, check if the Connection header contains keep-alive
+	// Reference Go net/http: wantsHttp10KeepAlive() only checks the value of the Connection header
 	if !is_http11 {
 		is_http11 = has_connection_keep_alive(raw, line_end, len)
 	}
 	
-	// 5. 查找 body（\r\n\r\n 之后）
+	// 5. Find body (after \r\n\r\n)
 	for i in line_end .. len - 3 {
 		if raw[i] == `\r` && raw[i + 1] == `\n` && raw[i + 2] == `\r` && raw[i + 3] == `\n` {
 			if i + 4 < len {
@@ -445,26 +445,26 @@ fn parse_http_request_usockets(raw string) (string, string, map[string]string, s
 	return method, path, query_map, body, is_http11
 }
 
-// 检查 Connection 头是否包含 keep-alive（参考 Go net/http 实现）
-// 只检查 "Connection:" 头的值，避免误判请求体中的内容
+// Check whether the Connection header contains keep-alive (refer to Go net/http implementation)
+// Only check the value of the "Connection:" header to avoid misjudgment of the content in the request body
 @[inline]
 fn has_connection_keep_alive(raw string, headers_start int, len int) bool {
 	mut i := headers_start
 	
-	// 遍历每一行头部
-	for i < len - 12 {  // 至少需要 "Connection:" + 一些值
-		// 跳过 \r\n
+	// Traverse the header of each row
+	for i < len - 12 {  // At least "Connection:" + some value is required
+		// skip \r\n
 		if raw[i] == `\r` && i + 1 < len && raw[i + 1] == `\n` {
 			i += 2
-			// 检查是否到达头部结束（空行）
+			// Check if the end of the header is reached (blank line)
 			if i < len - 1 && raw[i] == `\r` && raw[i + 1] == `\n` {
 				break
 			}
 		}
 		
-		// 检查是否是 "Connection:" 头（不区分大小写）
+		// Check if it is a "Connection:" header (case insensitive)
 		if (raw[i] == `C` || raw[i] == `c`) && i + 11 < len {
-			// 检查 "onnection:"
+			// Check "onnection:"
 			if (raw[i+1] == `o` || raw[i+1] == `O`) &&
 			   (raw[i+2] == `n` || raw[i+2] == `N`) &&
 			   (raw[i+3] == `n` || raw[i+3] == `N`) &&
@@ -475,18 +475,18 @@ fn has_connection_keep_alive(raw string, headers_start int, len int) bool {
 			   (raw[i+8] == `o` || raw[i+8] == `O`) &&
 			   (raw[i+9] == `n` || raw[i+9] == `N`) &&
 			   raw[i+10] == `:` {
-				// 找到 Connection 头，检查值是否包含 keep-alive
+				// Find the Connection header and check if the value contains keep-alive
 				mut value_start := i + 11
-				// 跳过空格
+				// skip spaces
 				for value_start < len && raw[value_start] == ` ` {
 					value_start++
 				}
-				// 查找行尾
+				// Find the end of the line
 				mut value_end := value_start
 				for value_end < len && raw[value_end] != `\r` && raw[value_end] != `\n` {
 					value_end++
 				}
-				// 在值中查找 "keep-alive"（不区分大小写）
+				// Find "keep-alive" in the value (case insensitive)
 				return contains_keep_alive_token(raw, value_start, value_end)
 			}
 		}
@@ -495,10 +495,10 @@ fn has_connection_keep_alive(raw string, headers_start int, len int) bool {
 	return false
 }
 
-// 检查字符串片段是否包含 keep-alive token
+// Check if the string fragment contains keep-alive token
 @[inline]
 fn contains_keep_alive_token(raw string, start int, end int) bool {
-	// 查找 "keep-alive" 或 "Keep-Alive"（支持多值如 "keep-alive, upgrade"）
+	// Find "keep-alive" or "Keep-Alive" (supports multiple values ​​such as "keep-alive, upgrade")
 	mut i := start
 	for i <= end - 10 {
 		if raw[i] == `k` || raw[i] == `K` {
@@ -517,7 +517,7 @@ fn contains_keep_alive_token(raw string, start int, end int) bool {
 		i++
 	}
 	return false
-}// 快速解析 query string（单次遍历，避免 split）
+}// Quickly parse query string (single traversal, avoid split)
 @[inline]
 fn parse_query_string_fast(raw string, start int, end int) map[string]string {
 	mut query_map := map[string]string{}
@@ -527,23 +527,23 @@ fn parse_query_string_fast(raw string, start int, end int) map[string]string {
 	mut value_start := -1
 	
 	for i := start; i <= end; i++ {
-		ch := if i < end { raw[i] } else { `&` } // 末尾视为分隔符
+		ch := if i < end { raw[i] } else { `&` } // The end is treated as a separator
 		
 		if ch == `=` && key_end == -1 {
 			key_end = i
 			value_start = i + 1
 		} else if ch == `&` {
-			// 完成一个键值对
+			//Complete a key-value pair
 			if key_end > key_start && value_start > 0 {
 				key := raw[key_start..key_end]
 				value := if value_start < i { raw[value_start..i] } else { '' }
 				query_map[key] = value
 			} else if key_end == -1 && i > key_start {
-				// 只有 key 没有 value
+				// Only key without value
 				key := raw[key_start..i]
 				query_map[key] = ''
 			}
-			// 重置状态
+			//Reset state
 			key_start = i + 1
 			key_end = -1
 			value_start = -1
@@ -553,7 +553,7 @@ fn parse_query_string_fast(raw string, start int, end int) map[string]string {
 	return query_map
 }
 
-// 创建 uSockets 上下文 - 优化版
+//Create uSockets context - optimized version
 fn create_usockets_context(method string, path string, params map[string]string, query map[string]string, body string) Context {
 	return Context{
 		req: http.Request{
@@ -571,7 +571,7 @@ fn create_usockets_context(method string, path string, params map[string]string,
 	}
 }
 
-// 创建 uSockets 上下文 - 带 HTTP 头部解析（用于 WebSocket 升级）
+// Create uSockets context - with HTTP header parsing (for WebSocket upgrades)
 fn create_usockets_context_with_headers(raw_data string, method string, path string, params map[string]string, query map[string]string, body string) Context {
 	// Parse headers from raw HTTP request
 	mut headers := http.new_header()
@@ -619,7 +619,7 @@ fn create_usockets_context_with_headers(raw_data string, method string, path str
 	}
 }
 
-// 快速 HTTP 方法解析（基于首字符和长度）
+// Fast HTTP method parsing (based on first character and length)
 @[inline]
 fn parse_http_method_usockets(method string) http.Method {
 	len := method.len
@@ -627,7 +627,7 @@ fn parse_http_method_usockets(method string) http.Method {
 		return http.Method.get
 	}
 	
-	// 基于首字符快速分支
+	// Quick branch based on first character
 	match method[0] {
 		`G` {
 			if len == 3 { return http.Method.get }
@@ -651,16 +651,16 @@ fn parse_http_method_usockets(method string) http.Method {
 	return http.Method.get
 }
 
-// 获取路径对应的所有中间件（优化版：使用预排序的前缀列表）
+// Get all middleware corresponding to the path (optimized version: use presorted prefix list)
 fn get_middlewares_for_path_usockets_optimized(app &Hono, path string) []ContextMiddleware {
-	// 优化2：只有全局中间件时，直接返回引用（避免克隆）
+	// Optimization 2: When there is only global middleware, return the reference directly (avoid cloning)
 	if app.route_middlewares.len == 0 {
 		return app.context_middlewares
 	}
 	
 	mut middlewares := app.context_middlewares.clone()
 
-	// 优化3：使用预排序的前缀列表（启动时已排序，不需要每次请求都排序）
+	// Optimization 3: Use a pre-sorted prefix list (sorted at startup, no need to sort every request)
 	for prefix in app.sorted_middleware_prefixes {
 		if path.starts_with(prefix) || prefix == '/' {
 			if mws := app.route_middlewares[prefix] {
@@ -672,12 +672,12 @@ fn get_middlewares_for_path_usockets_optimized(app &Hono, path string) []Context
 	return middlewares
 }
 
-// 获取路径对应的所有中间件（保留旧版本兼容）
+// Get all middleware corresponding to the path (retain compatibility with old versions)
 fn get_middlewares_for_path_usockets(app &Hono, path string) []ContextMiddleware {
 	return get_middlewares_for_path_usockets_optimized(app, path)
 }
 
-// 执行中间件链
+//Execute middleware chain
 fn exec_middlewares_usockets(idx int, middlewares []ContextMiddleware, mut ctx Context, handler IHandler) http.Response {
 	if idx < middlewares.len {
 		mw := middlewares[idx]
@@ -688,7 +688,7 @@ fn exec_middlewares_usockets(idx int, middlewares []ContextMiddleware, mut ctx C
 	return handler.handle(mut ctx)
 }
 
-// 发送 uSockets 响应 - 优化版
+// Send uSockets response - optimized version
 fn send_usockets_response(s usockets.Socket, ctx Context, response http.Response, is_http11 bool) {
 	// Check if this is a streaming response
 	if is_streaming_response(ctx) {
@@ -701,17 +701,17 @@ fn send_usockets_response(s usockets.Socket, ctx Context, response http.Response
 	
 	mut resp := strings.new_builder(512)
 	
-	// 状态行
+	// status line
 	resp.write_string('HTTP/1.1 ')
 	resp.write_string(status_code.str())
 	resp.write_string(' ')
 	resp.write_string(get_status_text_usockets(status_code))
 	resp.write_string('\r\n')
 
-	// 头部
+	//head
 	mut has_content_type := false
 	for key, value in ctx.headers {
-		// 使用快速大小写不敏感比较
+		// Use fast case-insensitive comparison
 		key_len := key.len
 		if key_len == 14 && eq_ignore_case_usockets(key, 'content-length') {
 			continue
@@ -743,22 +743,22 @@ fn send_usockets_response(s usockets.Socket, ctx Context, response http.Response
 	resp.write_string(response.body.len.str())
 	resp.write_string('\r\n')
 
-	// Connection - HTTP/1.0 用 close，HTTP/1.1 用 keep-alive
+	// Connection - HTTP/1.0 uses close, HTTP/1.1 uses keep-alive
 	if is_http11 {
 		resp.write_string('Connection: keep-alive\r\n')
 	} else {
 		resp.write_string('Connection: close\r\n')
 	}
 
-	// 空行 + body
+	// Blank line + body
 	resp.write_string('\r\n')
 	resp.write_string(response.body)
 
 	s.write_bytes(resp.str())
 	
-	// HTTP/1.0 请求完成后关闭连接
-	// 只调用 shutdown() 发送 FIN，让 on_end 回调处理 close()
-	// 这样可以确保发送缓冲区的数据完全发送
+	// Close the connection after HTTP/1.0 request is completed
+	// Just call shutdown() to send FIN and let the on_end callback handle close()
+	// This ensures that the data in the send buffer is completely sent
 	if !is_http11 {
 		s.shutdown()
 	}
@@ -858,7 +858,7 @@ fn handle_usockets_streaming_response(s usockets.Socket, ctx Context) {
 	cleanup_stream_config(ctx)
 }
 
-// 大小写不敏感字符串比较（避免分配）
+// Case-insensitive string comparison (avoid allocation)
 @[inline]
 fn eq_ignore_case_usockets(a string, b string) bool {
 	if a.len != b.len {
@@ -867,7 +867,7 @@ fn eq_ignore_case_usockets(a string, b string) bool {
 	for i in 0 .. a.len {
 		ca := a[i]
 		cb := b[i]
-		// 转换为小写比较
+		// Convert to lower case for comparison
 		la := if ca >= `A` && ca <= `Z` { ca + 32 } else { ca }
 		lb := if cb >= `A` && cb <= `Z` { cb + 32 } else { cb }
 		if la != lb {
@@ -877,7 +877,7 @@ fn eq_ignore_case_usockets(a string, b string) bool {
 	return true
 }
 
-// 获取状态码文本
+// Get status code text
 fn get_status_text_usockets(code int) string {
 	return match code {
 		101 { 'Switching Protocols' }

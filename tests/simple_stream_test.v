@@ -7,22 +7,22 @@ import strings
 fn main() {
 	println('=== 文件流式传输功能测试 ===')
 	
-	// 创建测试文件
+	//Create test file
 	create_test_files()
 	
-	// 创建Context进行测试
+	//Create Context for testing
 	test_file_streaming()
 	
 	println('\n功能测试完成!')
 	
-	// 清理测试文件
+	// Clean test files
 	cleanup_test_files()
 }
 
 fn create_test_files() {
 	println('创建测试文件...')
 	
-	// 创建小文件 (1KB)
+	//Create small file (1KB)
 	small_content := 'Hello World! '.repeat(80)
 	os.write_file('test_small.txt', small_content) or { 
 		println('  ❌ 创建小文件失败: $err')
@@ -30,7 +30,7 @@ fn create_test_files() {
 	}
 	println('  ✅ 创建小文件: test_small.txt (${small_content.len} bytes)')
 	
-	// 创建中等文件 (约100KB)
+	//Create medium file (~100KB)
 	mut medium_content := strings.new_builder(100 * 1024)
 	for i in 0 .. 1000 {
 		medium_content.write_string('This is line ${i:04d} with some content to make it longer and test streaming.\n')
@@ -42,7 +42,7 @@ fn create_test_files() {
 	}
 	println('  ✅ 创建中等文件: test_medium.txt (${medium_str.len} bytes)')
 	
-	// 创建大文件 (约1MB)
+	//Create large file (about 1MB)
 	mut large_content := strings.new_builder(1024 * 1024)
 	base_line := 'This is a long line of text that will be repeated many times to create a large file for testing streaming functionality. '
 	for i in 0 .. 10000 {
@@ -59,7 +59,7 @@ fn create_test_files() {
 fn test_file_streaming() {
 	println('\n开始功能测试...')
 	
-	// 创建模拟请求
+	//Create a mock request
 	test_req := http.Request{
 		method: http.Method.get
 		url: '/test'
@@ -67,23 +67,23 @@ fn test_file_streaming() {
 		header: http.new_header()
 	}
 	
-	// 测试1：传统文件服务
+	//Test 1: Traditional file service
 	println('\n--- 测试1: 传统文件服务 ---')
 	check_traditional_file_serving(test_req)
 	
-	// 测试2：流式文件服务  
+	//Test 2: Streaming file service
 	println('\n--- 测试2: 流式文件服务 ---')
 	check_stream_file_serving(test_req)
 	
-	// 测试3：智能文件服务
+	//Test 3: Smart file service
 	println('\n--- 测试3: 智能文件服务 ---')
 	check_smart_file_serving(test_req)
 	
-	// 测试4：Range请求
+	//Test 4: Range request
 	println('\n--- 测试4: Range请求测试 ---')
 	check_range_requests()
 	
-	// 测试5：自定义选项测试
+	//Test 5: Custom option test
 	println('\n--- 测试5: 自定义选项测试 ---')
 	check_custom_options(test_req)
 }
@@ -97,7 +97,7 @@ fn check_traditional_file_serving(req http.Request) {
 			continue
 		}
 		
-		// 创建Context
+		// Create Context
 		mut ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 		
 		start := time.now()
@@ -127,7 +127,7 @@ fn check_stream_file_serving(req http.Request) {
 			continue
 		}
 		
-		// 创建Context
+		// Create Context
 		mut ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 		
 		start := time.now()
@@ -157,7 +157,7 @@ fn check_smart_file_serving(req http.Request) {
 			continue
 		}
 		
-		// 创建Context
+		// Create Context
 		mut ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 		
 		start := time.now()
@@ -170,9 +170,9 @@ fn check_smart_file_serving(req http.Request) {
 		}
 		response_size := response.body.len
 		
-		// 检查是否正确选择了传输方式
+		// Check whether the transmission method is correctly selected
 		mut expected_method := "内存"
-		if original_size > 50 * 1024 * 1024 { // 默认阈值50MB
+		if original_size > 50 * 1024 * 1024 { //Default threshold 50MB
 			expected_method = "流式"
 		}
 		
@@ -191,7 +191,7 @@ fn check_range_requests() {
 		return
 	}
 	
-	// 创建带Range头的请求
+	//Create a request with Range header
 	mut range_header := http.new_header()
 	range_header.add_custom('Range', 'bytes=0-99') or { }
 	
@@ -202,13 +202,13 @@ fn check_range_requests() {
 		header: range_header
 	}
 	
-	// 创建Context
+	// Create Context
 	mut ctx := hono.Context.new(range_req, map[string]string{}, map[string]string{}, '')
 	
-	// 使用支持Range的选项
+	// Use options that support Range
 	options := hono.FileOptions{
 		enable_range: true
-		stream_threshold: 1024  // 强制使用流式传输来测试Range功能
+		stream_threshold: 1024  // Force streaming to test Range functionality
 	}
 	
 	response := ctx.file_stream_with_options(file, options)
@@ -216,7 +216,7 @@ fn check_range_requests() {
 	if response.status_code == 206 {  // Partial Content
 		println('  ✅ Range请求: 成功 (状态码: 206, 内容长度: ${response.body.len})')
 		
-		// 检查Content-Range头
+		// Check the Content-Range header
 		if content_range := response.header.get_custom('Content-Range') {
 			println('  📊 Content-Range: $content_range')
 		}
@@ -232,10 +232,10 @@ fn check_custom_options(req http.Request) {
 		return
 	}
 	
-	// 测试自定义选项
+	//Test custom options
 	custom_options := hono.FileOptions{
-		stream_threshold: 10 * 1024  // 10KB阈值
-		buffer_size: 2048            // 2KB缓冲区
+		stream_threshold: 10 * 1024  // 10KB threshold
+		buffer_size: 2048            // 2KB buffer
 		enable_range: true
 		max_age: 7200
 		content_type: 'text/plain; charset=utf-8'
@@ -245,7 +245,7 @@ fn check_custom_options(req http.Request) {
 		}
 	}
 	
-	// 创建Context
+	// Create Context
 	mut ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
 	response := ctx.file_stream_with_options(file, custom_options)
@@ -253,7 +253,7 @@ fn check_custom_options(req http.Request) {
 	if response.status_code == 200 {
 		println('  ✅ 自定义选项: 成功')
 		
-		// 检查自定义头部
+		// Check for custom headers
 		if custom_header := response.header.get_custom('X-Custom-Header') {
 			println('  📋 自定义头部: $custom_header')
 		}

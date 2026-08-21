@@ -3,37 +3,37 @@ import time
 import net.http
 
 fn main() {
-	println('=== V-Hono 简化集成测试 ===')
+	println('=== vono 简化集成测试 ===')
 	
-	// 测试1: 基本应用创建和FastRouter
+	//Test 1: Basic application creation and FastRouter
 	test_basic_app_creation()
 	
-	// 测试2: 路由添加和匹配
+	//Test 2: Route addition and matching
 	test_route_management()
 	
-	// 测试3: 性能验证
+	//Test 3: Performance verification
 	test_performance_validation()
 	
-	// 测试4: 配置系统
+	//Test 4: Configure the system
 	test_config_system()
 	
-	println('✅ V-Hono 简化集成测试完成')
+	println('✅ vono 简化集成测试完成')
 }
 
 fn test_basic_app_creation() {
 	println('\n📊 基本应用创建测试...')
 	
-	// 创建应用
+	// Create application
 	mut app := hono.Hono.new()
 	
-	// 验证FastRouter默认启用
+	// Verify that FastRouter is enabled by default
 	if app.use_fast_router {
 		println('  ✅ FastRouter默认启用')
 	} else {
 		println('  ❌ FastRouter未默认启用')
 	}
 	
-	// 测试FastRouter开关
+	//Test FastRouter switch
 	app.set_fast_router_enabled(false)
 	if !app.use_fast_router {
 		println('  ✅ FastRouter禁用成功')
@@ -54,7 +54,7 @@ fn test_route_management() {
 	
 	mut app := hono.Hono.new()
 	
-	// 添加不同类型的路由
+	//Add different types of routes
 	app.get('/static', fn (mut c hono.Context) http.Response {
 		return c.text('static response')
 	})
@@ -67,11 +67,11 @@ fn test_route_management() {
 		return c.text('api response')
 	})
 	
-	// 验证路由统计
+	//Verify routing statistics
 	static_count, dynamic_count, cache_count, _ := app.get_router_stats()
 	println('  路由统计: 静态=${static_count}, 动态=${dynamic_count}, 缓存=${cache_count}')
 	
-	// 测试路由匹配
+	//Test route matching
 	test_paths := ['/static', '/users/123', '/nonexistent']
 	expected_results := [true, true, false]
 	
@@ -97,11 +97,11 @@ fn test_route_management() {
 fn test_performance_validation() {
 	println('\n📊 性能验证测试...')
 	
-	// 创建FastRouter和HybridRouter进行对比
+	//Create FastRouter and HybridRouter for comparison
 	mut fast_router := hono.FastRouter.new()
 	mut hybrid_router := hono.ContextHybridRouter.new()
 	
-	// 添加相同的路由
+	//Add the same route
 	route_path := '/api/:version/users/:user_id'
 	test_path := '/api/v1/users/123'
 	
@@ -128,7 +128,7 @@ fn test_performance_validation() {
 	
 	iterations := 1000
 	
-	// 测试FastRouter性能
+	//Test FastRouter performance
 	fast_router.clear_cache()
 	start_time1 := time.now()
 	mut fast_matches := 0
@@ -139,7 +139,7 @@ fn test_performance_validation() {
 	}
 	fast_time := time.since(start_time1)
 	
-	// 测试HybridRouter性能
+	//Test HybridRouter performance
 	hybrid_router.clear_cache()
 	start_time2 := time.now()
 	mut hybrid_matches := 0
@@ -169,24 +169,24 @@ fn test_performance_validation() {
 fn test_config_system() {
 	println('\n📊 配置系统测试...')
 	
-	// 测试默认配置创建
+	// Test default configuration creation
 	config := hono.default_config()
 	
-	// 验证默认值
+	//Verify default value
 	if config.server.host == '127.0.0.1' && config.server.port == 8080 {
 		println('  ✅ 配置创建正确')
 	} else {
 		println('  ❌ 配置创建错误')
 	}
 	
-	// 测试配置字段
+	//Test configuration fields
 	if config.server.read_timeout == 30 && config.static.root_dir == './static' {
 		println('  ✅ 配置字段正确')
 	} else {
 		println('  ❌ 配置字段错误')
 	}
 	
-	// 测试配置环境
+	//Test configuration environment
 	if config.env == 'development' {
 		println('  ✅ 默认环境正确')
 	} else {

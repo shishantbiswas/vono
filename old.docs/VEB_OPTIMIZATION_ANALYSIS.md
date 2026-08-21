@@ -1,4 +1,4 @@
-# veb 优化分析 - v-hono 可借鉴的优化策略
+# veb 优化分析 - vono 可借鉴的优化策略
 
 ## veb 核心优化策略
 
@@ -18,7 +18,7 @@ mut pico := picoev.new(
 pico.serve()
 ```
 
-**v-hono 可借鉴：** 考虑使用 picoev 替代 `net.http.Server`，可以显著提升并发性能。
+**vono 可借鉴：** 考虑使用 picoev 替代 `net.http.Server`，可以显著提升并发性能。
 
 ### 2. 预分配缓冲区
 veb 预先分配了读写缓冲区，避免每次请求都分配内存：
@@ -31,7 +31,7 @@ pico_context.file_responses = []FileResponse{len: picoev.max_fds}
 pico_context.string_responses = []StringResponse{len: picoev.max_fds}
 ```
 
-**v-hono 可借鉴：** 使用对象池或预分配缓冲区减少 GC 压力。
+**vono 可借鉴：** 使用对象池或预分配缓冲区减少 GC 压力。
 
 ### 3. 编译时路由生成
 veb 使用 V 语言的编译时反射 `$for` 在编译时生成路由表：
@@ -53,7 +53,7 @@ fn generate_routes[A, X](app &A) !map[string]Route {
 }
 ```
 
-**v-hono 可借鉴：** 虽然 v-hono 使用运行时路由注册，但可以考虑在启动时预编译所有路由模式。
+**vono 可借鉴：** 虽然 vono 使用运行时路由注册，但可以考虑在启动时预编译所有路由模式。
 
 ### 4. 快速响应发送
 veb 使用 `strings.Builder` 构建响应，避免字符串拼接：
@@ -70,7 +70,7 @@ fn fast_send_resp_header(mut conn net.TcpConn, resp http.Response) ! {
 }
 ```
 
-**v-hono 可借鉴：** 使用 `strings.Builder` 替代字符串拼接构建 HTTP 响应。
+**vono 可借鉴：** 使用 `strings.Builder` 替代字符串拼接构建 HTTP 响应。
 
 ### 5. 零拷贝文件传输 (sendfile)
 veb 在 Linux/FreeBSD 上使用 `sendfile` 系统调用：
@@ -81,7 +81,7 @@ $if linux || freebsd {
 }
 ```
 
-**v-hono 可借鉴：** 对于静态文件服务，使用 sendfile 可以避免用户态和内核态之间的数据拷贝。
+**vono 可借鉴：** 对于静态文件服务，使用 sendfile 可以避免用户态和内核态之间的数据拷贝。
 
 ### 6. 智能连接管理
 veb 根据响应大小选择不同的发送策略：
@@ -99,7 +99,7 @@ if completed_context.res.body.len < max_read {
 }
 ```
 
-**v-hono 可借鉴：** 根据响应大小采用不同的发送策略。
+**vono 可借鉴：** 根据响应大小采用不同的发送策略。
 
 ### 7. 路由匹配优化
 veb 的路由匹配策略：
@@ -122,7 +122,7 @@ if params := route_matches(url_words, route_words) {
 }
 ```
 
-**v-hono 可借鉴：** v-hono 已经实现了类似的静态/动态路由分离，但可以进一步优化参数提取。
+**vono 可借鉴：** vono 已经实现了类似的静态/动态路由分离，但可以进一步优化参数提取。
 
 ### 8. 内存管理
 veb 使用 `@[manualfree]` 和 `defer` 进行精细的内存管理：
@@ -137,9 +137,9 @@ pub fn (mut sr StringResponse) done() {
 }
 ```
 
-**v-hono 可借鉴：** 对于频繁分配的对象，考虑手动内存管理。
+**vono 可借鉴：** 对于频繁分配的对象，考虑手动内存管理。
 
-## v-hono 优化建议
+## vono 优化建议
 
 ### 高优先级
 1. **使用 picoev 替代 http.Server** - 这是最大的性能提升点
@@ -158,7 +158,7 @@ pub fn (mut sr StringResponse) done() {
 
 ## 性能对比总结
 
-| 特性 | veb | v-hono | 差距原因 |
+| 特性 | veb | vono | 差距原因 |
 |------|-----|--------|----------|
 | 事件模型 | picoev | http.Server | picoev 更高效 |
 | Keep-Alive | ✅ 支持 | ❌ 不支持 | http.Server 限制 |
@@ -168,4 +168,4 @@ pub fn (mut sr StringResponse) done() {
 
 ## 结论
 
-v-hono 与 veb 的主要性能差距来自底层 HTTP 服务器实现。如果 v-hono 切换到 picoev，性能应该能接近甚至超过 veb。
+vono 与 veb 的主要性能差距来自底层 HTTP 服务器实现。如果 vono 切换到 picoev，性能应该能接近甚至超过 veb。

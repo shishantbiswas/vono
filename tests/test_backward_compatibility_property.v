@@ -7,7 +7,7 @@ import crypto.md5
 
 // ============================================================================
 // Property 10: Backward Compatibility
-// Feature: v-hono-upload-integration, Property 10: Backward Compatibility
+// Feature: vono-upload-integration, Property 10: Backward Compatibility
 // Validates: Requirements 11.2, 11.4
 //
 // *For any* existing ChunkUploadManager usage without storage configuration,
@@ -434,7 +434,7 @@ fn test_property_10_6_response_format_consistency() bool {
 // ============================================================================
 fn main() {
 	println('=== Property 10: Backward Compatibility 属性测试 ===')
-	println('Feature: v-hono-upload-integration')
+	println('Feature: vono-upload-integration')
 	println('Validates: Requirements 11.2, 11.4')
 	println('')
 

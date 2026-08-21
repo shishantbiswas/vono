@@ -1,4 +1,4 @@
-// uSockets 功能验证测试
+// uSockets functional verification test
 // go run benchmark/usockets_verify.go
 
 package main
@@ -21,7 +21,7 @@ func main() {
 
 	client := &http.Client{Timeout: 5 * time.Second}
 
-	// 检查服务器
+	// Check the server
 	fmt.Print("🔍 检查测试服务器... ")
 	if !checkServer(client) {
 		fmt.Println("❌ 服务器未运行")
@@ -33,7 +33,7 @@ func main() {
 	total, passed, failed := 0, 0, 0
 	var errors []string
 
-	// 1. 基本 GET 路由测试
+	// 1. Basic GET routing test
 	fmt.Println("📦 1. 基本 GET 路由测试")
 
 	total++
@@ -70,7 +70,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 2. 动态路由测试
+	// 2. Dynamic routing test
 	fmt.Println("📦 2. 动态路由测试")
 
 	total++
@@ -107,7 +107,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 3. 查询参数测试
+	// 3. Query parameter test
 	fmt.Println("📦 3. 查询参数测试")
 
 	total++
@@ -133,7 +133,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 4. 响应格式测试
+	// 4. Response format test
 	fmt.Println("📦 4. 响应格式测试")
 
 	total++
@@ -170,7 +170,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 5. HTTP 方法测试
+	// 5. HTTP method testing
 	fmt.Println("📦 5. HTTP 方法测试")
 
 	total++
@@ -207,7 +207,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 6. 错误处理测试
+	// 6. Error handling test
 	fmt.Println("📦 6. 错误处理测试")
 
 	total++
@@ -222,7 +222,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 7. Keep-Alive 测试
+	// 7. Keep-Alive test
 	fmt.Println("📦 7. Keep-Alive 连接测试")
 
 	total++
@@ -237,7 +237,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 8. 性能测试
+	// 8. Performance testing
 	fmt.Println("📦 8. 性能测试")
 
 	total++
@@ -253,7 +253,7 @@ func main() {
 	}
 	fmt.Println()
 
-	// 输出总结
+	// Output summary
 	fmt.Println("═══════════════════════════════════════════════════════════════")
 	fmt.Printf("📊 测试结果: %d/%d 通过\n", passed, total)
 
@@ -452,7 +452,7 @@ func checkThroughput(client *http.Client) float64 {
 	totalRequests := 1000000
 	requestsPerWorker := totalRequests / concurrency
 
-	// 创建共享的 Transport，启用连接池复用
+	//Create a shared Transport and enable connection pool reuse
 	transport := &http.Transport{
 		MaxIdleConns:        concurrency,
 		MaxIdleConnsPerHost: concurrency,
@@ -465,7 +465,7 @@ func checkThroughput(client *http.Client) float64 {
 	for i := 0; i < concurrency; i++ {
 		go func() {
 			localSuccess := 0
-			// 每个 goroutine 使用独立 Client，但共享 Transport（连接池）
+			//Each goroutine uses an independent Client, but shares the Transport (connection pool)
 			localClient := &http.Client{
 				Timeout:   10 * time.Second,
 				Transport: transport,

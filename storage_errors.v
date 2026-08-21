@@ -2,15 +2,15 @@ module hono
 
 import time
 
-// 存储错误类型枚举
+//Storage error type enumeration
 pub enum StorageErrorKind {
-	// 可重试错误 - 网络和临时性问题
+	// Retryable errors - network and temporary issues
 	network_timeout
 	service_unavailable
 	rate_limited
 	connection_reset
 	temporary_failure
-	// 不可重试错误 - 配置和权限问题
+	// Non-retryable error - configuration and permission issues
 	invalid_credentials
 	access_denied
 	bucket_not_found
@@ -23,11 +23,11 @@ pub enum StorageErrorKind {
 	object_already_exists
 	invalid_range
 	checksum_mismatch
-	// 其他错误
+	// other errors
 	unknown
 }
 
-// 存储错误结构
+//Storage error structure
 pub struct StorageError {
 pub:
 	kind        StorageErrorKind
@@ -41,7 +41,7 @@ pub mut:
 	retry_history []RetryAttempt
 }
 
-// 重试尝试记录
+//Retry attempt record
 pub struct RetryAttempt {
 pub:
 	attempt_number int
@@ -51,7 +51,7 @@ pub:
 }
 
 
-// 判断错误是否可重试
+// Determine whether the error can be retried
 pub fn (e StorageError) is_retryable() bool {
 	return e.kind in [
 		.network_timeout,
@@ -62,10 +62,10 @@ pub fn (e StorageError) is_retryable() bool {
 	]
 }
 
-// 获取建议的重试延迟（毫秒）
+// Get the recommended retry delay (milliseconds)
 pub fn (e StorageError) suggested_retry_delay() int {
 	base_delay := match e.kind {
-		.rate_limited { 5000 } // 限流错误需要更长等待
+		.rate_limited { 5000 } // Current limiting error requires longer wait
 		.service_unavailable { 2000 }
 		.network_timeout { 1000 }
 		.connection_reset { 500 }
@@ -75,7 +75,7 @@ pub fn (e StorageError) suggested_retry_delay() int {
 	return base_delay
 }
 
-// 获取错误类别描述
+// Get error category description
 pub fn (e StorageError) category() string {
 	if e.is_retryable() {
 		return 'retryable'
@@ -83,7 +83,7 @@ pub fn (e StorageError) category() string {
 	return 'non_retryable'
 }
 
-// 实现 IError 接口
+// Implement the IError interface
 pub fn (e StorageError) msg() string {
 	return '${e.provider}/${e.operation}: ${e.message} (kind: ${e.kind}, http_status: ${e.http_status})'
 }
@@ -92,7 +92,7 @@ pub fn (e StorageError) code() int {
 	return e.http_status
 }
 
-// 添加重试记录
+//Add retry record
 pub fn (mut e StorageError) add_retry_attempt(attempt_number int, error_message string, delay_ms int) {
 	e.retry_history << RetryAttempt{
 		attempt_number: attempt_number
@@ -102,7 +102,7 @@ pub fn (mut e StorageError) add_retry_attempt(attempt_number int, error_message 
 	}
 }
 
-// 获取重试历史摘要
+// Get retry history summary
 pub fn (e StorageError) retry_summary() string {
 	if e.retry_history.len == 0 {
 		return 'No retry attempts'
@@ -114,7 +114,7 @@ pub fn (e StorageError) retry_summary() string {
 	return summary
 }
 
-// 创建存储错误的辅助函数
+//Create a helper function to store errors
 pub fn new_storage_error(kind StorageErrorKind, message string, provider string, operation string) StorageError {
 	return StorageError{
 		kind: kind
@@ -128,7 +128,7 @@ pub fn new_storage_error(kind StorageErrorKind, message string, provider string,
 	}
 }
 
-// 创建带 HTTP 状态码的存储错误
+//Create a stored error with HTTP status code
 pub fn new_storage_error_with_status(kind StorageErrorKind, message string, provider string, operation string, http_status int) StorageError {
 	return StorageError{
 		kind: kind
@@ -142,7 +142,7 @@ pub fn new_storage_error_with_status(kind StorageErrorKind, message string, prov
 	}
 }
 
-// 创建带详情的存储错误
+//Create a stored error with details
 pub fn new_storage_error_with_details(kind StorageErrorKind, message string, provider string, operation string, http_status int, details map[string]string) StorageError {
 	return StorageError{
 		kind: kind
@@ -156,7 +156,7 @@ pub fn new_storage_error_with_details(kind StorageErrorKind, message string, pro
 	}
 }
 
-// 创建配置错误
+//Create configuration error
 pub fn new_config_error(message string, field string) StorageError {
 	mut details := map[string]string{}
 	details['field'] = field
@@ -172,7 +172,7 @@ pub fn new_config_error(message string, field string) StorageError {
 	}
 }
 
-// 创建对象未找到错误
+// Create object not found error
 pub fn new_not_found_error(provider string, bucket string, key string) StorageError {
 	mut details := map[string]string{}
 	details['bucket'] = bucket
@@ -190,7 +190,7 @@ pub fn new_not_found_error(provider string, bucket string, key string) StorageEr
 }
 
 
-// 创建存储桶未找到错误
+// Create bucket not found error
 pub fn new_bucket_not_found_error(provider string, bucket string) StorageError {
 	mut details := map[string]string{}
 	details['bucket'] = bucket
@@ -206,7 +206,7 @@ pub fn new_bucket_not_found_error(provider string, bucket string) StorageError {
 	}
 }
 
-// 创建访问拒绝错误
+//Create access denied error
 pub fn new_access_denied_error(provider string, operation string, resource string) StorageError {
 	mut details := map[string]string{}
 	details['resource'] = resource
@@ -222,7 +222,7 @@ pub fn new_access_denied_error(provider string, operation string, resource strin
 	}
 }
 
-// 创建网络超时错误
+//Create network timeout error
 pub fn new_timeout_error(provider string, operation string) StorageError {
 	return StorageError{
 		kind: .network_timeout
@@ -236,7 +236,7 @@ pub fn new_timeout_error(provider string, operation string) StorageError {
 	}
 }
 
-// 创建服务不可用错误
+//Create service unavailable error
 pub fn new_service_unavailable_error(provider string, operation string, message string) StorageError {
 	return StorageError{
 		kind: .service_unavailable
@@ -250,7 +250,7 @@ pub fn new_service_unavailable_error(provider string, operation string, message 
 	}
 }
 
-// 创建限流错误
+//Create current limiting error
 pub fn new_rate_limited_error(provider string, operation string) StorageError {
 	return StorageError{
 		kind: .rate_limited
@@ -264,7 +264,7 @@ pub fn new_rate_limited_error(provider string, operation string) StorageError {
 	}
 }
 
-// 创建连接重置错误
+//Create connection reset error
 pub fn new_connection_reset_error(provider string, operation string) StorageError {
 	return StorageError{
 		kind: .connection_reset
@@ -278,7 +278,7 @@ pub fn new_connection_reset_error(provider string, operation string) StorageErro
 	}
 }
 
-// 创建凭据无效错误
+// Create invalid credentials error
 pub fn new_invalid_credentials_error(provider string, operation string) StorageError {
 	return StorageError{
 		kind: .invalid_credentials
@@ -292,7 +292,7 @@ pub fn new_invalid_credentials_error(provider string, operation string) StorageE
 	}
 }
 
-// 创建配额超限错误
+//Create quota overrun error
 pub fn new_quota_exceeded_error(provider string, operation string, resource string) StorageError {
 	mut details := map[string]string{}
 	details['resource'] = resource
@@ -310,10 +310,10 @@ pub fn new_quota_exceeded_error(provider string, operation string, resource stri
 
 
 // ============================================================================
-// HTTP 状态码到错误类型的映射
+// Mapping of HTTP status codes to error types
 // ============================================================================
 
-// 从 HTTP 状态码映射到错误类型
+// Map from HTTP status code to error type
 pub fn error_kind_from_http_status(status int) StorageErrorKind {
 	return match status {
 		400 { StorageErrorKind.invalid_object_key }
@@ -333,10 +333,10 @@ pub fn error_kind_from_http_status(status int) StorageErrorKind {
 }
 
 // ============================================================================
-// 提供者特定的错误映射
+// Provider-specific error mapping
 // ============================================================================
 
-// S3 错误代码映射
+// S3 error code mapping
 pub fn map_s3_error_code(error_code string, http_status int) StorageErrorKind {
 	return match error_code {
 		'AccessDenied' { StorageErrorKind.access_denied }
@@ -367,7 +367,7 @@ pub fn map_s3_error_code(error_code string, http_status int) StorageErrorKind {
 	}
 }
 
-// 阿里云 OSS 错误代码映射
+//Alibaba Cloud OSS error code mapping
 pub fn map_aliyun_oss_error_code(error_code string, http_status int) StorageErrorKind {
 	return match error_code {
 		'AccessDenied' { StorageErrorKind.access_denied }
@@ -394,7 +394,7 @@ pub fn map_aliyun_oss_error_code(error_code string, http_status int) StorageErro
 	}
 }
 
-// 腾讯云 COS 错误代码映射
+// Tencent Cloud COS error code mapping
 pub fn map_tencent_cos_error_code(error_code string, http_status int) StorageErrorKind {
 	return match error_code {
 		'AccessDenied' { StorageErrorKind.access_denied }
@@ -424,10 +424,10 @@ pub fn map_tencent_cos_error_code(error_code string, http_status int) StorageErr
 
 
 // ============================================================================
-// 从错误消息解析错误代码
+// Parse the error code from the error message
 // ============================================================================
 
-// 从 XML 错误响应中提取错误代码
+//Extract the error code from the XML error response
 pub fn extract_error_code_from_xml(body string) string {
 	if code_start := body.index('<Code>') {
 		if code_end := body.index('</Code>') {
@@ -437,7 +437,7 @@ pub fn extract_error_code_from_xml(body string) string {
 	return ''
 }
 
-// 从 XML 错误响应中提取错误消息
+//Extract the error message from the XML error response
 pub fn extract_error_message_from_xml(body string) string {
 	if message_start := body.index('<Message>') {
 		if message_end := body.index('</Message>') {
@@ -448,10 +448,10 @@ pub fn extract_error_message_from_xml(body string) string {
 }
 
 // ============================================================================
-// 创建提供者特定的错误
+// Create provider specific errors
 // ============================================================================
 
-// 从 S3 响应创建错误
+// Create error from S3 response
 pub fn new_s3_error_from_response(body string, http_status int, operation string) StorageError {
 	error_code := extract_error_code_from_xml(body)
 	error_message := extract_error_message_from_xml(body)
@@ -467,7 +467,7 @@ pub fn new_s3_error_from_response(body string, http_status int, operation string
 	return new_storage_error_with_details(kind, message, 's3', operation, http_status, details)
 }
 
-// 从阿里云 OSS 响应创建错误
+// Create error from Alibaba Cloud OSS response
 pub fn new_aliyun_oss_error_from_response(body string, http_status int, operation string) StorageError {
 	error_code := extract_error_code_from_xml(body)
 	error_message := extract_error_message_from_xml(body)
@@ -483,7 +483,7 @@ pub fn new_aliyun_oss_error_from_response(body string, http_status int, operatio
 	return new_storage_error_with_details(kind, message, 'aliyun_oss', operation, http_status, details)
 }
 
-// 从腾讯云 COS 响应创建错误
+// Create error from Tencent Cloud COS response
 pub fn new_tencent_cos_error_from_response(body string, http_status int, operation string) StorageError {
 	error_code := extract_error_code_from_xml(body)
 	error_message := extract_error_message_from_xml(body)

@@ -1,8 +1,8 @@
 import meiseayoung.hono
 import net.http
 
-// Context Store 功能测试
-// 测试 Context 的 store 字段和 get/set/get_client_ip 方法
+// Context Store function test
+//Test the store field and get/set/get_client_ip method of Context
 
 struct TestStats {
 mut:
@@ -37,7 +37,7 @@ fn (stats TestStats) print_summary() {
 	}
 }
 
-// 创建测试用的 Context
+//Create a Context for testing
 fn create_test_context() hono.Context {
 	req := http.Request{
 		method: .get
@@ -46,15 +46,15 @@ fn create_test_context() hono.Context {
 	return hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 }
 
-// 测试 1: 基本的 set 和 get 操作
+//Test 1: Basic set and get operations
 fn test_basic_set_get() bool {
 	mut ctx := create_test_context()
 	
-	// 设置值
+	// set value
 	ctx.set('user_id', '12345')
 	ctx.set('role', 'admin')
 	
-	// 获取值
+	// get value
 	if user_id := ctx.get('user_id') {
 		if user_id != '12345' {
 			return false
@@ -74,29 +74,29 @@ fn test_basic_set_get() bool {
 	return true
 }
 
-// 测试 2: 获取不存在的 key 返回 none
+//Test 2: Get non-existing key and return none
 fn test_get_nonexistent_key() bool {
 	ctx := create_test_context()
 	
-	// 获取不存在的 key
+	// Get the non-existing key
 	if _ := ctx.get('nonexistent') {
-		return false // 应该返回 none
+		return false // should return none
 	}
 	
 	return true
 }
 
-// 测试 3: 覆盖已存在的值
+// Test 3: Overwrite existing value
 fn test_overwrite_value() bool {
 	mut ctx := create_test_context()
 	
-	// 设置初始值
+	//Set initial value
 	ctx.set('key', 'value1')
 	
-	// 覆盖值
+	// override value
 	ctx.set('key', 'value2')
 	
-	// 验证新值
+	//Verify new value
 	if val := ctx.get('key') {
 		return val == 'value2'
 	}
@@ -104,14 +104,14 @@ fn test_overwrite_value() bool {
 	return false
 }
 
-// 测试 4: 空字符串值
+// Test 4: Empty string value
 fn test_empty_string_value() bool {
 	mut ctx := create_test_context()
 	
-	// 设置空字符串
+	//Set empty string
 	ctx.set('empty', '')
 	
-	// 获取空字符串
+	// Get empty string
 	if val := ctx.get('empty') {
 		return val == ''
 	}
@@ -119,16 +119,16 @@ fn test_empty_string_value() bool {
 	return false
 }
 
-// 测试 5: 多个键值对
+// Test 5: Multiple key-value pairs
 fn test_multiple_keys() bool {
 	mut ctx := create_test_context()
 	
-	// 设置多个值
+	//Set multiple values
 	for i in 0 .. 10 {
 		ctx.set('key${i}', 'value${i}')
 	}
 	
-	// 验证所有值
+	// Validate all values
 	for i in 0 .. 10 {
 		if val := ctx.get('key${i}') {
 			if val != 'value${i}' {
@@ -142,16 +142,16 @@ fn test_multiple_keys() bool {
 	return true
 }
 
-// 测试 6: get_client_ip 默认返回值
+//Test 6: get_client_ip default return value
 fn test_get_client_ip_default() bool {
 	ctx := create_test_context()
 	
-	// 没有设置任何 IP 相关头时，应返回默认值
+	// When no IP related header is set, the default value should be returned
 	ip := ctx.get_client_ip()
 	return ip == '127.0.0.1'
 }
 
-// 测试 7: get_client_ip 从 X-Forwarded-For 获取
+//Test 7: get_client_ip is obtained from X-Forwarded-For
 fn test_get_client_ip_forwarded_for() bool {
 	mut headers := http.new_header()
 	headers.add_custom('X-Forwarded-For', '192.168.1.100, 10.0.0.1') or { return false }
@@ -163,12 +163,12 @@ fn test_get_client_ip_forwarded_for() bool {
 	}
 	ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
-	// 应该返回第一个 IP
+	// should return the first IP
 	ip := ctx.get_client_ip()
 	return ip == '192.168.1.100'
 }
 
-// 测试 8: get_client_ip 从 X-Real-IP 获取
+//Test 8: get_client_ip gets from X-Real-IP
 fn test_get_client_ip_real_ip() bool {
 	mut headers := http.new_header()
 	headers.add_custom('X-Real-IP', '10.20.30.40') or { return false }
@@ -184,7 +184,7 @@ fn test_get_client_ip_real_ip() bool {
 	return ip == '10.20.30.40'
 }
 
-// 测试 9: X-Forwarded-For 优先于 X-Real-IP
+// Test 9: X-Forwarded-For takes precedence over X-Real-IP
 fn test_get_client_ip_priority() bool {
 	mut headers := http.new_header()
 	headers.add_custom('X-Forwarded-For', '1.2.3.4') or { return false }
@@ -197,17 +197,17 @@ fn test_get_client_ip_priority() bool {
 	}
 	ctx := hono.Context.new(req, map[string]string{}, map[string]string{}, '')
 	
-	// X-Forwarded-For 应该优先
+	// X-Forwarded-For should take precedence
 	ip := ctx.get_client_ip()
 	return ip == '1.2.3.4'
 }
 
-// 测试 10: store 初始化为空
+//Test 10: store initialized to empty
 fn test_store_initialized_empty() bool {
 	ctx := create_test_context()
 	
-	// 新创建的 Context 的 store 应该为空
-	// 尝试获取任何 key 都应该返回 none
+	// The store of the newly created Context should be empty
+	// Attempts to get any key should return none
 	if _ := ctx.get('any_key') {
 		return false
 	}
@@ -220,7 +220,7 @@ fn main() {
 
 	mut stats := TestStats{}
 
-	// 运行所有测试
+	//Run all tests
 	stats.run_test('基本 set/get 操作', test_basic_set_get)
 	stats.run_test('获取不存在的 key', test_get_nonexistent_key)
 	stats.run_test('覆盖已存在的值', test_overwrite_value)
@@ -232,6 +232,6 @@ fn main() {
 	stats.run_test('X-Forwarded-For 优先级', test_get_client_ip_priority)
 	stats.run_test('store 初始化为空', test_store_initialized_empty)
 
-	// 打印测试总结
+	//Print test summary
 	stats.print_summary()
 }

@@ -1,6 +1,6 @@
-// middleware.v - 中间件统一导出模块
-// 本模块提供所有内置中间件的统一访问接口
-// 使用方式: import hono 后可通过 hono.cors(), hono.jwt_middleware() 等方式调用
+// middleware.v - middleware unified export module
+// This module provides a unified access interface for all built-in middleware
+// Usage: After importing hono, it can be called through hono.cors(), hono.jwt_middleware(), etc.
 module hono
 
 import net.http
@@ -8,14 +8,14 @@ import time
 import rand
 
 // ============================================================================
-// 中间件导出说明
+// Middleware export instructions
 // ============================================================================
 //
-// 本框架提供以下 9 个内置中间件：
+// This framework provides the following 9 built-in middleware:
 //
-// 1. CORS 中间件 (cors.v)
+// 1. CORS middleware (cors.v)
 //    - cors(options ...CorsOptions) ContextMiddleware
-//    - 用于处理跨域资源共享
+// - used to handle cross-domain resource sharing
 //
 // 2. Cookie Helper (cookie.v)
 //    - get_cookie(c Context, name string) ?string
@@ -25,7 +25,7 @@ import rand
 //    - set_signed_cookie(mut c Context, name string, value string, secret string, options ...CookieOptions) !
 //    - get_signed_cookie(c Context, name string, secret string) !string
 //
-// 3. JWT 中间件 (jwt.v)
+// 3. JWT middleware (jwt.v)
 //    - jwt_middleware(options JwtOptions) ContextMiddleware
 //    - sign_jwt(payload JwtPayload, secret string, alg JwtAlgorithm) !string
 //    - verify_jwt(token string, secret string, alg JwtAlgorithm) !JwtPayload
@@ -33,21 +33,21 @@ import rand
 //    - get_jwt_payload(c Context) ?JwtPayload
 //    - get_jwt_claim(c Context, key string) ?string
 //
-// 4. Bearer Auth 中间件 (bearer_auth.v)
+// 4. Bearer Auth middleware (bearer_auth.v)
 //    - bearer_auth(options BearerAuthOptions) ContextMiddleware
 //    - get_bearer_token(c Context) ?string
 //
-// 5. 压缩中间件 (compress.v)
+// 5. Compression middleware (compress.v)
 //    - compress(options ...CompressOptions) ContextMiddleware
 //    - decompress_gzip(data []u8) ![]u8
 //    - decompress_deflate(data []u8) ![]u8
 //
-// 6. 限流中间件 (rate_limit.v)
+// 6. Rate limiting middleware (rate_limit.v)
 //    - rate_limit(options RateLimitOptions) ContextMiddleware
 //    - MemoryStore.new() &MemoryStore
 //    - get_rate_limit_info(c Context) ?RateLimitInfo
 //
-// 7. 请求验证系统 (validator.v)
+// 7. Request verification system (validator.v)
 //    - validator(target ValidationTarget, schema ObjectSchema, options ...ValidatorOptions) ContextMiddleware
 //    - v_string() StringSchema
 //    - v_int() IntSchema
@@ -61,58 +61,58 @@ import rand
 //
 // 8. WebSocket Helper (websocket.v)
 //    - upgrade_websocket(factory WSHandlerFactory, options ...WebSocketOptions) fn (mut Context) http.Response
-//    - 用于处理 WebSocket 连接升级和事件处理
+// - Used to handle WebSocket connection upgrades and event handling
 //
 //    Types:
-//    - WebSocketOptions: 配置选项 (ping_interval, max_message_size, timeout, protocols)
-//    - WSReadyState: 连接状态枚举 (connecting, open, closing, closed)
-//    - WSMessageEvent: 消息事件结构
-//    - WSCloseEvent: 关闭事件结构
-//    - WSContext: WebSocket 上下文，提供 send/send_bytes/send_json/close 方法
-//    - WSEvents: 事件处理器配置 (on_open, on_message, on_close, on_error)
-//    - WSHandlerFactory: 处理器工厂函数类型
+// - WebSocketOptions: configuration options (ping_interval, max_message_size, timeout, protocols)
+// - WSReadyState: connection state enumeration (connecting, open, closing, closed)
+// - WSMessageEvent: message event structure
+// - WSCloseEvent: close event structure
+// - WSContext: WebSocket context, provides send/send_bytes/send_json/close method
+// - WSEvents: event handler configuration (on_open, on_message, on_close, on_error)
+// - WSHandlerFactory: processor factory function type
 //
 //    Constants:
 //    - ws_opcode_text, ws_opcode_binary, ws_opcode_close, ws_opcode_ping, ws_opcode_pong
 //    - ws_close_normal, ws_close_going_away, ws_close_protocol_error, etc.
 //
 //    Helper Functions:
-//    - is_websocket_upgrade(c Context) bool: 检查是否为 WebSocket 升级请求
-//    - compute_accept_key(key string) string: 计算 Sec-WebSocket-Accept
-//    - encode_ws_frame(opcode u8, payload []u8, masked bool) []u8: 编码 WebSocket 帧
-//    - decode_ws_frame(data []u8) !WSFrame: 解码 WebSocket 帧
+// - is_websocket_upgrade(c Context) bool: Check whether it is a WebSocket upgrade request
+// - compute_accept_key(key string) string: compute Sec-WebSocket-Accept
+// - encode_ws_frame(opcode u8, payload []u8, masked bool) []u8: encode WebSocket frame
+// - decode_ws_frame(data []u8) !WSFrame: Decode WebSocket frame
 //
-// 9. Swagger UI 中间件 (swagger.v)
+// 9. Swagger UI middleware (swagger.v)
 //    - swagger_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response
 //    - swagger_ui_handler(options ...SwaggerUIOptions) fn (mut Context) http.Response
-//    - 用于提供交互式 API 文档界面
+// - used to provide an interactive API documentation interface
 //
 //    Types:
-//    - SwaggerUIOptions: 配置选项
-//      - url: OpenAPI 文档 URL (默认: '/doc')
-//      - title: 页面标题 (默认: 'API Documentation')
-//      - deep_linking: 启用深度链接 (默认: true)
-//      - display_request_duration: 显示请求耗时 (默认: true)
-//      - default_models_expand_depth: 模型展开深度 (默认: 1)
-//      - doc_expansion: 文档展开方式 ('list', 'full', 'none')
-//      - filter: 启用过滤
-//      - show_extensions: 显示扩展
-//      - show_common_extensions: 显示常用扩展 (默认: true)
-//      - try_it_out_enabled: 启用 Try it out (默认: true)
-//      - custom_css: 自定义 CSS
-//      - custom_js: 自定义 JavaScript
-//      - custom_css_url: 自定义 CSS URL
-//      - custom_js_url: 自定义 JavaScript URL
+// - SwaggerUIOptions: configuration options
+// - url: OpenAPI documentation URL (default: '/doc')
+// - title: page title (default: 'API Documentation')
+// - deep_linking: enable deep linking (default: true)
+// - display_request_duration: display request duration (default: true)
+// - default_models_expand_depth: model expansion depth (default: 1)
+// - doc_expansion: document expansion method ('list', 'full', 'none')
+// - filter: enable filtering
+// - show_extensions: show extensions
+// - show_common_extensions: Show common extensions (default: true)
+// - try_it_out_enabled: enable Try it out (default: true)
+// - custom_css: Custom CSS
+// - custom_js: custom JavaScript
+// - custom_css_url: Custom CSS URL
+// - custom_js_url: Custom JavaScript URL
 //
-//    OpenAPI 文档相关 (openapi.v):
-//    - OpenAPIDocument: OpenAPI 文档主结构
-//    - OpenAPIBuilder: 流式 API 构建器
-//    - app.doc(path, spec): 注册 OpenAPI 文档路由
-//    - app.doc_fn(path, builder): 使用构建器函数注册文档路由
-//    - app.get_routes(): 获取应用的所有路由信息
+// OpenAPI documentation related (openapi.v):
+// - OpenAPIDocument: OpenAPI document main structure
+// - OpenAPIBuilder: Streaming API builder
+// - app.doc(path, spec): Register OpenAPI document route
+// - app.doc_fn(path, builder): Register the document route using the builder function
+// - app.get_routes(): Get all routing information of the application
 //
-//    使用示例:
-//      // 1. 创建 OpenAPI 文档
+// Usage example:
+// // 1. Create OpenAPI documentation
 //      spec := hono.OpenAPIBuilder.new()
 //          .openapi('3.0.0')
 //          .title('My API')
@@ -127,43 +127,43 @@ import rand
 //              .done()
 //          .build()!
 //
-//      // 2. 注册 OpenAPI 文档路由
+// // 2. Register OpenAPI document route
 //      app.doc('/doc', spec)
 //
-//      // 3. 注册 Swagger UI 路由
+// // 3. Register Swagger UI route
 //      app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
 //
 // ============================================================================
 
 // ============================================================================
-// 中间件快捷别名函数
-// 提供更简洁的调用方式，与 Hono.js 风格保持一致
+//Middleware shortcut alias function
+// Provide a more concise calling method, consistent with the Hono.js style
 // ============================================================================
 
-// cors_middleware - CORS 中间件的别名函数
-// 使用示例:
+// cors_middleware - alias function for CORS middleware
+// Usage example:
 //   app.use(hono.cors_middleware())
 //   app.use(hono.cors_middleware(CorsOptions{ origin: 'https://example.com' }))
 pub fn cors_middleware(options ...CorsOptions) ContextMiddleware {
 	return cors(...options)
 }
 
-// jwt_auth - JWT 认证中间件的别名函数
-// 使用示例:
+// jwt_auth - Alias ​​function for JWT authentication middleware
+// Usage example:
 //   app.use('/api/*', hono.jwt_auth(JwtOptions{ secret: 'my-secret' }))
 pub fn jwt_auth(options JwtOptions) ContextMiddleware {
 	return jwt_middleware(options)
 }
 
-// bearer - Bearer Token 认证中间件的别名函数
-// 使用示例:
+// bearer - Alias ​​function of Bearer Token authentication middleware
+// Usage example:
 //   app.use('/api/*', hono.bearer(BearerAuthOptions{ token: 'my-token' }))
 pub fn bearer(options BearerAuthOptions) ContextMiddleware {
 	return bearer_auth(options)
 }
 
-// gzip - 压缩中间件的别名函数（默认使用 gzip）
-// 使用示例:
+// gzip - alias function for compression middleware (default uses gzip)
+// Usage example:
 //   app.use(hono.gzip())
 pub fn gzip(options ...CompressOptions) ContextMiddleware {
 	if options.len > 0 {
@@ -174,8 +174,8 @@ pub fn gzip(options ...CompressOptions) ContextMiddleware {
 	})
 }
 
-// deflate_compress - 压缩中间件的别名函数（使用 deflate）
-// 使用示例:
+// deflate_compress - alias function for compression middleware (using deflate)
+// Usage example:
 //   app.use(hono.deflate_compress())
 pub fn deflate_compress(options ...CompressOptions) ContextMiddleware {
 	if options.len > 0 {
@@ -186,16 +186,16 @@ pub fn deflate_compress(options ...CompressOptions) ContextMiddleware {
 	})
 }
 
-// rate_limiter - 限流中间件的别名函数
-// 使用示例:
+// rate_limiter - Alias ​​function of rate limiting middleware
+// Usage example:
 //   store := MemoryStore.new()
 //   app.use(hono.rate_limiter(RateLimitOptions{ store: store, limit: 100 }))
 pub fn rate_limiter(options RateLimitOptions) ContextMiddleware {
 	return rate_limit(options)
 }
 
-// validate_json - JSON body 验证中间件的便捷函数
-// 使用示例:
+// validate_json - Convenience function for JSON body validation middleware
+// Usage example:
 //   app.post('/users', hono.validate_json(v_object({
 //       'name': v_string().required()
 //       'email': v_string().required()
@@ -204,8 +204,8 @@ pub fn validate_json(schema ObjectSchema, options ...ValidatorOptions) ContextMi
 	return validator(.json, schema, ...options)
 }
 
-// validate_query - Query 参数验证中间件的便捷函数
-// 使用示例:
+// validate_query - Convenience function for Query parameter validation middleware
+// Usage example:
 //   app.get('/search', hono.validate_query(v_object({
 //       'q': v_string().required()
 //       'page': v_int().min(1)
@@ -214,8 +214,8 @@ pub fn validate_query(schema ObjectSchema, options ...ValidatorOptions) ContextM
 	return validator(.query, schema, ...options)
 }
 
-// validate_params - Path 参数验证中间件的便捷函数
-// 使用示例:
+// validate_params - Convenience function for Path parameter validation middleware
+// Usage example:
 //   app.get('/users/:id', hono.validate_params(v_object({
 //       'id': v_int().required().min(1)
 //   })), handler)
@@ -223,8 +223,8 @@ pub fn validate_params(schema ObjectSchema, options ...ValidatorOptions) Context
 	return validator(.param, schema, ...options)
 }
 
-// validate_headers - Header 验证中间件的便捷函数
-// 使用示例:
+// validate_headers - Convenience function for Header validation middleware
+// Usage example:
 //   app.use(hono.validate_headers(v_object({
 //       'X-API-Key': v_string().required()
 //   })))
@@ -232,8 +232,8 @@ pub fn validate_headers(schema ObjectSchema, options ...ValidatorOptions) Contex
 	return validator(.header, schema, ...options)
 }
 
-// validate_form - Form 数据验证中间件的便捷函数
-// 使用示例:
+// validate_form - Convenience function for Form data validation middleware
+// Usage example:
 //   app.post('/login', hono.validate_form(v_object({
 //       'username': v_string().required()
 //       'password': v_string().required().min(6)
@@ -243,11 +243,11 @@ pub fn validate_form(schema ObjectSchema, options ...ValidatorOptions) ContextMi
 }
 
 // ============================================================================
-// 中间件组合工具
+//Middleware combination tool
 // ============================================================================
 
-// combine_middlewares - 组合多个中间件为一个
-// 使用示例:
+// combine_middlewares - combines multiple middlewares into one
+// Usage example:
 //   combined := hono.combine_middlewares([
 //       hono.cors_middleware(),
 //       hono.gzip(),
@@ -256,12 +256,12 @@ pub fn validate_form(schema ObjectSchema, options ...ValidatorOptions) ContextMi
 //   app.use(combined)
 pub fn combine_middlewares(middlewares []ContextMiddleware) ContextMiddleware {
 	return fn [middlewares] (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 递归执行中间件链
+		// Recursive execution middleware chain
 		return execute_middleware_chain(0, middlewares, mut c, next)
 	}
 }
 
-// execute_middleware_chain - 递归执行中间件链
+// execute_middleware_chain - recursive execution middleware chain
 fn execute_middleware_chain(idx int, middlewares []ContextMiddleware, mut c Context, final_next fn (mut Context) http.Response) http.Response {
 	if idx >= middlewares.len {
 		return final_next(mut c)
@@ -274,14 +274,14 @@ fn execute_middleware_chain(idx int, middlewares []ContextMiddleware, mut c Cont
 }
 
 // ============================================================================
-// 预配置中间件工厂
+// Pre-configured middleware factory
 // ============================================================================
 
-// secure_headers - 安全响应头中间件
-// 添加常用的安全响应头
+// secure_headers - secure response header middleware
+//Add commonly used security response headers
 pub fn secure_headers() ContextMiddleware {
 	return fn (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 设置安全响应头
+		//Set security response header
 		c.headers['X-Content-Type-Options'] = 'nosniff'
 		c.headers['X-Frame-Options'] = 'DENY'
 		c.headers['X-XSS-Protection'] = '1; mode=block'
@@ -291,11 +291,11 @@ pub fn secure_headers() ContextMiddleware {
 	}
 }
 
-// request_id - 请求 ID 中间件
-// 为每个请求生成唯一 ID
+// request_id - request ID middleware
+// Generate a unique ID for each request
 pub fn request_id() ContextMiddleware {
 	return fn (mut c Context, next fn (mut Context) http.Response) http.Response {
-		// 检查是否已有请求 ID
+		// Check if there is already a request ID
 		existing_id := c.req.header.get_custom('X-Request-ID') or { '' }
 		
 		request_id := if existing_id.len > 0 {
@@ -304,40 +304,40 @@ pub fn request_id() ContextMiddleware {
 			generate_request_id()
 		}
 		
-		// 存储到 Context
+		// Store in Context
 		c.set('request_id', request_id)
 		
-		// 添加到响应头
+		//Add to response header
 		c.headers['X-Request-ID'] = request_id
 		
 		return next(mut c)
 	}
 }
 
-// generate_request_id - 生成简单的请求 ID
+// generate_request_id - Generate a simple request ID
 fn generate_request_id() string {
 	timestamp := time.now().unix_milli()
 	random_part := rand.u32()
 	return '${timestamp:x}-${random_part:08x}'
 }
 
-// timing - 请求计时中间件
-// 记录请求处理时间
+// timing - request timing middleware
+// Record request processing time
 pub fn timing() ContextMiddleware {
 	return fn (mut c Context, next fn (mut Context) http.Response) http.Response {
 		start := time.now()
 		
-		// 执行后续处理
+		//Perform subsequent processing
 		response := next(mut c)
 		
-		// 计算耗时
+		// Calculation time
 		duration := time.since(start)
 		duration_ms := duration.milliseconds()
 		
-		// 存储到 Context
+		// Store in Context
 		c.set('request_duration_ms', duration_ms.str())
 		
-		// 添加到响应头
+		//Add to response header
 		c.headers['X-Response-Time'] = '${duration_ms}ms'
 		
 		return response
@@ -346,37 +346,37 @@ pub fn timing() ContextMiddleware {
 
 
 // ============================================================================
-// Swagger UI 中间件导出
+// Swagger UI middleware export
 // ============================================================================
 //
-// Swagger UI 中间件提供交互式 API 文档界面，支持 OpenAPI 3.0/3.1 规范。
-// 主要功能通过 swagger.v 和 openapi.v 文件导出，包括：
+// Swagger UI middleware provides an interactive API document interface and supports the OpenAPI 3.0/3.1 specification.
+//The main functions are exported through swagger.v and openapi.v files, including:
 //
-// 核心函数:
-//   - swagger_ui(options...) - 创建 Swagger UI 处理器
-//   - swagger_ui_handler(options...) - swagger_ui 的别名
-//   - app.doc(path, spec) - 注册 OpenAPI 文档路由
-//   - app.doc_fn(path, builder) - 使用构建器函数注册文档路由
+// Core function:
+// - swagger_ui(options...) - Create a Swagger UI handler
+// - swagger_ui_handler(options...) - Alias ​​for swagger_ui
+// - app.doc(path, spec) - Register the OpenAPI document route
+// - app.doc_fn(path, builder) - Register the document route using the builder function
 //
-// 类型定义:
-//   - SwaggerUIOptions - Swagger UI 配置选项
-//   - OpenAPIDocument - OpenAPI 文档主结构
-//   - OpenAPIBuilder - 流式 API 构建器
-//   - OpenAPIInfo, OpenAPIServer, OpenAPIPathItem, OpenAPIOperation 等
+//Type definition:
+// - SwaggerUIOptions - Swagger UI configuration options
+// - OpenAPIDocument - OpenAPI document main structure
+// - OpenAPIBuilder - Streaming API builder
+// - OpenAPIInfo, OpenAPIServer, OpenAPIPathItem, OpenAPIOperation, etc.
 //
-// 使用示例:
-//   // 创建 OpenAPI 文档
+// Usage example:
+// // Create OpenAPI documentation
 //   spec := hono.OpenAPIBuilder.new()
 //       .openapi('3.0.0')
 //       .title('My API')
 //       .version('1.0.0')
 //       .build()!
 //
-//   // 注册文档和 UI 路由
+// // Register documents and UI routes
 //   app.doc('/doc', spec)
 //   app.get('/ui', hono.swagger_ui(hono.SwaggerUIOptions{ url: '/doc' }))
 //
-// 带自定义选项:
+//With custom options:
 //   app.get('/swagger', hono.swagger_ui(hono.SwaggerUIOptions{
 //       url: '/api/doc'
 //       title: 'My API Documentation'
@@ -387,15 +387,15 @@ pub fn timing() ContextMiddleware {
 //   }))
 // ============================================================================
 
-// swagger - Swagger UI 处理器的简短别名
-// 使用示例:
+// swagger - short alias for the Swagger UI handler
+// Usage example:
 //   app.get('/docs', hono.swagger(hono.SwaggerUIOptions{ url: '/doc' }))
 pub fn swagger(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	return swagger_ui(...options)
 }
 
-// openapi_ui - Swagger UI 处理器的另一个别名
-// 使用示例:
+// openapi_ui - Another alias for the Swagger UI handler
+// Usage example:
 //   app.get('/api-docs', hono.openapi_ui(hono.SwaggerUIOptions{ url: '/openapi.json' }))
 pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 	return swagger_ui(...options)
@@ -403,35 +403,35 @@ pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 
 
 // ============================================================================
-// WebSocket Helper 导出
+// WebSocket Helper export
 // ============================================================================
 //
-// WebSocket Helper 提供服务端 WebSocket 支持，实现 RFC 6455 协议。
-// 主要功能通过 websocket.v 文件导出，包括：
+// WebSocket Helper provides server-side WebSocket support and implements the RFC 6455 protocol.
+//The main functions are exported through the websocket.v file, including:
 //
-// 核心函数:
-//   - upgrade_websocket(factory, options...) - 创建 WebSocket 升级处理器
-//   - is_websocket_upgrade(c) - 检查是否为 WebSocket 升级请求
+// Core function:
+// - upgrade_websocket(factory, options...) - Create WebSocket upgrade handler
+// - is_websocket_upgrade(c) - Check if it is a WebSocket upgrade request
 //
-// 类型定义:
-//   - WebSocketOptions - 配置选项
-//   - WSReadyState - 连接状态枚举
-//   - WSMessageEvent - 消息事件
-//   - WSCloseEvent - 关闭事件
-//   - WSContext - WebSocket 上下文
-//   - WSEvents - 事件处理器配置
-//   - WSHandlerFactory - 处理器工厂类型
+//Type definition:
+// - WebSocketOptions - configuration options
+// - WSReadyState - connection state enumeration
+// - WSMessageEvent - message event
+// - WSCloseEvent - close event
+// - WSContext - WebSocket context
+// - WSEvents - event handler configuration
+// - WSHandlerFactory - Processor factory type
 //
-// 常量:
-//   - ws_opcode_* - WebSocket 操作码
-//   - ws_close_* - WebSocket 关闭状态码
+// constants:
+// - ws_opcode_* - WebSocket opcodes
+// - ws_close_* - WebSocket close status code
 //
-// 帧处理函数:
-//   - encode_ws_frame() - 编码 WebSocket 帧
-//   - decode_ws_frame() - 解码 WebSocket 帧
-//   - compute_accept_key() - 计算握手响应密钥
+// Frame processing function:
+// - encode_ws_frame() - Encode WebSocket frame
+// - decode_ws_frame() - Decode WebSocket frames
+// - compute_accept_key() - compute the handshake response key
 //
-// 使用示例:
+// Usage example:
 //   app.get('/ws', hono.upgrade_websocket(fn (c hono.Context) hono.WSEvents {
 //       return hono.WSEvents{
 //           on_open: fn (mut ws hono.WSContext) {
@@ -446,17 +446,17 @@ pub fn openapi_ui(options ...SwaggerUIOptions) fn (mut Context) http.Response {
 //       }
 //   }))
 //
-// 带配置选项:
+//With configuration options:
 //   app.get('/ws', hono.upgrade_websocket(factory, hono.WebSocketOptions{
-//       ping_interval: 30000      // 30秒 ping 间隔
-//       max_message_size: 1048576 // 1MB 最大消息大小
-//       timeout: 60000            // 60秒超时
-//       protocols: ['chat', 'json'] // 支持的子协议
+// ping_interval: 30000 // 30 seconds ping interval
+// max_message_size: 1048576 // 1MB maximum message size
+// timeout: 60000 // 60 seconds timeout
+// protocols: ['chat', 'json'] // Supported sub-protocols
 //   }))
 // ============================================================================
 
-// websocket - WebSocket 升级处理器的别名函数
-// 使用示例:
+// websocket - Alias ​​function for WebSocket upgrade handler
+// Usage example:
 //   app.get('/ws', hono.websocket(fn (c hono.Context) hono.WSEvents {
 //       return hono.WSEvents{
 //           on_message: fn (event hono.WSMessageEvent, mut ws hono.WSContext) {
@@ -468,15 +468,15 @@ pub fn websocket(factory WSHandlerFactory, options ...WebSocketOptions) fn (mut 
 	return upgrade_websocket(factory, ...options)
 }
 
-// ws - WebSocket 升级处理器的简短别名
-// 使用示例:
+// ws - Short alias for the WebSocket upgrade handler
+// Usage example:
 //   app.get('/ws', hono.ws(handler_factory))
 pub fn ws(factory WSHandlerFactory, options ...WebSocketOptions) fn (mut Context) http.Response {
 	return upgrade_websocket(factory, ...options)
 }
 
-// is_ws_upgrade - 检查请求是否为 WebSocket 升级请求的别名
-// 使用示例:
+// is_ws_upgrade - Checks if the request is an alias for a WebSocket upgrade request
+// Usage example:
 //   if hono.is_ws_upgrade(c) {
 //       // Handle WebSocket upgrade
 //   }

@@ -6,10 +6,10 @@ import os
 import time
 
 // ============================================================================
-// HTTP 请求/响应结构
+//HTTP request/response structure
 // ============================================================================
 
-// 文件上传请求（JSON 格式）
+//File upload request (JSON format)
 pub struct UploadRequest {
 pub:
 	bucket       string @[json: 'bucket']
@@ -18,7 +18,7 @@ pub:
 	metadata     string @[json: 'metadata']
 }
 
-// 分片上传初始化请求
+// Multipart upload initialization request
 pub struct InitMultipartRequest {
 pub:
 	bucket       string @[json: 'bucket']
@@ -28,19 +28,19 @@ pub:
 	chunk_size   int    @[json: 'chunk_size']
 }
 
-// 分片上传完成请求
+//Multiple upload completion request
 pub struct CompleteMultipartRequest {
 pub:
 	upload_id string @[json: 'upload_id']
 }
 
-// 分片上传取消请求
+//Multiple upload cancellation request
 pub struct AbortMultipartRequest {
 pub:
 	upload_id string @[json: 'upload_id']
 }
 
-// 预签名 URL 请求
+// Pre-signed URL request
 pub struct PresignRequest {
 pub:
 	file_uuid  string @[json: 'file_uuid']
@@ -48,7 +48,7 @@ pub:
 	method     string @[json: 'method']
 }
 
-// 文件列表请求
+//File list request
 pub struct ListFilesRequest {
 pub:
 	bucket       string @[json: 'bucket']
@@ -58,15 +58,15 @@ pub:
 	offset       int    @[json: 'offset']
 }
 
-// 通用 API 响应
+// Generic API response
 pub struct StorageApiResponse {
 pub:
 	success bool   @[json: 'success']
 	message string @[json: 'message']
-	data    string @[json: 'data'] // JSON 编码的数据
+	data    string @[json: 'data'] // JSON encoded data
 }
 
-// 存储错误响应
+// store error response
 pub struct StorageErrorResponse {
 pub:
 	success bool   @[json: 'success']
@@ -75,15 +75,15 @@ pub:
 }
 
 // ============================================================================
-// HTTP 处理器
+// HTTP handler
 // ============================================================================
 
-// 处理文件上传（单文件）
+// Process file upload (single file)
 // POST /upload
 // Content-Type: multipart/form-data
-// 表单字段: file (文件), bucket (可选), metadata (可选 JSON)
+// Form fields: file (file), bucket (optional), metadata (optional JSON)
 pub fn (mut fs FileService) handle_upload(mut ctx Context) http.Response {
-	// 解析 multipart 表单数据
+	// Parse multipart form data
 	content_type := ctx.req.header.get(.content_type) or { '' }
 	
 	if !content_type.starts_with('multipart/form-data') {
@@ -95,7 +95,7 @@ pub fn (mut fs FileService) handle_upload(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 使用 v-hono 的 multipart 解析器
+	//Use vono's multipart parser
 	parser := new_multipart_parser(content_type, ctx.body) or {
 		ctx.status(400)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -114,7 +114,7 @@ pub fn (mut fs FileService) handle_upload(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 提取表单字段
+	//Extract form fields
 	mut file_data := []u8{}
 	mut filename := ''
 	mut file_content_type := 'application/octet-stream'
@@ -152,7 +152,7 @@ pub fn (mut fs FileService) handle_upload(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 上传文件
+	//Upload file
 	result := fs.upload_file(UploadParams{
 		bucket: bucket
 		filename: filename
@@ -171,7 +171,7 @@ pub fn (mut fs FileService) handle_upload(mut ctx Context) http.Response {
 	return ctx.json(json2.encode[UploadResult](result))
 }
 
-// 处理文件下载
+// Process file download
 // GET /download/:file_uuid
 pub fn (mut fs FileService) handle_download(mut ctx Context) http.Response {
 	file_uuid := ctx.params['file_uuid'] or {
@@ -183,7 +183,7 @@ pub fn (mut fs FileService) handle_download(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 获取文件信息
+	// Get file information
 	file_info := fs.get_file_info(file_uuid) or {
 		ctx.status(404)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -193,14 +193,14 @@ pub fn (mut fs FileService) handle_download(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 检查 Range 请求
+	// Check the Range request
 	range_header := ctx.req.header.get_custom('Range') or { '' }
 	
 	if range_header != '' {
 		return fs.handle_range_download(mut ctx, file_info, range_header)
 	}
 	
-	// 下载文件
+	// Download file
 	data := fs.download_file(file_uuid) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -210,7 +210,7 @@ pub fn (mut fs FileService) handle_download(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 设置响应头
+	//Set response headers
 	ctx.headers['Content-Type'] = file_info.file_type
 	ctx.headers['Content-Length'] = data.len.str()
 	ctx.headers['Content-Disposition'] = 'attachment; filename="${file_info.file_name}"'
@@ -230,9 +230,9 @@ pub fn (mut fs FileService) handle_download(mut ctx Context) http.Response {
 	}
 }
 
-// 处理 Range 请求下载
+// Handle Range request download
 fn (mut fs FileService) handle_range_download(mut ctx Context, file_info FileInfo, range_header string) http.Response {
-	// 解析 Range 头
+	// Parse the Range header
 	if !range_header.starts_with('bytes=') {
 		ctx.status(416)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -264,7 +264,7 @@ fn (mut fs FileService) handle_range_download(mut ctx Context, file_info FileInf
 		end = parts[1].i64()
 	}
 	
-	// 验证范围
+	// Validation scope
 	if start < 0 || start >= file_size || end < start || end >= file_size {
 		ctx.status(416)
 		ctx.headers['Content-Range'] = 'bytes */${file_size}'
@@ -275,7 +275,7 @@ fn (mut fs FileService) handle_range_download(mut ctx Context, file_info FileInf
 		}))
 	}
 	
-	// 下载完整文件
+	// Download the complete file
 	data := fs.download_file(file_info.file_uuid) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -285,11 +285,11 @@ fn (mut fs FileService) handle_range_download(mut ctx Context, file_info FileInf
 		}))
 	}
 	
-	// 提取范围数据
+	//Extract range data
 	range_data := data[int(start)..int(end) + 1]
 	content_length := end - start + 1
 	
-	// 设置响应头
+	//Set response headers
 	ctx.headers['Content-Type'] = file_info.file_type
 	ctx.headers['Content-Length'] = content_length.str()
 	ctx.headers['Content-Range'] = 'bytes ${start}-${end}/${file_size}'
@@ -309,7 +309,7 @@ fn (mut fs FileService) handle_range_download(mut ctx Context, file_info FileInf
 	}
 }
 
-// 处理文件删除
+// Handle file deletion
 // DELETE /files/:file_uuid
 pub fn (mut fs FileService) handle_delete(mut ctx Context) http.Response {
 	file_uuid := ctx.params['file_uuid'] or {
@@ -321,7 +321,7 @@ pub fn (mut fs FileService) handle_delete(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 删除文件
+	// delete file
 	fs.delete_file(file_uuid) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -341,13 +341,13 @@ pub fn (mut fs FileService) handle_delete(mut ctx Context) http.Response {
 
 
 // ============================================================================
-// 分片上传处理器
+//Multiple upload processor
 // ============================================================================
 
-// 初始化分片上传
+//Initialize multipart upload
 // POST /multipart/init
 pub fn (mut fs FileService) handle_init_multipart(mut ctx Context) http.Response {
-	// 解析请求体
+	// Parse the request body
 	req := json2.decode[InitMultipartRequest](ctx.body) or {
 		ctx.status(400)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -366,10 +366,10 @@ pub fn (mut fs FileService) handle_init_multipart(mut ctx Context) http.Response
 		}))
 	}
 	
-	// 生成对象键
+	// Generate object key
 	object_key := generate_multipart_object_key(req.filename)
 	
-	// 初始化分片上传
+	//Initialize multipart upload
 	upload := fs.init_multipart_upload(InitMultipartParams{
 		bucket: req.bucket
 		object_key: object_key
@@ -390,7 +390,7 @@ pub fn (mut fs FileService) handle_init_multipart(mut ctx Context) http.Response
 	return ctx.json(json2.encode[MultipartUpload](upload))
 }
 
-// 上传分片
+//Upload fragments
 // POST /multipart/upload/:upload_id/:part_number
 pub fn (mut fs FileService) handle_upload_part(mut ctx Context) http.Response {
 	upload_id := ctx.params['upload_id'] or {
@@ -421,7 +421,7 @@ pub fn (mut fs FileService) handle_upload_part(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 获取分片数据
+	// Get shard data
 	data := ctx.body.bytes()
 	if data.len == 0 {
 		ctx.status(400)
@@ -432,7 +432,7 @@ pub fn (mut fs FileService) handle_upload_part(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 上传分片
+	//Upload fragments
 	result := fs.upload_part(upload_id, part_number, data) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -455,10 +455,10 @@ pub fn (mut fs FileService) handle_upload_part(mut ctx Context) http.Response {
 	return ctx.json(json2.encode[ChunkUploadResult](result))
 }
 
-// 完成分片上传
+//Complete multipart upload
 // POST /multipart/complete
 pub fn (mut fs FileService) handle_complete_multipart(mut ctx Context) http.Response {
-	// 解析请求体
+	// Parse the request body
 	req := json2.decode[CompleteMultipartRequest](ctx.body) or {
 		ctx.status(400)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -477,7 +477,7 @@ pub fn (mut fs FileService) handle_complete_multipart(mut ctx Context) http.Resp
 		}))
 	}
 	
-	// 完成上传
+	//Complete upload
 	result := fs.complete_multipart_upload(req.upload_id) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -491,10 +491,10 @@ pub fn (mut fs FileService) handle_complete_multipart(mut ctx Context) http.Resp
 	return ctx.json(json2.encode[StorageResult](result))
 }
 
-// 取消分片上传
+//Cancel multipart upload
 // POST /multipart/abort
 pub fn (mut fs FileService) handle_abort_multipart(mut ctx Context) http.Response {
-	// 解析请求体
+	// Parse the request body
 	req := json2.decode[AbortMultipartRequest](ctx.body) or {
 		ctx.status(400)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -513,7 +513,7 @@ pub fn (mut fs FileService) handle_abort_multipart(mut ctx Context) http.Respons
 		}))
 	}
 	
-	// 取消上传
+	// Cancel upload
 	fs.abort_multipart_upload(req.upload_id) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -531,7 +531,7 @@ pub fn (mut fs FileService) handle_abort_multipart(mut ctx Context) http.Respons
 	}))
 }
 
-// 获取上传进度
+// Get upload progress
 // GET /multipart/progress/:upload_id
 pub fn (fs FileService) handle_upload_progress(mut ctx Context) http.Response {
 	upload_id := ctx.params['upload_id'] or {
@@ -543,7 +543,7 @@ pub fn (fs FileService) handle_upload_progress(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 获取进度
+	// Get progress
 	progress := fs.get_upload_progress(upload_id) or {
 		ctx.status(404)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -559,10 +559,10 @@ pub fn (fs FileService) handle_upload_progress(mut ctx Context) http.Response {
 
 
 // ============================================================================
-// 文件列表和元数据处理器
+//File list and metadata processor
 // ============================================================================
 
-// 获取文件列表
+// Get file list
 // GET /files?bucket=xxx&prefix=xxx&limit=100&offset=0
 pub fn (fs FileService) handle_list_files(mut ctx Context) http.Response {
 	bucket := ctx.query['bucket'] or { '' }
@@ -574,7 +574,7 @@ pub fn (fs FileService) handle_list_files(mut ctx Context) http.Response {
 	limit := limit_str.int()
 	offset := offset_str.int()
 	
-	// 查询文件列表
+	//Query file list
 	result := fs.list_files(FileListOptions{
 		bucket: bucket
 		prefix: prefix
@@ -594,7 +594,7 @@ pub fn (fs FileService) handle_list_files(mut ctx Context) http.Response {
 	return ctx.json(json2.encode[FileListResult](result))
 }
 
-// 获取文件信息
+// Get file information
 // GET /files/:file_uuid/info
 pub fn (fs FileService) handle_get_file_info(mut ctx Context) http.Response {
 	file_uuid := ctx.params['file_uuid'] or {
@@ -606,7 +606,7 @@ pub fn (fs FileService) handle_get_file_info(mut ctx Context) http.Response {
 		}))
 	}
 	
-	// 获取文件信息
+	// Get file information
 	file_info := fs.get_file_info(file_uuid) or {
 		ctx.status(404)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -620,10 +620,10 @@ pub fn (fs FileService) handle_get_file_info(mut ctx Context) http.Response {
 	return ctx.json(json2.encode[FileInfo](file_info))
 }
 
-// 获取预签名 URL
+// Get pre-signed URL
 // POST /presign
 pub fn (mut fs FileService) handle_presign(mut ctx Context) http.Response {
-	// 解析请求体
+	// Parse the request body
 	req := json2.decode[PresignRequest](ctx.body) or {
 		ctx.status(400)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -644,7 +644,7 @@ pub fn (mut fs FileService) handle_presign(mut ctx Context) http.Response {
 	
 	expires_in := if req.expires_in > 0 { req.expires_in } else { 3600 }
 	
-	// 生成预签名 URL
+	// Generate pre-signed URL
 	result := fs.get_presigned_url(req.file_uuid, expires_in) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -658,7 +658,7 @@ pub fn (mut fs FileService) handle_presign(mut ctx Context) http.Response {
 	return ctx.json(json2.encode[PresignResult](result))
 }
 
-// 获取预签名 URL (GET 方式)
+// Get the pre-signed URL (GET method)
 // GET /presign/:file_uuid?expires_in=3600
 pub fn (mut fs FileService) handle_presign_get(mut ctx Context) http.Response {
 	file_uuid := ctx.params['file_uuid'] or {
@@ -676,7 +676,7 @@ pub fn (mut fs FileService) handle_presign_get(mut ctx Context) http.Response {
 		expires_in = 3600
 	}
 	
-	// 生成预签名 URL
+	// Generate pre-signed URL
 	result := fs.get_presigned_url(file_uuid, expires_in) or {
 		ctx.status(500)
 		return ctx.json(json2.encode[StorageErrorResponse](StorageErrorResponse{
@@ -692,10 +692,10 @@ pub fn (mut fs FileService) handle_presign_get(mut ctx Context) http.Response {
 
 
 // ============================================================================
-// 辅助函数
+// helper function
 // ============================================================================
 
-// 生成分片上传的对象键
+// Generate the object key for multipart upload
 fn generate_multipart_object_key(filename string) string {
 	now := time.now()
 	date_prefix := now.custom_format('YYYY/MM/DD')
@@ -705,74 +705,74 @@ fn generate_multipart_object_key(filename string) string {
 }
 
 // ============================================================================
-// 路由注册
+//Route registration
 // ============================================================================
 
-// 注册所有文件服务路由
-// prefix: 路由前缀，例如 "/api/storage"
+//Register all file service routes
+// prefix: routing prefix, such as "/api/storage"
 pub fn (mut fs FileService) register_routes(mut app Hono, prefix string) {
-	// 文件上传
+	//File upload
 	app.post('${prefix}/upload', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_upload(mut ctx)
 	})
 	
-	// 文件下载
+	//File download
 	app.get('${prefix}/download/:file_uuid', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_download(mut ctx)
 	})
 	
-	// 文件删除
+	//File deletion
 	app.delete('${prefix}/files/:file_uuid', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_delete(mut ctx)
 	})
 	
-	// 文件列表
+	// file list
 	app.get('${prefix}/files', fn [fs] (mut ctx Context) http.Response {
 		return fs.handle_list_files(mut ctx)
 	})
 	
-	// 文件信息
+	//File information
 	app.get('${prefix}/files/:file_uuid/info', fn [fs] (mut ctx Context) http.Response {
 		return fs.handle_get_file_info(mut ctx)
 	})
 	
-	// 预签名 URL (POST)
+	// Pre-signed URL (POST)
 	app.post('${prefix}/presign', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_presign(mut ctx)
 	})
 	
-	// 预签名 URL (GET)
+	// Pre-signed URL (GET)
 	app.get('${prefix}/presign/:file_uuid', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_presign_get(mut ctx)
 	})
 	
-	// 分片上传 - 初始化
+	// Multipart upload - initialization
 	app.post('${prefix}/multipart/init', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_init_multipart(mut ctx)
 	})
 	
-	// 分片上传 - 上传分片
+	// Multipart upload - Upload parts
 	app.post('${prefix}/multipart/upload/:upload_id/:part_number', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_upload_part(mut ctx)
 	})
 	
-	// 分片上传 - 完成
+	// Multipart upload - complete
 	app.post('${prefix}/multipart/complete', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_complete_multipart(mut ctx)
 	})
 	
-	// 分片上传 - 取消
+	// Multipart upload - cancel
 	app.post('${prefix}/multipart/abort', fn [mut fs] (mut ctx Context) http.Response {
 		return fs.handle_abort_multipart(mut ctx)
 	})
 	
-	// 分片上传 - 进度查询
+	// Multipart upload - progress query
 	app.get('${prefix}/multipart/progress/:upload_id', fn [fs] (mut ctx Context) http.Response {
 		return fs.handle_upload_progress(mut ctx)
 	})
 }
 
-// 注册简化的路由（不带前缀）
+// Register simplified route (without prefix)
 pub fn (mut fs FileService) register_default_routes(mut app Hono) {
 	fs.register_routes(mut app, '/storage')
 }

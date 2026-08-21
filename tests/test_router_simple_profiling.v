@@ -5,10 +5,10 @@ import net.http
 fn main() {
 	println('=== 简化路由性能分析 ===')
 	
-	// 测试不同复杂度路由的编译时间
+	//Test the compilation time of routes of different complexity
 	test_compilation_time()
 	
-	// 测试路由排序效果
+	//Test the routing sorting effect
 	test_route_sorting_effect()
 	
 	println('✅ 简化路由性能分析完成')
@@ -52,13 +52,13 @@ fn test_compilation_time() {
 			}
 		}
 		
-		// 添加路由
+		//Add route
 		router.add_route('GET', handler, '')
 		
-		// 清空缓存确保需要编译
+		// Clear cache to ensure compilation is required
 		router.clear_regex_cache()
 		
-		// 测试编译时间（第一次匹配）
+		// Test compilation time (first match)
 		start_time := time.now()
 		result := router.match_route('GET', test_case['path'])
 		compile_time := time.since(start_time)
@@ -70,7 +70,7 @@ fn test_compilation_time() {
 			continue
 		}
 		
-		// 测试缓存匹配时间
+		//Test cache matching time
 		iterations := 10000
 		start_time2 := time.now()
 		mut cache_matches := 0
@@ -86,13 +86,13 @@ fn test_compilation_time() {
 			println('    平均缓存匹配: ${avg_cache_time:.3f}μs')
 		}
 		
-		// 分析路由特征
+		//Analyze routing characteristics
 		param_count := test_case['route'].count(':')
 		segment_count := test_case['route'].split('/').len
 		println('    参数数量: ${param_count}')
 		println('    路径段数: ${segment_count}')
 		
-		// 检查缓存状态
+		// Check cache status
 		regex_total, regex_compiled := router.get_regex_cache_stats()
 		println('    正则缓存: ${regex_compiled}/${regex_total}')
 	}
@@ -101,20 +101,20 @@ fn test_compilation_time() {
 fn test_route_sorting_effect() {
 	println('\n📊 测试路由排序效果...')
 	
-	// 创建两个路由器：一个使用排序，一个不使用
+	// Create two routers: one with sorting and one without
 	mut sorted_router := hono.ContextHybridRouter.new()
 	mut unsorted_router := hono.ContextHybridRouter.new()
 	
-	// 定义路由（按复杂度递减顺序）
+	// Define routes (in order of decreasing complexity)
 	routes := [
-		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id/replies/:reply_id',  // 最复杂
-		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',                   // 很复杂
-		'/api/:version/users/:user_id/posts/:post_id',                                        // 中等复杂
-		'/users/:id/posts/:post_id',                                                          // 较简单
-		'/users/:id'                                                                          // 最简单
+		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id/replies/:reply_id',  // most complex
+		'/api/:version/users/:user_id/posts/:post_id/comments/:comment_id',                   // Very complicated
+		'/api/:version/users/:user_id/posts/:post_id',                                        // medium complex
+		'/users/:id/posts/:post_id',                                                          // simpler
+		'/users/:id'                                                                          // simplest
 	]
 	
-	// 添加到排序路由器（会自动排序）
+	//Add to sorting router (will be automatically sorted)
 	for route in routes {
 		handler := hono.ContextHandler{
 			path: route
@@ -125,7 +125,7 @@ fn test_route_sorting_effect() {
 		sorted_router.add_route('GET', handler, '')
 	}
 	
-	// 手动添加到未排序路由器（保持原顺序）
+	// Manually add to unsorted router (maintain original order)
 	for route in routes {
 		handler := hono.ContextHandler{
 			path: route
@@ -136,14 +136,14 @@ fn test_route_sorting_effect() {
 		unsorted_router.dynamic_routes << handler
 	}
 	
-	// 测试匹配最简单的路由
+	//Test matching the simplest route
 	simple_path := '/users/123'
 	iterations := 50000
 	
 	println('  测试路径: ${simple_path}')
 	println('  测试次数: ${iterations}')
 	
-	// 测试排序路由器
+	//Test sorting router
 	start_time1 := time.now()
 	mut sorted_matches := 0
 	for _ in 0 .. iterations {
@@ -153,7 +153,7 @@ fn test_route_sorting_effect() {
 	}
 	sorted_time := time.since(start_time1)
 	
-	// 测试未排序路由器
+	//Test unsorted routers
 	start_time2 := time.now()
 	mut unsorted_matches := 0
 	for _ in 0 .. iterations {
@@ -184,7 +184,7 @@ fn test_route_sorting_effect() {
 		}
 	}
 	
-	// 显示路由顺序
+	//Display routing order
 	_, sorted_paths := sorted_router.get_all_routes()
 	println('\n  排序后的路由顺序:')
 	for i, path in sorted_paths {
