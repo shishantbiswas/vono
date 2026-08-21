@@ -1,9 +1,22 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig, HeadConfig } from 'vitepress'
+
+const umamiScript: HeadConfig = ["script", {
+  defer: "true",
+  src: "https://bul0hfxshyzutcdjwmaygdib.service.bsws.in/script.js",
+  "data-website-id": "218292fe-7665-4031-a754-5b942fa27685"
+}]
+
+const baseHeaders: HeadConfig[] = []
+
+const headers = process.env.NODE_ENV === "production" ?
+  [...baseHeaders, umamiScript] :
+  baseHeaders
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Vono",
   description: "Hono but in Vlang",
+  head: headers,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
