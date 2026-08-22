@@ -3,12 +3,12 @@ Vono
 <img src="./docs/public/vono.svg"  width=25 alt="icon" />
 </h1>
 
-A high-performance V language web framework inspired by [Vono.js](https://vono.dev/).
+A high-performance V language web framework inspired by [Hono.js](https://hono.dev/).
 
 ## Features
 
 -  **High Performance** - Hybrid routing with LRU cache for optimal speed
--  **Simple API** - Clean and intuitive API design inspired by Vono.js
+-  **Simple API** - Clean and intuitive API design inspired by hono.js
 -  **Middleware Support** - Flexible middleware system with onion model
 -  **CORS** - Built-in CORS middleware with full configuration
 -  **Cookie Helper** - Easy cookie management with signed cookie support
@@ -82,7 +82,7 @@ The uSockets library and libuv are pre-compiled and included in the `usockets/li
 ### Using uSockets Backend
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -134,7 +134,7 @@ See [docs/HIGH_CONCURRENCY.md](docs/HIGH_CONCURRENCY.md) for detailed optimizati
 
 ```v
 import net.http
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -166,7 +166,7 @@ fn main() {
 ```v
 import net.http
 import time
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -190,14 +190,14 @@ fn main() {
 
 ## Built-in Middleware
 
-vono provides 7 built-in middleware components inspired by Vono.js:
+vono provides 7 built-in middleware components inspired by Hono.js:
 
 ### 1. CORS Middleware
 
 Cross-Origin Resource Sharing middleware for handling CORS requests.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -223,7 +223,7 @@ fn main() {
 Utilities for managing HTTP cookies, including signed cookies.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -278,7 +278,7 @@ fn main() {
 JSON Web Token authentication middleware.
 
 ```v
-import meiseayoung.vono
+import vono
 import time
 
 fn main() {
@@ -329,7 +329,7 @@ fn main() {
 Simple Bearer token authentication.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -367,7 +367,7 @@ fn main() {
 Response compression with gzip and deflate support.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -399,7 +399,7 @@ fn main() {
 Request rate limiting to protect against abuse.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -451,7 +451,7 @@ fn main() {
 Schema-based request validation for JSON body, query parameters, path parameters, and headers.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -551,7 +551,7 @@ vono.v_object({
 Additional utility middleware included:
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -582,7 +582,7 @@ fn main() {
 Store and retrieve data within request context:
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -610,7 +610,7 @@ fn main() {
 RFC 6455 compliant WebSocket support for real-time bidirectional communication.
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -643,7 +643,7 @@ fn main() {
 #### WebSocket with Configuration Options
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -672,7 +672,7 @@ fn main() {
 #### WebSocket with Route Parameters
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -699,7 +699,7 @@ fn main() {
 #### Sending Different Message Types
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -775,7 +775,7 @@ Server-Sent Events (SSE) and streaming response support for real-time data push.
 #### Basic Binary Streaming
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -805,7 +805,7 @@ fn main() {
 #### Text Streaming
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -834,7 +834,7 @@ fn main() {
 #### Server-Sent Events (SSE)
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -879,7 +879,7 @@ fn main() {
 #### SSE with Multi-line Data
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -903,7 +903,7 @@ fn main() {
 #### SSE with Error Handling
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -933,7 +933,7 @@ fn main() {
 #### SSE with Retry Field
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -1020,7 +1020,7 @@ Interactive API documentation with OpenAPI 3.0/3.1 specification support.
 #### Basic Usage
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -1064,7 +1064,7 @@ fn main() {
 #### OpenAPI Builder API
 
 ```v
-import meiseayoung.vono
+import vono
 
 // Build a complete OpenAPI specification
 spec := vono.OpenAPIBuilder.new()
@@ -1143,7 +1143,7 @@ spec := vono.OpenAPIBuilder.new()
 #### Swagger UI Options
 
 ```v
-import meiseayoung.vono
+import vono
 
 // Customize Swagger UI appearance and behavior
 app.get('/docs', vono.swagger_ui(vono.SwaggerUIOptions{
@@ -1215,7 +1215,7 @@ Built-in support for multiple storage backends including Local filesystem, AWS S
 #### Storage Configuration
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     // Local storage configuration
@@ -1267,7 +1267,7 @@ fn main() {
 #### Using FileService
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -1298,7 +1298,7 @@ fn main() {
 #### Direct Storage Provider Usage
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     // Create local storage provider
@@ -1347,7 +1347,7 @@ fn main() {
 #### Multipart Upload for Large Files
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut storage := vono.new_s3_storage(vono.S3Config{
@@ -1397,7 +1397,7 @@ fn main() {
 #### HTTP Handlers for File Operations
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -1455,7 +1455,7 @@ fn main() {
 #### Switching Storage Providers at Runtime
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut fs := vono.new_file_service(vono.FileServiceConfig{
@@ -1533,7 +1533,7 @@ fn main() {
 #### Error Handling and Retry
 
 ```v
-import meiseayoung.vono
+import vono
 
 fn main() {
     // Configure retry behavior
@@ -1561,7 +1561,7 @@ fn main() {
 
 ```v
 import net.http
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
@@ -1589,7 +1589,7 @@ fn main() {
 
 ```v
 import net.http
-import meiseayoung.vono
+import vono
 
 fn main() {
     mut app := vono.Vono.new()
