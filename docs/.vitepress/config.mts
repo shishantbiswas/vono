@@ -36,6 +36,7 @@ export default defineConfig({
         items: [
           { text: 'Motivation', link: '/motivation' },
           { text: 'Gettings Started', link: '/getting-started' },
+          // { text: 'Middleware', link: '/middleware' },
           // { text: 'Markdown Examples', link: '/markdown-examples' },
           // { text: 'Runtime API Examples', link: '/api-examples' },
         ]
@@ -43,10 +44,13 @@ export default defineConfig({
       {
         text: 'Middleware',
         items: [
-          { text: 'Middleware', link: '/middleware' },
-          // { text: 'Gettings Started', link: '/getting-started' },
-          // { text: 'Markdown Examples', link: '/markdown-examples' },
-          // { text: 'Runtime API Examples', link: '/api-examples' },
+          { text: 'Bearer Auth', link: '/middleware/bearer-auth' },
+          { text: 'Cookie Helper', link: '/middleware/cookie' },
+          { text: 'CORS Middleware', link: '/middleware/cors' },
+          { text: 'Compression', link: '/middleware/compression' },
+          { text: 'Rate Limiting', link: '/middleware/rate-limiting' },
+          { text: 'Request Validator', link: '/middleware/request-validator' },
+          { text: 'JWT Middleware', link: '/middleware/jwt' },
         ]
       }
     ],
