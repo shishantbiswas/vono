@@ -3,6 +3,7 @@ Schema-based request validation for JSON body, query parameters, path parameters
 
 ```v
 import vono
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()

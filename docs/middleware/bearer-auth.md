@@ -3,6 +3,7 @@ Simple Bearer token authentication.
 
 ```v
 import vono
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()

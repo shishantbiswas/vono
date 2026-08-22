@@ -1,4 +1,7 @@
-# vono
+<h1  style="text-decoration: none; cursor: none;">
+Vono
+<img src="./docs/public/vono.svg"  width=25 alt="icon" />
+</h1>
 
 A high-performance V language web framework inspired by [Vono.js](https://vono.dev/).
 

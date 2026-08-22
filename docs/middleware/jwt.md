@@ -4,6 +4,7 @@ JSON Web Token authentication middleware.
 ```v
 import vono
 import time
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()

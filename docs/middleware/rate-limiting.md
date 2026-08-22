@@ -3,6 +3,7 @@ Request rate limiting to protect against abuse.
 
 ```v
 import vono
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()

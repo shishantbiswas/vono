@@ -2,8 +2,8 @@
 Response compression with gzip and deflate support.
 
 ```v
-
 import vono
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()

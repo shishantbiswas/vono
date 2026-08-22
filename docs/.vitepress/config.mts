@@ -18,9 +18,9 @@ export default defineConfig({
   description: "Hono but in Vlang",
   head: headers,
   themeConfig: {
-  logo:"/vono.svg",
-  siteTitle: "Vono",
-  search: {
+    logo: "/vono.svg",
+    siteTitle: "Vono",
+    search: {
       provider: 'local',
     },
 
@@ -34,8 +34,9 @@ export default defineConfig({
       {
         text: 'Introduction',
         items: [
-          { text: 'Motivation', link: '/motivation' },
+          { text: 'Prerequisite', link: '/v-setup' },
           { text: 'Gettings Started', link: '/getting-started' },
+          { text: 'Motivation', link: '/motivation' },
           // { text: 'Middleware', link: '/middleware' },
           // { text: 'Markdown Examples', link: '/markdown-examples' },
           // { text: 'Runtime API Examples', link: '/api-examples' },
@@ -43,15 +44,24 @@ export default defineConfig({
       },
       {
         text: 'Middleware',
+        collapsed: true,
+        base: '/middleware/',
         items: [
-          { text: 'Bearer Auth', link: '/middleware/bearer-auth' },
-          { text: 'Cookie Helper', link: '/middleware/cookie' },
-          { text: 'CORS Middleware', link: '/middleware/cors' },
-          { text: 'Compression', link: '/middleware/compression' },
-          { text: 'Rate Limiting', link: '/middleware/rate-limiting' },
-          { text: 'Request Validator', link: '/middleware/request-validator' },
-          { text: 'JWT Middleware', link: '/middleware/jwt' },
+          { text: 'Bearer Auth', link: '/bearer-auth' },
+          { text: 'Cookie Helper', link: '/cookie' },
+          { text: 'CORS Middleware', link: '/cors' },
+          { text: 'Compression', link: '/compression' },
+          { text: 'Rate Limiting', link: '/rate-limiting' },
+          { text: 'Request Validator', link: '/request-validator' },
+          { text: 'JWT Middleware', link: '/jwt' },
         ]
+      },
+      {
+        text: "Helpers",
+        collapsed: true,
+        items: [
+
+        ],
       }
     ],
 

@@ -4,6 +4,7 @@ Cross-Origin Resource Sharing (CORS) is a browser seecurity mechanism used to ch
 
 ```v
 import vono
+import net.http
 
 fn main() {
     mut app := vono.Vono.new()
