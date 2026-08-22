@@ -14,10 +14,12 @@ const headers = process.env.NODE_ENV === "production" ?
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Vono",
+  title: "Vono - Web framework inspired by Hono",
   description: "Hono but in Vlang",
   head: headers,
   themeConfig: {
+  logo:"/vono.svg",
+  siteTitle: "Vono",
   search: {
       provider: 'local',
     },
