@@ -36,8 +36,17 @@ export default defineConfig({
         items: [
           { text: 'Motivation', link: '/motivation' },
           { text: 'Gettings Started', link: '/getting-started' },
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' },
+          // { text: 'Markdown Examples', link: '/markdown-examples' },
+          // { text: 'Runtime API Examples', link: '/api-examples' },
+        ]
+      },
+      {
+        text: 'Middleware',
+        items: [
+          { text: 'Middleware', link: '/middleware' },
+          // { text: 'Gettings Started', link: '/getting-started' },
+          // { text: 'Markdown Examples', link: '/markdown-examples' },
+          // { text: 'Runtime API Examples', link: '/api-examples' },
         ]
       }
     ],
